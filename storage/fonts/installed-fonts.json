@@ -1,0 +1,12 @@
+{
+    "nunito": {
+        "normal": "D:\\laragon\\www\\RatioPlan\\storage\\fonts\/\/nunito-normal_99fa167b6ffac157e5aaeb26e0b6bff3"
+    },
+    "roboto": {
+        "normal": "D:\\laragon\\www\\RatioPlan\\storage\\fonts\/\/roboto-normal_7a84c838f04f89e2a6cf0df9321b241a",
+        "500": "D:\\laragon\\www\\RatioPlan\\storage\\fonts\/\/roboto-500_ea207100bd3be6603288fe34a7dec1d6"
+    },
+    "libre barcode 39": {
+        "normal": "D:\\laragon\\www\\RatioPlan\\storage\\fonts\/\/libre-barcode-39-normal_4e1c2cc104a83b74d69b91ff18ecdca4"
+    }
+}
