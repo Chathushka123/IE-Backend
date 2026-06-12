@@ -1,0 +1,51 @@
+# Laravel / PHP vendor dependencies
+/vendor
+/node_modules
+
+# Environment files
+.env
+.env.backup
+.env.production
+.env.testing
+
+# Laravel storage & cache
+/storage/*.key
+/storage/logs
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/bootstrap/cache/*.php
+
+# IDE / editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Laravel specific
+/public/storage
+Homestead.json
+Homestead.yaml
+auth.json
+
+# PHPUnit
+.phpunit.result.cache
+coverage/
+
+# npm / yarn logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Vite / Mix build outputs
+/public/build
+/public/mix-manifest.json
+
+# Temporary files
+*.log
+*.cache
+*.tmp
