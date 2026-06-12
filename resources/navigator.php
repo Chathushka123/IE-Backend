@@ -10,7 +10,7 @@ $navigator_json = '
        "permitted" : 0,
        "nodes":[
          {
-            "caption":"Employee",
+            "caption":"Employees",
             "icon":"fas fa-cubes",
             "type":"node",
             "permitted" : 0,
