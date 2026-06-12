@@ -154,7 +154,7 @@ class SearchController extends Controller
       if (($searchJsonRelations != "")) {
         
         foreach ($searchJsonRelations as $key => $temp) {
-          $with[] = Str::lower(Str::snake(array_key_first($temp)));
+          $with[] = Str::camel(array_key_first($temp));
         }
         
       }
@@ -235,7 +235,10 @@ class SearchController extends Controller
       // adding whereIn clauses to include relations
       if ($relations) {
         foreach ($relations as $relationJson) {
-          $query->whereIn(Str::snake(array_key_first($relationJson)) . '_id', $this->_getModelIds($relationJson));
+          $relationKey = array_key_first($relationJson);
+          if (!empty($relationJson[$relationKey])) {
+            $query->whereIn(Str::snake($relationKey) . '_id', $this->_getModelIds($relationJson));
+          }
         }
       }
       return $query->pluck('id');
