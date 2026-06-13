@@ -55,8 +55,10 @@ class AuthController extends Controller
                     if ($request->remember_me)
                         $token->expires_at = Carbon::now()->addWeeks(1);
                     $token->save();
+                    $user->load('role');
                     return response()->json([
                         'user' => $user,
+                        'roles' => $user->role ? [$user->role] : [],
                         'access_token' => $tokenResult->accessToken,
                         'token_type' => 'Bearer',
                         'expires_at' => Carbon::parse(
@@ -81,8 +83,10 @@ class AuthController extends Controller
                     if ($request->remember_me)
                         $token->expires_at = Carbon::now()->addWeeks(1);
                     $token->save();
+                    $user->load('role');
                     return response()->json([
                         'user' => $user,
+                        'roles' => $user->role ? [$user->role] : [],
                         'access_token' => $tokenResult->accessToken,
                         'token_type' => 'Bearer',
                         'expires_at' => Carbon::parse(

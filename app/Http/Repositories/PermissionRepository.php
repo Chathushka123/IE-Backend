@@ -124,7 +124,7 @@ class PermissionRepository
           if(!is_null($rec)){
             $curr_arry[$role->role_code] = $rec['grant'];
           }
-          
+
       }
       array_push($final_array, $curr_arry);
     }
@@ -137,7 +137,7 @@ class PermissionRepository
     if ($user->email != 'sysadmin@gmail.com') {
     $permitted = "";
     $user = Auth::user();
-    $screen = Screen::where('screen_code', $screen_code)->first();
+    $screen = Screen::where('screen_name', $screen_code)->first();
     if (!(is_null($screen))) {
       $permission = Permission::where('screen_id', $screen->id)->where('role_id', $user->role_id)->first();
       if (!(is_null($permission))) {
@@ -156,11 +156,11 @@ class PermissionRepository
     include resource_path('navigator.php');
     //$json = file_get_contents(asset('navigator.json'));
     $user = Auth::user();
-    
+
     if ($user->email != 'sysadmin@gmail.com') {
       $json =  json_decode($navigator_json, true);
       $permission = Permission::where('role_id', Auth::user()->role_id)->whereNotNull('grant')->with('screen')->get();
-      
+
       //return $permission;
       foreach ($permission as $perm) {
         foreach ($json as $index => $rec) {
@@ -192,10 +192,19 @@ class PermissionRepository
         $intermediate[$index]["nodes"] = array_values($vararr);
       }
       return $intermediate;
-    } 
+    }
     else {
-      
-      return json_decode($navigator_json, true);
+
+      $json = json_decode($navigator_json, true);
+      foreach ($json as $index => $rec) {
+        $json[$index]["permitted"] = 1;
+        if (array_key_exists("nodes", $rec)) {
+          foreach ($rec["nodes"] as $nodeIndex => $node) {
+            $json[$index]["nodes"][$nodeIndex]["permitted"] = 1;
+          }
+        }
+      }
+      return $json;
     }
   }
 
