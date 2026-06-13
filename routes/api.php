@@ -30,6 +30,9 @@ Route::prefix('v1')->group(function () {
         Route::get('importExportView', 'ImportExportController@importExportView');
         Route::post('import', 'ImportExportController@import')->name('import');
 
+        // Employees
+        Route::get('employees/export', 'Api\EmployeeController@export')->name('employees.export');
+
         // Auth
         Route::get('user', 'Api\AuthController@user')->name('user.get');
         Route::post('logout', 'Api\AuthController@logout')->name('logout');
