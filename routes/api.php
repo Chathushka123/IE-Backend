@@ -32,6 +32,10 @@ Route::prefix('v1')->group(function () {
 
         // Employees
         Route::get('employees/export', 'Api\EmployeeController@export')->name('employees.export');
+        Route::get('employees/dashboard', 'Api\EmployeeController@dashboard')->name('employees.dashboard');
+        Route::get('employees/{id}', 'Api\EmployeeController@show')->name('employees.show');
+        Route::post('employees', 'Api\EmployeeController@store')->name('employees.store');
+        Route::put('employees/{id}', 'Api\EmployeeController@update')->name('employees.update');
 
         // Auth
         Route::get('user', 'Api\AuthController@user')->name('user.get');

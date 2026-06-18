@@ -8,6 +8,8 @@ class LineCategoryCreateValidator
 {
   public static function getCreateRules()
   {
-    return array_merge([], LineCategoryCommonValidator::getCommonRules());
+    return array_merge(LineCategoryCommonValidator::getCommonRules(), [
+      'description' => 'required|string|max:255|unique:line_categories,description',
+    ]);
   }
 }
