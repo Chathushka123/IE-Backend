@@ -48,6 +48,25 @@ Route::prefix('v1')->group(function () {
         Route::post('searchByParameters', 'Api\SearchController@searchByParameters')->name('search.queryString');
         Route::post('searchByParametersJson', 'Api\SearchController@searchByParametersJson')->name('search.queryStringJson');
 
+        // Operations
+        Route::get('operations/byCategories', 'Api\OperationController@getByCategories')->name('operations.byCategories');
+
+        // Operation Gradings
+        Route::get('operationGradings', 'Api\OperationGradingController@index')->name('operationGradings.index');
+        Route::get('operationGradings/{id}', 'Api\OperationGradingController@show')->name('operationGradings.show');
+        Route::get('operationGradings/byOperation/{operationId}', 'Api\OperationGradingController@getByOperation')->name('operationGradings.byOperation');
+        Route::get('operationGradings/byGrade/{gradeId}', 'Api\OperationGradingController@getByGrade')->name('operationGradings.byGrade');
+        Route::post('operationGradings', 'Api\OperationGradingController@store')->name('operationGradings.store');
+        Route::put('operationGradings/{id}', 'Api\OperationGradingController@update')->name('operationGradings.update');
+
+        // Operation Skills
+        Route::get('operationSkills', 'Api\OperationSkillController@index')->name('operationSkills.index');
+        Route::get('operationSkills/{id}', 'Api\OperationSkillController@show')->name('operationSkills.show');
+        Route::get('operationSkills/byOperation/{operationId}', 'Api\OperationSkillController@getByOperation')->name('operationSkills.byOperation');
+        Route::get('operationSkills/bySkill/{skillId}', 'Api\OperationSkillController@getBySkill')->name('operationSkills.bySkill');
+        Route::post('operationSkills', 'Api\OperationSkillController@store')->name('operationSkills.store');
+        Route::put('operationSkills/{id}', 'Api\OperationSkillController@update')->name('operationSkills.update');
+
         // HashStore
         Route::get('hashStores/getByUuid/{uuid}', 'Api\HashStoreController@getByUuid')->name('hashStores.getByUuid');
         Route::post('hashStores', 'Api\HashStoreController@store')->name('hashStores.store');
