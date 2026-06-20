@@ -15,7 +15,10 @@ class OperationGradingRepository
   {
     $validator = Validator::make(
       $rec,
-      OperationGradingCreateValidator::getCreateRules($rec)
+      OperationGradingCreateValidator::getCreateRules($rec),
+      [
+        'product_category_id.unique' => 'This operation is already mapped to the selected product category.',
+      ]
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
@@ -39,7 +42,10 @@ class OperationGradingRepository
     Utilities::hydrate($model, $rec);
     $validator = Validator::make(
       $rec,
-      OperationGradingUpdateValidator::getUpdateRules($model_id, $rec)
+      OperationGradingUpdateValidator::getUpdateRules($model_id, $rec),
+      [
+        'product_category_id.unique' => 'This operation is already mapped to the selected product category.',
+      ]
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
