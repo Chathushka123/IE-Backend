@@ -6,6 +6,10 @@ use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Auth\AuthenticationException;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenInvalidException;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -64,6 +68,24 @@ class Handler extends ExceptionHandler
                 'status' => 'error',
                 'message' => 'The requested resource is not found.'
             ], 404);
+        } elseif ($exception instanceof TokenExpiredException) {
+            return response()->json([
+                'status' => 'error',
+                'code' => 'TOKEN_EXPIRED',
+                'message' => 'Access token has expired'
+            ], 401);
+        } elseif ($exception instanceof TokenInvalidException) {
+            return response()->json([
+                'status' => 'error',
+                'code' => 'TOKEN_INVALID',
+                'message' => 'Access token is invalid'
+            ], 401);
+        } elseif ($exception instanceof JWTException || $exception instanceof AuthenticationException) {
+            return response()->json([
+                'status' => 'error',
+                'code' => 'TOKEN_ABSENT',
+                'message' => 'Authorization token not found'
+            ], 401);
         } elseif ($exception instanceof GeneralException) {
             return response()->json([
                 'status' => 'error',

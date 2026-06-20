@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Laravel 10 (PHP ^7.3||^8.0) REST API backend for "IE Module" / SkillMatrix — an industrial engineering / employee management system. Auth is via Laravel Passport (OAuth2 bearer tokens), not Sanctum, despite both being installed (`config/auth.php`: `api` guard driver is `passport`).
+Laravel 10 (PHP ^7.3||^8.0) REST API backend for "IE Module" / SkillMatrix — an industrial engineering / employee management system. Auth is via JWT (`php-open-source-saver/jwt-auth`), not Sanctum despite it being installed (`config/auth.php`: `api` guard driver is `jwt`). Laravel Passport was removed in favor of JWT — see "Auth flow" below.
 
 ## Commands
 
@@ -71,7 +71,9 @@ When adding a new model that should be searchable via `novelSearch`, you must ad
 
 ### Auth flow
 
-`AuthController@login` supports two paths: normal email/password (`Auth::attempt`), and a "common user" SSO-style path where `common_user` is an encrypted token (`Crypt::decrypt`) standing in for a password — used for cross-system handoff logins. Both paths reject login for users where `is_active` is false, and issue a Passport personal access token (`createToken`), optionally extended to 1 week via `remember_me`.
+`AuthController@login` supports two paths: normal email/password (`Auth::attempt`), and a "common user" SSO-style path where `common_user` is an encrypted token (`Crypt::decrypt`) standing in for a password — used for cross-system handoff logins. Both paths reject login for users where `is_active` is false, then issue a JWT access token (`JWTAuth::fromUser`, 15 min TTL via `JWT_TTL`, returned in the JSON body) plus an opaque refresh token (`App\Http\Repositories\RefreshTokenRepository`, 7 day TTL via `JWT_REFRESH_TOKEN_TTL`/`config/refresh_token.php`). The refresh token is a random string stored in Redis (`refresh_token:<token>` → user id), not a second JWT, so it can be revoked on logout/rotation — unlike the stateless access token, which is only invalidated via jwt-auth's blacklist (`JWTAuth::invalidate`, requires `CACHE_DRIVER=redis`). `App\User` implements `JWTSubject` instead of Passport's `HasApiTokens`.
+
+The refresh token never appears in the JSON body — it's set as an httpOnly, `Secure`, `SameSite=Lax` cookie (`refresh_token`, scoped to path `/api/v1`) so XSS can't read it. A companion non-httpOnly cookie (`csrf_refresh_token`, excluded from encryption in `App\Http\Middleware\EncryptCookies::$except`) implements a double-submit CSRF check: the frontend must read that cookie via JS and echo its value back as an `X-CSRF-TOKEN` header on any request that touches the refresh cookie. `App\Http\Middleware\VerifyCsrfCookie` (aliased `csrf.cookie` in `Kernel::$routeMiddleware`) enforces this on `POST refreshToken` (outside `auth:api`, since the access token may already be expired) and `POST logout` (inside `auth:api`) — both rotate/clear the cookie pair. The `api` middleware group had to gain `EncryptCookies` + `AddQueuedCookiesToResponse` for any of this to work, since the stock group only had `throttle` + `SubstituteBindings`. CORS (`config/cors.php`) now requires `supports_credentials: true` and an explicit `FRONTEND_URLS` env allowlist — browsers reject `*` once credentials/cookies are involved.
 
 ### Excel import/export
 
@@ -81,7 +83,7 @@ When adding a new model that should be searchable via `novelSearch`, you must ad
 
 ### Routes
 
-All API routes are versioned under `/api/v1` (`routes/api.php`) and registered as string controller actions (`'Api\EmployeeController@show'`), not invokable/class-based route binding except `MasterDetailController` (registered as `'Api\MasterDetailController'`, an invokable controller). Nearly everything except `login`, `register`, and `fpos/{fpo}/generateLayout` sits behind the `auth:api` (Passport) middleware group.
+All API routes are versioned under `/api/v1` (`routes/api.php`) and registered as string controller actions (`'Api\EmployeeController@show'`), not invokable/class-based route binding except `MasterDetailController` (registered as `'Api\MasterDetailController'`, an invokable controller). Nearly everything except `login`, `register`, `refreshToken`, and `fpos/{fpo}/generateLayout` sits behind the `auth:api` (JWT) middleware group.
 
 ### Repo-specific gotchas
 
