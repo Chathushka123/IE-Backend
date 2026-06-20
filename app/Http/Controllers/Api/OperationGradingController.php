@@ -2,15 +2,22 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exports\OperationGradingsExport;
 use App\Http\Controllers\Controller;
 use App\Http\Repositories\OperationGradingRepository;
 use App\OperationGrading;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 use Exception;
 
 class OperationGradingController extends Controller
 {
+    public function export()
+    {
+        return Excel::download(new OperationGradingsExport(), 'OperationGradings_' . date('Y_m_d_H_i_s') . '.xlsx');
+    }
+
     private function withRelations()
     {
         return ['operation', 'productCategory', 'grade'];
@@ -65,6 +72,43 @@ class OperationGradingController extends Controller
 
             return response()->json(['status' => 'success', 'data' => $records], 200);
         } catch (Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 400);
+        }
+    }
+
+    public function getByProductCategory($productCategoryId)
+    {
+        try {
+            $records = OperationGrading::with(['operation', 'grade'])
+                ->where('product_category_id', $productCategoryId)
+                ->orderBy('sequence_no')
+                ->get();
+
+            return response()->json(['status' => 'success', 'data' => $records], 200);
+        } catch (Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 400);
+        }
+    }
+
+    public function resequence(Request $request)
+    {
+        $request->validate([
+            'product_category_id'   => 'required|integer|exists:product_categories,id',
+            'ids'                   => 'required|array|min:1',
+            'ids.*'                 => 'integer|exists:operation_gradings,id',
+        ]);
+
+        try {
+            DB::beginTransaction();
+            $records = OperationGradingRepository::resequence(
+                $request->product_category_id,
+                $request->ids
+            );
+            DB::commit();
+
+            return response()->json(['status' => 'success', 'data' => $records], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 400);
         }
     }

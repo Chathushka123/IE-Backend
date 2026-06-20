@@ -86,4 +86,29 @@ class OperationGradingRepository
   {
     OperationGrading::destroy($recs);
   }
+
+  public static function resequence(int $productCategoryId, array $ids)
+  {
+    $records = OperationGrading::whereIn('id', $ids)
+      ->where('product_category_id', $productCategoryId)
+      ->get()
+      ->keyBy('id');
+
+    if ($records->count() !== count($ids)) {
+      throw new \App\Exceptions\GeneralException(
+        'One or more IDs do not belong to the given product category.'
+      );
+    }
+
+    // Null out all sequence numbers first to avoid unique constraint conflicts
+    OperationGrading::whereIn('id', $ids)->update(['sequence_no' => null]);
+
+    // Use query builder directly — Eloquent's dirty-check would skip save()
+    // for any record whose new sequence_no equals its original value
+    foreach ($ids as $index => $id) {
+      OperationGrading::where('id', $id)->update(['sequence_no' => $index + 1]);
+    }
+
+    return OperationGrading::whereIn('id', $ids)->orderBy('sequence_no')->get();
+  }
 }

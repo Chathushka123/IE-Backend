@@ -52,11 +52,14 @@ Route::prefix('v1')->group(function () {
         Route::get('operations/export', 'Api\OperationController@export')->name('operations.export');
         Route::get('operations/byCategories', 'Api\OperationController@getByCategories')->name('operations.byCategories');
 
-        // Operation Gradings
+        // Operation Gradings — specific paths must come before {id} wildcard
+        Route::get('operationGradings/export', 'Api\OperationGradingController@export')->name('operationGradings.export');
         Route::get('operationGradings', 'Api\OperationGradingController@index')->name('operationGradings.index');
-        Route::get('operationGradings/{id}', 'Api\OperationGradingController@show')->name('operationGradings.show');
         Route::get('operationGradings/byOperation/{operationId}', 'Api\OperationGradingController@getByOperation')->name('operationGradings.byOperation');
         Route::get('operationGradings/byGrade/{gradeId}', 'Api\OperationGradingController@getByGrade')->name('operationGradings.byGrade');
+        Route::get('operationGradings/byProductCategory/{productCategoryId}', 'Api\OperationGradingController@getByProductCategory')->name('operationGradings.byProductCategory');
+        Route::put('operationGradings/resequence', 'Api\OperationGradingController@resequence')->name('operationGradings.resequence');
+        Route::get('operationGradings/{id}', 'Api\OperationGradingController@show')->name('operationGradings.show');
         Route::post('operationGradings', 'Api\OperationGradingController@store')->name('operationGradings.store');
         Route::put('operationGradings/{id}', 'Api\OperationGradingController@update')->name('operationGradings.update');
 
