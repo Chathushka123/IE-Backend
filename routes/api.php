@@ -49,6 +49,7 @@ Route::prefix('v1')->group(function () {
         Route::post('searchByParametersJson', 'Api\SearchController@searchByParametersJson')->name('search.queryStringJson');
 
         // Operations
+        Route::get('operations/export', 'Api\OperationController@export')->name('operations.export');
         Route::get('operations/byCategories', 'Api\OperationController@getByCategories')->name('operations.byCategories');
 
         // Operation Gradings
