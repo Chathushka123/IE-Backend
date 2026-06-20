@@ -29,6 +29,13 @@ $navigator_json = '
             "type":"node",
             "permitted" : 0,
             "path":"/ie/departments"
+         },
+        {
+            "caption":"Operations & Skills",
+            "icon":"fas fa-cubes",
+            "type":"node",
+            "permitted" : 0,
+            "path":"/ie/op-skills"
          }
 
 

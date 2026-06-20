@@ -12,6 +12,9 @@ class EncryptCookies extends Middleware
      * @var array
      */
     protected $except = [
-        //
+        // Left unencrypted so the frontend can read it via JS and echo it
+        // back as a header for the double-submit CSRF check; the actual
+        // refresh_token cookie stays encrypted + httpOnly.
+        'csrf_refresh_token',
     ];
 }
