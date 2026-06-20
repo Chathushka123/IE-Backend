@@ -17,6 +17,7 @@ class SkillWithParentsResource extends JsonResource
             'updated_by_id' => $this->updated_by_id,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'operations' => $this->whenLoaded('operations'),
         ];
     }
 }

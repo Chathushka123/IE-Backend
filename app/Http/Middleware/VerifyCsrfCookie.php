@@ -16,17 +16,37 @@ class VerifyCsrfCookie
 {
     public function handle(Request $request, Closure $next)
     {
-        $cookieValue = $request->cookie(config('refresh_token.csrf_cookie_name'));
         $headerValue = $request->header(config('refresh_token.csrf_header_name'));
 
-        if (
-            empty($cookieValue) ||
-            empty($headerValue) ||
-            !hash_equals($cookieValue, $headerValue)
-        ) {
+        if (empty($headerValue)) {
             throw new GeneralException('CSRF token mismatch');
         }
 
-        return $next($request);
+        // Parse the raw Cookie header to collect ALL values for this cookie name.
+        // PHP's $_COOKIE keeps only the first occurrence when the browser sends
+        // duplicates (e.g. stale cookie on /api/v1 + current cookie on /), so
+        // $request->cookie() alone cannot be trusted when duplicates exist.
+        $cookieName = config('refresh_token.csrf_cookie_name');
+        $cookieValues = $this->allCookieValues($request, $cookieName);
+
+        foreach ($cookieValues as $value) {
+            if (hash_equals($value, $headerValue)) {
+                return $next($request);
+            }
+        }
+
+        throw new GeneralException('CSRF token mismatch');
+    }
+
+    private function allCookieValues(Request $request, string $name): array
+    {
+        $values = [];
+        foreach (explode(';', $request->header('Cookie', '')) as $part) {
+            [$k, $v] = array_pad(explode('=', trim($part), 2), 2, '');
+            if (trim($k) === $name && $v !== '') {
+                $values[] = trim($v);
+            }
+        }
+        return $values;
     }
 }

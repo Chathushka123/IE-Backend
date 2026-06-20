@@ -11,6 +11,7 @@ class SkillUpdateValidator
   {
     return array_merge(SkillCommonValidator::getCommonRules(), [
       'description' => ['required', 'string', 'max:255', Rule::unique('skills', 'description')->ignore($keyIgnore)],
+      'code' => ['nullable', 'string', 'max:50', Rule::unique('skills', 'code')->ignore($keyIgnore)],
     ]);
   }
 }

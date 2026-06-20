@@ -10,6 +10,7 @@ class OperationCreateValidator
   {
     return array_merge(OperationCommonValidator::getCommonRules(), [
       'description' => 'required|string|max:255|unique:operations,description',
+      'code' => 'nullable|string|max:50|unique:operations,code',
     ]);
   }
 }

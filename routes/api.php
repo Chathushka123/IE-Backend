@@ -22,7 +22,7 @@ Route::prefix('v1')->group(function () {
     Route::get('fpos/{fpo}/generateLayout', 'Api\FpoController@generateLayout')->name('fpos.generateLayout');
 
     // Route::get('search', 'Api\SearchController@search')->name('search.index');
-    Route::group(['middleware' => 'auth:api'], function () {
+    Route::group(['middleware' => \App\Http\Middleware\JwtAuthenticate::class], function () {
         Route::post('novelSearch', 'Api\SearchController@novelSearch')->name('novelSearch');
         Route::post('getFunctionalPermission', 'Api\SearchController@getFunctionalPermission')->name('getFunctionalPermission');
 

@@ -11,6 +11,7 @@ class OperationUpdateValidator
   {
     return array_merge(OperationCommonValidator::getCommonRules(), [
       'description' => ['required', 'string', 'max:255', Rule::unique('operations', 'description')->ignore($keyIgnore)],
+      'code' => ['nullable', 'string', 'max:50', Rule::unique('operations', 'code')->ignore($keyIgnore)],
     ]);
   }
 }

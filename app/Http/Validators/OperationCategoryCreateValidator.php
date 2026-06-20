@@ -10,6 +10,7 @@ class OperationCategoryCreateValidator
   {
     return array_merge(OperationCategoryCommonValidator::getCommonRules(), [
       'description' => 'required|string|max:255|unique:operation_categories,description',
+      'code' => 'nullable|string|max:50|unique:operation_categories,code',
     ]);
   }
 }

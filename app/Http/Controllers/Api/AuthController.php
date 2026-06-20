@@ -124,7 +124,7 @@ class AuthController extends Controller
                 config('refresh_token.csrf_cookie_name'),
                 Str::random(40),
                 $ttlMinutes,
-                $path,
+                '/', // must be '/' so document.cookie is readable on any frontend page path
                 null,
                 $secure,
                 false, // readable by JS for the double-submit header
@@ -148,11 +148,14 @@ class AuthController extends Controller
             RefreshTokenRepository::revoke($refreshToken);
         }
 
-        $path = config('refresh_token.cookie_path');
+        $refreshPath = config('refresh_token.cookie_path');
+        $csrfPath = '/'; // csrf cookie is set at '/' so JS can read it on any page
 
         return response()->json(['message' => 'Successfully logged out'])
-            ->withCookie(Cookie::forget(config('refresh_token.cookie_name'), $path))
-            ->withCookie(Cookie::forget(config('refresh_token.csrf_cookie_name'), $path));
+            ->withCookie(Cookie::forget(config('refresh_token.cookie_name'), $refreshPath))
+            ->withCookie(Cookie::forget(config('refresh_token.csrf_cookie_name'), $csrfPath))
+            // also clear any stale csrf cookie that may have been set on the old /api/v1 path
+            ->withCookie(Cookie::forget(config('refresh_token.csrf_cookie_name'), $refreshPath));
     }
 
     /**

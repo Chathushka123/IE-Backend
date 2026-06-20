@@ -17,8 +17,8 @@
         "laravel/tinker": "^2.8",
         "maatwebsite/excel": "^3.1",
         "masbug/flysystem-google-drive-ext": "^2.4",
-        "php-open-source-saver/jwt-auth": "^2.8",
-        "picqer/php-barcode-generator": "^3.2",
+        "php-open-source-saver/jwt-auth": "^2.6",
+        "picqer/php-barcode-generator": "^2.0",
         "predis/predis": "^2.2",
         "simplesoftwareio/simple-qrcode": "^4.2"
     },

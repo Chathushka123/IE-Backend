@@ -59,26 +59,21 @@ class SearchController extends Controller
         if (isset($params->limit) && ($params->limit != "")) {
           $limit = $params->limit;
         }
+        $page = isset($params->page) && $params->page !== "" ? (int) $params->page : null;
+        $perPage = isset($params->per_page) && $params->per_page !== "" ? (int) $params->per_page : null;
 
-        $query = null;
-        if ($relations === null) {
-          if (!empty($where)) {
-            $query = $model::where($where);
-          }
-          if (!empty($whereins)) {
-            foreach ($whereins as $key => $value) {
-              $query = $model::whereIn($key, $value);
-            }
-          }
-        } else {
-          $query = $model::with($relations);
-          if (!empty($where)) {
-            $query = $query->where($where);
-          }
-          if (!empty($whereins)) {
-            foreach ($whereins as $key => $value) {
-              $query = $query->whereIn($key, $value);
-            }
+        if (empty($fieldList)) {
+          $fieldList = ['*'];
+        }
+
+        $query = $relations === null ? $model::query() : $model::with($relations);
+
+        if (!empty($where)) {
+          $query = $query->where($where);
+        }
+        if (!empty($whereins)) {
+          foreach ($whereins as $key => $value) {
+            $query = $query->whereIn($key, $value);
           }
         }
 
@@ -93,14 +88,44 @@ class SearchController extends Controller
           $query = $query->orderBy($orderByArr[0], $orderByArr[1]);
         }
 
+        // Pagination takes precedence over plain limit when both page and per_page are supplied.
+        if ($page !== null && $perPage !== null) {
+          $paginated = $query->paginate($perPage, ['*'], 'page', $page);
+
+          foreach ($paginated->items() as $result) {
+            if (isset($result->qty_json) && isset($result->qty_json_order)) {
+              $result->qty_json = Utilities::sortQtyJson($result->qty_json_order, $result->qty_json);
+            }
+          }
+
+          $entry = [
+            'data' => $paginated->items(),
+            'meta' => [
+              'total'        => $paginated->total(),
+              'per_page'     => $paginated->perPage(),
+              'current_page' => $paginated->currentPage(),
+              'last_page'    => $paginated->lastPage(),
+              'from'         => $paginated->firstItem(),
+              'to'           => $paginated->lastItem(),
+            ],
+          ];
+
+          if ($needValidJson) {
+            $ret[$obj] = $entry;
+          } else {
+            $ret[] = [$obj => $entry];
+          }
+          continue;
+        }
+
         if ($limit) {
           $query = $query->limit($limit);
         }
 
         // Log::info($query->toSql());
-        
-        $results =  $query->get();
-        
+
+        $results = $query->get();
+
         //sorting json
         foreach ($results as $key => $result) {
           if ((isset($result->qty_json)) && (isset($result->qty_json_order))) {
@@ -178,34 +203,60 @@ class SearchController extends Controller
       }
     }
 
+    $page = null;
+    $perPage = null;
+    $pageIsSet = isset($searchJson[array_key_first($searchJson)]['page']);
+    $perPageIsSet = isset($searchJson[array_key_first($searchJson)]['per_page']);
+    if ($pageIsSet && $perPageIsSet) {
+      $page = (int) $searchJson[array_key_first($searchJson)]['page'];
+      $perPage = (int) $searchJson[array_key_first($searchJson)]['per_page'];
+      unset($searchJson[array_key_first($searchJson)]['page']);
+      unset($searchJson[array_key_first($searchJson)]['per_page']);
+    }
+
     $rootClass = "App\\" . array_key_first($searchJson);
     $query = '';
     if (empty($with)) {
       $query = $rootClass::whereIn('id', $this->_getModelIds($searchJson));
-      $this->_addOrderByAndLimit($query, $orderby, $limit);
-
-      //sorting json
-      $results =  $query->get();
-      foreach ($results as $key => $result) {
-        if ((isset($result->qty_json)) && (isset($result->qty_json_order))) {
-          $result->qty_json = Utilities::sortQtyJson($result->qty_json_order, $result->qty_json);
-        }
-      }
     } else {
       $query = $rootClass::with($with)->whereIn('id', $this->_getModelIds($searchJson));
-      $this->_addOrderByAndLimit($query, $orderby, $limit);
-      $sql = $query->toSql();
+    }
 
-      //sorting json
-      $results =  $query->get();
-      foreach ($results as $key => $result) {
-        if ((isset($result->qty_json)) && (isset($result->qty_json_order))) {
+    $this->_addOrderByAndLimit($query, $orderby ?? null, ($page === null) ? ($limit ?? null) : null);
+
+    $resourceClass = "App\\Http\\Resources\\" . array_key_first($searchJson) . "WithParentsResource";
+
+    if ($page !== null && $perPage !== null) {
+      $paginated = $query->paginate($perPage, ['*'], 'page', $page);
+
+      foreach ($paginated->items() as $result) {
+        if (isset($result->qty_json) && isset($result->qty_json_order)) {
           $result->qty_json = Utilities::sortQtyJson($result->qty_json_order, $result->qty_json);
         }
       }
+
+      return response()->json([
+        'data' => $resourceClass::collection(collect($paginated->items())),
+        'meta' => [
+          'total'        => $paginated->total(),
+          'per_page'     => $paginated->perPage(),
+          'current_page' => $paginated->currentPage(),
+          'last_page'    => $paginated->lastPage(),
+          'from'         => $paginated->firstItem(),
+          'to'           => $paginated->lastItem(),
+        ],
+      ]);
     }
+
+    $results = $query->get();
+
+    foreach ($results as $result) {
+      if (isset($result->qty_json) && isset($result->qty_json_order)) {
+        $result->qty_json = Utilities::sortQtyJson($result->qty_json_order, $result->qty_json);
+      }
+    }
+
     // return $sql;
-    $resourceClass = "App\\Http\\Resources\\" . array_key_first($searchJson) . "WithParentsResource";
     return $resourceClass::collection($results);
   }
 
@@ -246,7 +297,7 @@ class SearchController extends Controller
   }
 
 
-  private function _addOrderByAndLimit(&$query, $orderby, $limit)
+  private function _addOrderByAndLimit(&$query, $orderby = null, $limit = null)
   {
     if ($orderby) {
       $orderByArr = explode(':', $orderby);
