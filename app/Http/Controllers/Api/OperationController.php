@@ -22,7 +22,7 @@ class OperationController extends Controller
             'category_ids.*' => 'integer|min:1',
         ]);
 
-        $operations = Operation::with('category', 'skills')
+        $operations = Operation::with('category')
             ->whereIn('operation_category_id', $request->category_ids)
             ->where('is_active', true)
             ->orderBy('description')

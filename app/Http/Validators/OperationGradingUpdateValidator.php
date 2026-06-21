@@ -14,7 +14,16 @@ class OperationGradingUpdateValidator
         'required',
         'integer',
         'exists:product_categories,id',
-        Rule::unique('operation_gradings')->where('operation_id', $rec['operation_id'] ?? null)->ignore($keyIgnore),
+        Rule::unique('operation_gradings')
+          ->where('operation_id', $rec['operation_id'] ?? null)
+          ->where('machine_type_id', $rec['machine_type_id'] ?? null)
+          ->ignore($keyIgnore),
+      ],
+      'code' => [
+        'nullable',
+        'string',
+        'max:50',
+        Rule::unique('operation_gradings')->ignore($keyIgnore),
       ],
       'sequence_no' => [
         'nullable',

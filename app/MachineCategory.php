@@ -5,7 +5,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
-class Operation extends Model
+class MachineCategory extends Model
 {
     public static function boot()
     {
@@ -24,17 +24,11 @@ class Operation extends Model
     protected $fillable = [
         'description',
         'code',
-        'operation_category_id',
         'is_active',
     ];
 
-    public function category()
+    public function machineTypes()
     {
-        return $this->belongsTo(OperationCategory::class, 'operation_category_id');
-    }
-
-    public function operationGradings()
-    {
-        return $this->hasMany(OperationGrading::class, 'operation_id');
+        return $this->hasMany(MachineType::class, 'machine_category_id');
     }
 }

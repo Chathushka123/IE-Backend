@@ -24,6 +24,9 @@ class OperationGrading extends Model
     protected $fillable = [
         'operation_id',
         'product_category_id',
+        'machine_type_id',
+        'description',
+        'code',
         'grade_id',
         'sequence_no',
         'smv',
@@ -42,6 +45,16 @@ class OperationGrading extends Model
     public function productCategory()
     {
         return $this->belongsTo(ProductCategory::class, 'product_category_id');
+    }
+
+    public function machineType()
+    {
+        return $this->belongsTo(MachineType::class, 'machine_type_id');
+    }
+
+    public function skills()
+    {
+        return $this->belongsToMany(Skill::class, 'operation_grading_skill', 'operation_grading_id', 'skill_id');
     }
 
     public function grade()

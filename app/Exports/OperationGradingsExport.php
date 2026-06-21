@@ -18,6 +18,7 @@ class OperationGradingsExport implements FromCollection, WithHeadings, WithMappi
         return OperationGrading::with([
             'productCategory.productGroup',
             'operation.operationCategory',
+            'machineType.category',
             'grade',
         ])
             ->orderBy('product_category_id')
@@ -33,6 +34,10 @@ class OperationGradingsExport implements FromCollection, WithHeadings, WithMappi
             'Operation Category',
             'Operation Code',
             'Operation',
+            'Machine Category',
+            'Machine Type',
+            'Description',
+            'Code',
             'Grade',
             'Sequence No',
             'SMV',
@@ -48,6 +53,10 @@ class OperationGradingsExport implements FromCollection, WithHeadings, WithMappi
             optional(optional($grading->operation)->operationCategory)->description,
             optional($grading->operation)->code,
             optional($grading->operation)->description,
+            optional(optional($grading->machineType)->category)->description,
+            optional($grading->machineType)->description,
+            $grading->description,
+            $grading->code,
             optional($grading->grade)->description,
             $grading->sequence_no,
             $grading->smv,

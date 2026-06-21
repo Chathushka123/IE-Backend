@@ -63,13 +63,22 @@ Route::prefix('v1')->group(function () {
         Route::post('operationGradings', 'Api\OperationGradingController@store')->name('operationGradings.store');
         Route::put('operationGradings/{id}', 'Api\OperationGradingController@update')->name('operationGradings.update');
 
-        // Operation Skills
-        Route::get('operationSkills', 'Api\OperationSkillController@index')->name('operationSkills.index');
-        Route::get('operationSkills/{id}', 'Api\OperationSkillController@show')->name('operationSkills.show');
-        Route::get('operationSkills/byOperation/{operationId}', 'Api\OperationSkillController@getByOperation')->name('operationSkills.byOperation');
-        Route::get('operationSkills/bySkill/{skillId}', 'Api\OperationSkillController@getBySkill')->name('operationSkills.bySkill');
-        Route::post('operationSkills', 'Api\OperationSkillController@store')->name('operationSkills.store');
-        Route::put('operationSkills/{id}', 'Api\OperationSkillController@update')->name('operationSkills.update');
+        // Operation Grading Skills
+        Route::get('operationGradingSkills', 'Api\OperationGradingSkillController@index')->name('operationGradingSkills.index');
+        Route::get('operationGradingSkills/{id}', 'Api\OperationGradingSkillController@show')->name('operationGradingSkills.show');
+        Route::get('operationGradingSkills/byOperationGrading/{operationGradingId}', 'Api\OperationGradingSkillController@getByOperationGrading')->name('operationGradingSkills.byOperationGrading');
+        Route::get('operationGradingSkills/bySkill/{skillId}', 'Api\OperationGradingSkillController@getBySkill')->name('operationGradingSkills.bySkill');
+        Route::post('operationGradingSkills', 'Api\OperationGradingSkillController@store')->name('operationGradingSkills.store');
+        Route::put('operationGradingSkills/{id}', 'Api\OperationGradingSkillController@update')->name('operationGradingSkills.update');
+
+        // Product Operation Gradings — specific paths must come before {id} wildcard
+        Route::get('productOperationGradings', 'Api\ProductOperationGradingController@index')->name('productOperationGradings.index');
+        Route::get('productOperationGradings/byProduct/{productId}', 'Api\ProductOperationGradingController@getByProduct')->name('productOperationGradings.byProduct');
+        Route::get('productOperationGradings/byOperationGrading/{operationGradingId}', 'Api\ProductOperationGradingController@getByOperationGrading')->name('productOperationGradings.byOperationGrading');
+        Route::put('productOperationGradings/resequence', 'Api\ProductOperationGradingController@resequence')->name('productOperationGradings.resequence');
+        Route::get('productOperationGradings/{id}', 'Api\ProductOperationGradingController@show')->name('productOperationGradings.show');
+        Route::post('productOperationGradings', 'Api\ProductOperationGradingController@store')->name('productOperationGradings.store');
+        Route::put('productOperationGradings/{id}', 'Api\ProductOperationGradingController@update')->name('productOperationGradings.update');
 
         // HashStore
         Route::get('hashStores/getByUuid/{uuid}', 'Api\HashStoreController@getByUuid')->name('hashStores.getByUuid');

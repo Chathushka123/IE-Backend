@@ -10,13 +10,6 @@ $navigator_json = '
        "permitted" : 0,
        "nodes":[
          {
-            "caption":"Employees",
-            "icon":"fas fa-cubes",
-            "type":"node",
-            "permitted" : 0,
-            "path":"/ie/employees"
-         },
-         {
             "caption":"Production Lines",
             "icon":"fas fa-cubes",
             "type":"node",
@@ -30,24 +23,41 @@ $navigator_json = '
             "permitted" : 0,
             "path":"/ie/departments"
          },
-        {
-            "caption":"Operations & Skills",
+         {
+            "caption":"Employees",
             "icon":"fas fa-cubes",
             "type":"node",
             "permitted" : 0,
-            "path":"/ie/op-skills"
+            "path":"/ie/employees"
          },
          {
-            "caption":"Products",
-            "icon":"fas fa-cubes",
-            "type":"node",
-            "permitted" : 0,
-            "path":"/ie/products"
-         }
-
-
-
-
+          "caption":"Products",
+          "icon":"fas fa-cubes",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ie/products"
+         },
+        {
+          "caption":"Machines",
+          "icon":"fas fa-cubes",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ie/machines"
+        },
+        {
+          "caption":"Operations & Skills",
+          "icon":"fas fa-cubes",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ie/op-skills"
+        },
+        {
+          "caption":"Operation Standards",
+          "icon":"fas fa-cubes",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ie/operation-grading"
+        }
        ]
     },
     {
