@@ -2,7 +2,7 @@
 
 namespace App\Exports\Sheets;
 
-use App\OperationSkill;
+use App\OperationGradingSkill;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -12,18 +12,23 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class OperationSkillMappingSheet implements FromCollection, WithHeadings, WithMapping, WithTitle, ShouldAutoSize, WithStyles
+class OperationGradingSkillMappingSheet implements FromCollection, WithHeadings, WithMapping, WithTitle, ShouldAutoSize, WithStyles
 {
     public function collection()
     {
-        return OperationSkill::with('operation.category', 'skill')
-            ->orderBy('operation_id')
+        return OperationGradingSkill::with([
+            'operationGrading.operation.category',
+            'operationGrading.productCategory',
+            'operationGrading.machineType',
+            'skill',
+        ])
+            ->orderBy('operation_grading_id')
             ->get();
     }
 
     public function title(): string
     {
-        return 'Operation-Skill Mapping';
+        return 'Operation Grading-Skill Mapping';
     }
 
     public function headings(): array
@@ -33,6 +38,8 @@ class OperationSkillMappingSheet implements FromCollection, WithHeadings, WithMa
             'Operation Description',
             'Category Code',
             'Category Description',
+            'Product Category',
+            'Machine Type',
             'Skill Code',
             'Skill Description',
             'Active',
@@ -41,11 +48,15 @@ class OperationSkillMappingSheet implements FromCollection, WithHeadings, WithMa
 
     public function map($row): array
     {
+        $operation = optional($row->operationGrading)->operation;
+
         return [
-            optional($row->operation)->code,
-            optional($row->operation)->description,
-            optional($row->operation->category)->code,
-            optional($row->operation->category)->description,
+            optional($operation)->code,
+            optional($operation)->description,
+            optional(optional($operation)->category)->code,
+            optional(optional($operation)->category)->description,
+            optional(optional($row->operationGrading)->productCategory)->description,
+            optional(optional($row->operationGrading)->machineType)->description,
             optional($row->skill)->code,
             optional($row->skill)->description,
             $row->is_active ? 'Yes' : 'No',

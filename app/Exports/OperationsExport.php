@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Exports\Sheets\OperationSkillMappingSheet;
+use App\Exports\Sheets\OperationGradingSkillMappingSheet;
 use App\Exports\Sheets\OperationsSheet;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
@@ -12,7 +12,7 @@ class OperationsExport implements WithMultipleSheets
     {
         return [
             new OperationsSheet(),
-            new OperationSkillMappingSheet(),
+            new OperationGradingSkillMappingSheet(),
         ];
     }
 }

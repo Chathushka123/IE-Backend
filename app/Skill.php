@@ -27,8 +27,8 @@ class Skill extends Model
         'is_active',
     ];
 
-    public function operations()
+    public function operationGradings()
     {
-        return $this->belongsToMany(Operation::class, 'operation_skill', 'skill_id', 'operation_id');
+        return $this->belongsToMany(OperationGrading::class, 'operation_grading_skill', 'skill_id', 'operation_grading_id');
     }
 }

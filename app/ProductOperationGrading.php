@@ -5,7 +5,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
-class Operation extends Model
+class ProductOperationGrading extends Model
 {
     public static function boot()
     {
@@ -22,19 +22,24 @@ class Operation extends Model
     }
 
     protected $fillable = [
-        'description',
-        'code',
-        'operation_category_id',
+        'product_id',
+        'operation_grading_id',
+        'sequence_no',
+        'smv',
         'is_active',
     ];
 
-    public function category()
+    protected $casts = [
+        'smv' => 'decimal:4',
+    ];
+
+    public function product()
     {
-        return $this->belongsTo(OperationCategory::class, 'operation_category_id');
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
-    public function operationGradings()
+    public function operationGrading()
     {
-        return $this->hasMany(OperationGrading::class, 'operation_id');
+        return $this->belongsTo(OperationGrading::class, 'operation_grading_id');
     }
 }

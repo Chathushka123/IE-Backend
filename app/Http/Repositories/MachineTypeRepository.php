@@ -2,26 +2,26 @@
 
 namespace App\Http\Repositories;
 
-use App\OperationSkill;
+use App\MachineType;
 use Illuminate\Support\Facades\Validator;
 use Exception;
 
-use App\Http\Validators\OperationSkillCreateValidator;
-use App\Http\Validators\OperationSkillUpdateValidator;
+use App\Http\Validators\MachineTypeCreateValidator;
+use App\Http\Validators\MachineTypeUpdateValidator;
 
-class OperationSkillRepository
+class MachineTypeRepository
 {
   public static function createRec(array $rec)
   {
     $validator = Validator::make(
       $rec,
-      OperationSkillCreateValidator::getCreateRules($rec)
+      MachineTypeCreateValidator::getCreateRules()
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
     }
     try {
-      $model = OperationSkill::create($rec);
+      $model = MachineType::create($rec);
     } catch (Exception $e) {
       throw new \App\Exceptions\GeneralException($e->getMessage());
     }
@@ -30,7 +30,7 @@ class OperationSkillRepository
 
   public static function updateRec($model_id, array $rec)
   {
-    $model = OperationSkill::findOrFail($model_id);
+    $model = MachineType::findOrFail($model_id);
 
     if (!$model->updated_at->eq(\Carbon\Carbon::parse($rec['updated_at']))) {
       $entity = (new \ReflectionClass($model))->getShortName();
@@ -39,7 +39,7 @@ class OperationSkillRepository
     Utilities::hydrate($model, $rec);
     $validator = Validator::make(
       $rec,
-      OperationSkillUpdateValidator::getUpdateRules($model_id, $rec)
+      MachineTypeUpdateValidator::getUpdateRules($model_id)
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
@@ -84,6 +84,6 @@ class OperationSkillRepository
 
   public static function deleteRecs(array $recs)
   {
-    OperationSkill::destroy($recs);
+    MachineType::destroy($recs);
   }
 }

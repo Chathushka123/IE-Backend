@@ -2,47 +2,43 @@
 
 namespace App\Http\Repositories;
 
-use App\Operation;
 use App\OperationGrading;
-use App\ProductCategory;
-use App\MachineType;
+use App\Product;
+use App\ProductOperationGrading;
 use Illuminate\Support\Facades\Validator;
 use Exception;
 
-use App\Http\Validators\OperationGradingCreateValidator;
-use App\Http\Validators\OperationGradingUpdateValidator;
+use App\Http\Validators\ProductOperationGradingCreateValidator;
+use App\Http\Validators\ProductOperationGradingUpdateValidator;
 
-class OperationGradingRepository
+class ProductOperationGradingRepository
 {
-  private static function buildDefaultDescription(array $rec)
+  private static function assertSameCategory(array $rec)
   {
-    $parts = [
-      optional(Operation::find($rec['operation_id'] ?? null))->description,
-      optional(ProductCategory::find($rec['product_category_id'] ?? null))->description,
-      optional(MachineType::find($rec['machine_type_id'] ?? null))->description,
-    ];
+    $product = Product::find($rec['product_id'] ?? null);
+    $grading = OperationGrading::find($rec['operation_grading_id'] ?? null);
 
-    return implode(' - ', array_filter($parts));
+    if ($product && $grading && $product->product_category_id !== $grading->product_category_id) {
+      throw new \App\Exceptions\GeneralException("This operation grading does not belong to the product's category.");
+    }
   }
 
   public static function createRec(array $rec)
   {
-    if (empty($rec['description'])) {
-      $rec['description'] = self::buildDefaultDescription($rec);
-    }
-
     $validator = Validator::make(
       $rec,
-      OperationGradingCreateValidator::getCreateRules($rec),
+      ProductOperationGradingCreateValidator::getCreateRules($rec),
       [
-        'product_category_id.unique' => 'This operation is already mapped to the selected product category.',
+        'operation_grading_id.unique' => 'This operation grading is already mapped to the selected product.',
+        'sequence_no.unique' => 'This sequence number is already used by another operation grading for this product.',
       ]
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
     }
+    self::assertSameCategory($rec);
     try {
-      $model = OperationGrading::create($rec);
+      $model = ProductOperationGrading::create($rec);
     } catch (Exception $e) {
       throw new \App\Exceptions\GeneralException($e->getMessage());
     }
@@ -51,7 +47,7 @@ class OperationGradingRepository
 
   public static function updateRec($model_id, array $rec)
   {
-    $model = OperationGrading::findOrFail($model_id);
+    $model = ProductOperationGrading::findOrFail($model_id);
 
     if (!$model->updated_at->eq(\Carbon\Carbon::parse($rec['updated_at']))) {
       $entity = (new \ReflectionClass($model))->getShortName();
@@ -60,14 +56,16 @@ class OperationGradingRepository
     Utilities::hydrate($model, $rec);
     $validator = Validator::make(
       $rec,
-      OperationGradingUpdateValidator::getUpdateRules($model_id, $rec),
+      ProductOperationGradingUpdateValidator::getUpdateRules($model_id, $rec),
       [
-        'product_category_id.unique' => 'This operation is already mapped to the selected product category.',
+        'operation_grading_id.unique' => 'This operation grading is already mapped to the selected product.',
+        'sequence_no.unique' => 'This sequence number is already used by another operation grading for this product.',
       ]
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
     }
+    self::assertSameCategory($rec);
     try {
       $model->update($rec);
     } catch (Exception $e) {
@@ -108,31 +106,31 @@ class OperationGradingRepository
 
   public static function deleteRecs(array $recs)
   {
-    OperationGrading::destroy($recs);
+    ProductOperationGrading::destroy($recs);
   }
 
-  public static function resequence(int $productCategoryId, array $ids)
+  public static function resequence(int $productId, array $ids)
   {
-    $records = OperationGrading::whereIn('id', $ids)
-      ->where('product_category_id', $productCategoryId)
+    $records = ProductOperationGrading::whereIn('id', $ids)
+      ->where('product_id', $productId)
       ->get()
       ->keyBy('id');
 
     if ($records->count() !== count($ids)) {
       throw new \App\Exceptions\GeneralException(
-        'One or more IDs do not belong to the given product category.'
+        'One or more IDs do not belong to the given product.'
       );
     }
 
     // Null out all sequence numbers first to avoid unique constraint conflicts
-    OperationGrading::whereIn('id', $ids)->update(['sequence_no' => null]);
+    ProductOperationGrading::whereIn('id', $ids)->update(['sequence_no' => null]);
 
     // Use query builder directly — Eloquent's dirty-check would skip save()
     // for any record whose new sequence_no equals its original value
     foreach ($ids as $index => $id) {
-      OperationGrading::where('id', $id)->update(['sequence_no' => $index + 1]);
+      ProductOperationGrading::where('id', $id)->update(['sequence_no' => $index + 1]);
     }
 
-    return OperationGrading::whereIn('id', $ids)->orderBy('sequence_no')->get();
+    return ProductOperationGrading::whereIn('id', $ids)->orderBy('sequence_no')->get();
   }
 }

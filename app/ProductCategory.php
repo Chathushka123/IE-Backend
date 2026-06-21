@@ -37,4 +37,9 @@ class ProductCategory extends Model
     {
         return $this->hasMany(OperationGrading::class, 'product_category_id');
     }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'product_category_id');
+    }
 }

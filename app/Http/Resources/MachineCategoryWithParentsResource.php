@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class SkillWithParentsResource extends JsonResource
+class MachineCategoryWithParentsResource extends JsonResource
 {
     public function toArray($request)
     {
@@ -17,7 +17,6 @@ class SkillWithParentsResource extends JsonResource
             'updated_by_id' => $this->updated_by_id,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'operationGradings' => $this->whenLoaded('operationGradings'),
         ];
     }
 }
