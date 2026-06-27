@@ -45,14 +45,14 @@ $navigator_json = '
           "path":"/ie/machines"
         },
         {
-          "caption":"Operations & Skills",
+          "caption":"Base Operations & Soft Skills",
           "icon":"fas fa-cubes",
           "type":"node",
           "permitted" : 0,
           "path":"/ie/op-skills"
         },
         {
-          "caption":"Operation Standards",
+          "caption":"Operations Master",
           "icon":"fas fa-cubes",
           "type":"node",
           "permitted" : 0,
