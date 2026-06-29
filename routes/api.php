@@ -19,6 +19,9 @@ Route::prefix('v1')->group(function () {
     Route::post('login', 'Api\AuthController@login')->name('login');
     Route::post('register', 'Api\AuthController@register')->name('register');
     Route::post('refreshToken', 'Api\AuthController@refreshToken')->middleware('csrf.cookie')->name('refreshToken');
+    Route::post('users/change-paasword-by-user-self', 'Api\UserController@changePasswordByUserSelf')
+        ->middleware('throttle:5,1')
+        ->name('users.changePasswordByUserSelf');
     Route::get('fpos/{fpo}/generateLayout', 'Api\FpoController@generateLayout')->name('fpos.generateLayout');
 
     // Route::get('search', 'Api\SearchController@search')->name('search.index');

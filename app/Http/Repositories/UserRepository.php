@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Crypt;
 use App\Http\Validators\UserCreateValidator;
 use App\Http\Validators\UserUpdateValidator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 
 class UserRepository
 {
@@ -125,5 +126,42 @@ class UserRepository
       return response()->json(["status" => "error", "message" => ($e->getMessage()), "trace" => $e->getTraceAsString()], 400);
     }
   }
-  
+
+  /**
+   * Self-service password change, used before login (no JWT available yet).
+   * Identifies the user by email + current password instead of an id, and
+   * updates via the query builder (not Eloquent) so it doesn't go through
+   * App\User::boot()'s updating listener, which assumes an authenticated
+   * Auth::user() to stamp updated_by_id — there is none in this flow.
+   */
+  public static function changePasswordBySelf(string $email, string $currentPassword, string $newPassword)
+  {
+    $user = User::where('email', $email)->first();
+
+    // Generic message on both "no such user" and "wrong password" to avoid
+    // leaking which part of the credential pair was wrong (no enumeration).
+    if (!$user || !Hash::check($currentPassword, $user->password)) {
+      throw new \App\Exceptions\GeneralException("Invalid email or current password");
+    }
+
+    if (!$user->is_active) {
+      throw new \App\Exceptions\GeneralException("Cannot change password, not an Active User");
+    }
+
+    DB::beginTransaction();
+    try {
+      DB::table('users')->where('id', $user->id)->update([
+        'password' => bcrypt($newPassword),
+        'common_user' => $user->common_user_state == 1 ? Crypt::encrypt($newPassword) : null,
+        'updated_at' => now(),
+      ]);
+      DB::commit();
+    } catch (Exception $e) {
+      DB::rollBack();
+      throw new \App\Exceptions\GeneralException($e->getMessage());
+    }
+
+    return true;
+  }
+
 }
