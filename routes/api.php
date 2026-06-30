@@ -83,6 +83,16 @@ Route::prefix('v1')->group(function () {
         Route::post('productOperationGradings', 'Api\ProductOperationGradingController@store')->name('productOperationGradings.store');
         Route::put('productOperationGradings/{id}', 'Api\ProductOperationGradingController@update')->name('productOperationGradings.update');
 
+        // Line Plans — specific paths must come before {id} wildcard
+        Route::get('linePlans', 'Api\LinePlanController@index')->name('linePlans.index');
+        Route::get('linePlans/suggestSchedule', 'Api\LinePlanController@suggestSchedule')->name('linePlans.suggestSchedule');
+        Route::get('linePlans/byProductionLine/{productionLineId}', 'Api\LinePlanController@getByProductionLine')->name('linePlans.byProductionLine');
+        Route::get('linePlans/byProduct/{productId}', 'Api\LinePlanController@getByProduct')->name('linePlans.byProduct');
+        Route::put('linePlans/resequence', 'Api\LinePlanController@resequence')->name('linePlans.resequence');
+        Route::get('linePlans/{id}', 'Api\LinePlanController@show')->name('linePlans.show');
+        Route::post('linePlans', 'Api\LinePlanController@store')->name('linePlans.store');
+        Route::put('linePlans/{id}', 'Api\LinePlanController@update')->name('linePlans.update');
+
         // HashStore
         Route::get('hashStores/getByUuid/{uuid}', 'Api\HashStoreController@getByUuid')->name('hashStores.getByUuid');
         Route::post('hashStores', 'Api\HashStoreController@store')->name('hashStores.store');

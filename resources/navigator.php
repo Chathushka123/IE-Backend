@@ -68,6 +68,22 @@ $navigator_json = '
       "permitted" : 0,
       "nodes": [
         {
+          "caption":"Line Schedule",
+          "icon":"fas fa-cubes",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ie/line-schedule"
+        }
+      ]
+    },
+    {
+      "caption": "User Management",
+      "id": "user-management",
+      "icon": "fas fa-user-tie",
+      "type": "folder",
+      "permitted" : 0,
+      "nodes": [
+        {
           "caption": "Create User",
           "icon": "fas fa-user-plus",
           "type": "node",

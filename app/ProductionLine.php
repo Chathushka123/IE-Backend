@@ -27,6 +27,8 @@ class ProductionLine extends Model
         'category_id',
         'department_id',
         'is_active',
+        'working_minutes_per_day',
+        'target_efficiency_pct',
     ];
 
     public function category()
@@ -47,5 +49,10 @@ class ProductionLine extends Model
     public function baseEmployees()
     {
         return $this->hasMany(Employee::class, 'base_line_id');
+    }
+
+    public function linePlans()
+    {
+        return $this->hasMany(LinePlan::class, 'production_line_id');
     }
 }

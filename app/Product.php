@@ -37,4 +37,9 @@ class Product extends Model
     {
         return $this->hasMany(ProductOperationGrading::class, 'product_id');
     }
+
+    public function linePlans()
+    {
+        return $this->hasMany(LinePlan::class, 'product_id');
+    }
 }
