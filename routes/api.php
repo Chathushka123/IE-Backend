@@ -36,10 +36,15 @@ Route::prefix('v1')->group(function () {
 
         // Employees
         Route::get('employees/export', 'Api\EmployeeController@export')->name('employees.export');
+        Route::post('employees/import', 'Api\EmployeeController@import')->name('employees.import');
         Route::get('employees/dashboard', 'Api\EmployeeController@dashboard')->name('employees.dashboard');
         Route::get('employees/{id}', 'Api\EmployeeController@show')->name('employees.show');
         Route::post('employees', 'Api\EmployeeController@store')->name('employees.store');
         Route::put('employees/{id}', 'Api\EmployeeController@update')->name('employees.update');
+
+        // Products — export/import only; CRUD goes through the generic masterDetails endpoint
+        Route::get('products/export', 'Api\ProductController@export')->name('products.export');
+        Route::post('products/import', 'Api\ProductController@import')->name('products.import');
 
         // Auth
         Route::get('user', 'Api\AuthController@user')->name('user.get');

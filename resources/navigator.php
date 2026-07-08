@@ -11,49 +11,49 @@ $navigator_json = '
        "nodes":[
          {
             "caption":"Production Lines",
-            "icon":"fas fa-cubes",
+            "icon":"fas fa-industry",
             "type":"node",
             "permitted" : 0,
             "path":"/ie/production-lines"
          },
          {
             "caption":"IE Departments",
-            "icon":"fas fa-cubes",
+            "icon":"fas fa-sitemap",
             "type":"node",
             "permitted" : 0,
             "path":"/ie/departments"
          },
          {
             "caption":"Employees",
-            "icon":"fas fa-cubes",
+            "icon":"fas fa-users",
             "type":"node",
             "permitted" : 0,
             "path":"/ie/employees"
          },
          {
           "caption":"Products",
-          "icon":"fas fa-cubes",
+          "icon":"fas fa-shirt",
           "type":"node",
           "permitted" : 0,
           "path":"/ie/products"
          },
         {
           "caption":"Machines",
-          "icon":"fas fa-cubes",
+          "icon":"fas fa-cogs",
           "type":"node",
           "permitted" : 0,
           "path":"/ie/machines"
         },
         {
           "caption":"Base Operations & Soft Skills",
-          "icon":"fas fa-cubes",
+          "icon":"fas fa-list-check",
           "type":"node",
           "permitted" : 0,
           "path":"/ie/op-skills"
         },
         {
           "caption":"Operations Master",
-          "icon":"fas fa-cubes",
+          "icon":"fas fa-diagram-project",
           "type":"node",
           "permitted" : 0,
           "path":"/ie/operation-grading"
@@ -61,15 +61,15 @@ $navigator_json = '
        ]
     },
     {
-      "caption": "User Management",
-      "id": "user-management",
-      "icon": "fas fa-user-tie",
+      "caption": "Product Management",
+      "id": "product-management",
+      "icon": "fas fa-layer-group",
       "type": "folder",
       "permitted" : 0,
       "nodes": [
         {
           "caption":"Line Schedule",
-          "icon":"fas fa-cubes",
+          "icon":"fas fa-chart-gantt",
           "type":"node",
           "permitted" : 0,
           "path":"/ie/line-schedule"

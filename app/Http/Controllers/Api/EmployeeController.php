@@ -18,6 +18,27 @@ class EmployeeController extends Controller
         return Excel::download(new EmployeesExport(), 'Employees_' . date('Y_m_d_H_i_s') . '.xlsx');
     }
 
+    /**
+     * The Excel file itself is parsed client-side (via SheetJS) into plain row objects
+     * keyed the same way EmployeesExport's headings map to snake_case — this endpoint
+     * just receives that JSON and hands it to the same create/update logic the single-
+     * record endpoints use, row by row.
+     */
+    public function import(Request $request)
+    {
+        try {
+            $request->validate([
+                'rows' => 'required|array|min:1',
+            ]);
+
+            $summary = EmployeeRepository::importRows($request->input('rows'));
+
+            return response()->json(['status' => 'success', 'data' => $summary], 200);
+        } catch (Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 400);
+        }
+    }
+
     public function show($id)
     {
         try {

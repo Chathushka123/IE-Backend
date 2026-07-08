@@ -23,14 +23,33 @@ class Product extends Model
 
     protected $fillable = [
         'description',
-        'code',
+        'style_code',
+        'style_description',
         'product_category_id',
+        'customer_id',
+        'season',
+        'colors',
+        'sizes',
+        'customer_requested_delivery_date',
+        'planned_efficiency_pct',
         'is_active',
+    ];
+
+    protected $casts = [
+        'colors' => 'array',
+        'sizes' => 'array',
+        'customer_requested_delivery_date' => 'date:Y-m-d',
+        'planned_efficiency_pct' => 'float',
     ];
 
     public function productCategory()
     {
         return $this->belongsTo(ProductCategory::class, 'product_category_id');
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'customer_id');
     }
 
     public function productOperationGradings()

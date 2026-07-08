@@ -10,7 +10,7 @@ class ProductCreateValidator
   {
     return array_merge(ProductCommonValidator::getCommonRules(), [
       'description' => 'required|string|max:255|unique:products,description',
-      'code' => 'nullable|string|max:50|unique:products,code',
+      'style_code' => 'nullable|string|max:50|unique:products,style_code',
     ]);
   }
 }
