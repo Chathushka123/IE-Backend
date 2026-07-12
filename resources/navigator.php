@@ -76,7 +76,7 @@ $navigator_json = '
       "permitted" : 0,
       "nodes": [
         {
-          "caption":"Line Schedule",
+          "caption":"Team Schedule",
           "icon":"fas fa-chart-gantt",
           "type":"node",
           "permitted" : 0,
