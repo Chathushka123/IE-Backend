@@ -27,6 +27,7 @@ class ProductWithParentsResource extends JsonResource
             'updated_at' => $this->updated_at,
             'productCategory' => $this->whenLoaded('productCategory'),
             'customer' => $this->whenLoaded('customer'),
+            'factories' => $this->whenLoaded('factories'),
         ];
     }
 }

@@ -6,6 +6,7 @@ use App\Department;
 use App\Designation;
 use App\Employee;
 use App\EmployeeCategory;
+use App\Factory;
 use App\ProductionLine;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
@@ -34,6 +35,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
     {
         return Employee::with([
             'category',
+            'factory',
             'department',
             'designation',
             'reportingManager',
@@ -67,6 +69,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             'Production Line',
             'Base Line',
             'Employee Status',
+            'Factory',
         ];
     }
 
@@ -98,6 +101,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             optional($employee->productionLine)->description,
             optional($employee->baseLine)->description,
             $employee->employee_status,
+            optional($employee->factory)->description,
         ];
     }
 
@@ -156,6 +160,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
         $this->applyRangeList($sheet, 'S', $lastRow, $ranges['employee'], 'Reporting Manager', "Enter the manager's Employee No, or leave blank.");
         $this->applyRangeList($sheet, 'T', $lastRow, $ranges['productionLine'], 'Production Line', 'Pick from the list, or leave blank.');
         $this->applyRangeList($sheet, 'U', $lastRow, $ranges['productionLine'], 'Base Line', 'Pick from the list, or leave blank.');
+        $this->applyRangeList($sheet, 'W', $lastRow, $ranges['factory'], 'Factory', 'Pick from the list — must match an existing factory exactly.');
 
         foreach (self::DATE_COLUMNS as $column) {
             $this->applyDateValidation($sheet, $column, $lastRow);
@@ -179,6 +184,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             'C' => Designation::where('is_active', true)->orderBy('description')->pluck('description'),
             'D' => Employee::where('employee_status', 'Active')->orderBy('employee_no')->pluck('employee_no'),
             'E' => ProductionLine::where('is_active', true)->orderBy('description')->pluck('description'),
+            'F' => Factory::where('is_active', true)->orderBy('description')->pluck('description'),
         ];
 
         $lastRows = [];
@@ -199,6 +205,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             'designation' => "Lists!\$C\$2:\$C\${$lastRows['C']}",
             'employee' => "Lists!\$D\$2:\$D\${$lastRows['D']}",
             'productionLine' => "Lists!\$E\$2:\$E\${$lastRows['E']}",
+            'factory' => "Lists!\$F\$2:\$F\${$lastRows['F']}",
         ];
     }
 

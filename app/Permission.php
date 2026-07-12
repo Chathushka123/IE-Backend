@@ -25,9 +25,10 @@ class Permission extends Model
    
     protected $fillable = [
             'user_id' ,
-            'screen_id', 
-            'role_id' , 
-            'grant' , 
+            'screen_id',
+            'role_id' ,
+            'factory_id',
+            'grant' ,
            ];
 
         
@@ -46,5 +47,10 @@ class Permission extends Model
         {
             return $this->belongsTo(Screen::class);
         }
-    
+
+        public function factory()
+        {
+            return $this->belongsTo(Factory::class);
+        }
+
 }

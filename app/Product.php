@@ -4,9 +4,12 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use App\Support\Concerns\ScopedToFactories;
 
 class Product extends Model
 {
+    use ScopedToFactories;
+
     public static function boot()
     {
         parent::boot();
@@ -60,5 +63,10 @@ class Product extends Model
     public function linePlans()
     {
         return $this->hasMany(LinePlan::class, 'product_id');
+    }
+
+    public function factories()
+    {
+        return $this->belongsToMany(Factory::class, 'factory_product');
     }
 }

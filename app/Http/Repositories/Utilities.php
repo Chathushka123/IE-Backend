@@ -269,6 +269,30 @@ class Utilities
     }
   }
 
+  /** Throws unless $factoryId is one of the current request's active factories. */
+  public static function assertFactoryIdAllowed($factoryId)
+  {
+    if (\App\Support\FactoryContext::isBypassed() || !\App\Support\FactoryContext::isResolved()) {
+      return;
+    }
+    if (!in_array((int) $factoryId, \App\Support\FactoryContext::ids(), true)) {
+      throw new \App\Exceptions\GeneralException("You do not have access to the selected factory.");
+    }
+  }
+
+  /** Throws unless every id in $factoryIds is one of the current request's active factories. */
+  public static function assertFactoryIdsAllowed(array $factoryIds)
+  {
+    if (\App\Support\FactoryContext::isBypassed() || !\App\Support\FactoryContext::isResolved()) {
+      return;
+    }
+    $allowed = \App\Support\FactoryContext::ids();
+    $invalid = array_diff(array_map('intval', $factoryIds), $allowed);
+    if (!empty($invalid)) {
+      throw new \App\Exceptions\GeneralException("You do not have access to one or more of the selected factories.");
+    }
+  }
+
   public static function NVL($value, $revalue){
     return is_null($value) ? $revalue : $value;
   }

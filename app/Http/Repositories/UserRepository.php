@@ -31,9 +31,15 @@ class UserRepository
     if ($validator->fails()) {
       throw new Exception($validator->errors());
     }
+    if (array_key_exists('factory_ids', $rec)) {
+      Utilities::assertFactoryIdsAllowed($rec['factory_ids'] ?? []);
+    }
     try {
-      
+
       $model = User::create($rec);
+      if (array_key_exists('factory_ids', $rec)) {
+        $model->factories()->sync($rec['factory_ids'] ?? []);
+      }
     } catch (Exception $e) {
       throw new \App\Exceptions\GeneralException($e->getMessage());
     }
@@ -52,13 +58,19 @@ class UserRepository
     if ($validator->fails()) {
       throw new Exception($validator->errors());
     }
-    if ($model->email == "sysadmin@gmail.com"){     
+    if ($model->email == "sysadmin@gmail.com"){
       if($model->email != $rec['email']){
         throw new \App\Exceptions\GeneralException("Changes to Administrator Information is not Allowed");
       }
     }
+    if (array_key_exists('factory_ids', $rec)) {
+      Utilities::assertFactoryIdsAllowed($rec['factory_ids'] ?? []);
+    }
     try {
          $model->update($rec);
+      if (array_key_exists('factory_ids', $rec)) {
+        $model->factories()->sync($rec['factory_ids'] ?? []);
+      }
     } catch (Exception $e) {
       throw new \App\Exceptions\GeneralException($e->getMessage());
     }

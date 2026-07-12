@@ -24,8 +24,14 @@ class ProductRepository
     if ($validator->fails()) {
       Utilities::extractError($validator);
     }
+    if (array_key_exists('factory_ids', $rec)) {
+      Utilities::assertFactoryIdsAllowed($rec['factory_ids'] ?? []);
+    }
     try {
       $model = Product::create($rec);
+      if (array_key_exists('factory_ids', $rec)) {
+        $model->factories()->sync($rec['factory_ids'] ?? []);
+      }
     } catch (Exception $e) {
       throw new \App\Exceptions\GeneralException($e->getMessage());
     }
@@ -48,8 +54,14 @@ class ProductRepository
     if ($validator->fails()) {
       Utilities::extractError($validator);
     }
+    if (array_key_exists('factory_ids', $rec)) {
+      Utilities::assertFactoryIdsAllowed($rec['factory_ids'] ?? []);
+    }
     try {
       $model->update($rec);
+      if (array_key_exists('factory_ids', $rec)) {
+        $model->factories()->sync($rec['factory_ids'] ?? []);
+      }
     } catch (Exception $e) {
       throw new \App\Exceptions\GeneralException($e->getMessage());
     }

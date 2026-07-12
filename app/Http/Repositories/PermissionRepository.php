@@ -109,7 +109,7 @@ class PermissionRepository
     Permission::destroy($recs);
   }
 
-  public function getPermissions()
+  public function getPermissions($factory_id = null)
   {
     $final_array = [];
     $screens = Screen::get();
@@ -120,7 +120,9 @@ class PermissionRepository
       $curr_arry["key"] = $screen->screen_code;
       $curr_arry["function"] = $screen->screen_name;
       foreach($roles as $role){
-          $rec = Permission::select('grant')->where('screen_id', $screen->id)->where('role_id', $role->id)->first();
+          $query = Permission::select('grant')->where('screen_id', $screen->id)->where('role_id', $role->id);
+          $query = is_null($factory_id) ? $query->whereNull('factory_id') : $query->where('factory_id', $factory_id);
+          $rec = $query->first();
           if(!is_null($rec)){
             $curr_arry[$role->role_code] = $rec['grant'];
           }
@@ -229,6 +231,7 @@ class PermissionRepository
     try {
       DB::beginTransaction();
 
+      $factory_id = $request->factory_id ?? null;
       $full_array = $request->permissions;
       foreach ($full_array as $index => $attrib_array) {
 
@@ -238,9 +241,23 @@ class PermissionRepository
         foreach ($attrib_array as $attrib_index => $attrib_value) {
           if (($attrib_index != 'function') && ($attrib_index != 'key')) {
             $role_obj = Role::where('role_code', $attrib_index)->first();
-            $permission_obj = Permission::where('role_id', $role_obj->id)->where('screen_id', $screen_obj->id)->first();
-            $permission_obj->grant = $attrib_value;
-            PermissionRepository::updateRec($permission_obj->id, $permission_obj->toArray());
+            $query = Permission::where('role_id', $role_obj->id)->where('screen_id', $screen_obj->id);
+            $query = is_null($factory_id) ? $query->whereNull('factory_id') : $query->where('factory_id', $factory_id);
+            $permission_obj = $query->first();
+
+            if (is_null($permission_obj)) {
+              // No factory-specific override row yet — create one instead of
+              // updating the global row, so the override only applies to this factory.
+              PermissionRepository::createRec([
+                'role_id' => $role_obj->id,
+                'screen_id' => $screen_obj->id,
+                'factory_id' => $factory_id,
+                'grant' => $attrib_value,
+              ]);
+            } else {
+              $permission_obj->grant = $attrib_value;
+              PermissionRepository::updateRec($permission_obj->id, $permission_obj->toArray());
+            }
           }
         }
       }

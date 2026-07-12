@@ -4,9 +4,12 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use App\Support\Concerns\ScopedToFactory;
 
 class ProductionLine extends Model
 {
+    use ScopedToFactory;
+
     public static function boot()
     {
         parent::boot();
@@ -26,6 +29,7 @@ class ProductionLine extends Model
         'code',
         'category_id',
         'department_id',
+        'factory_id',
         'is_active',
         'working_minutes_per_day',
         'target_efficiency_pct',
@@ -34,6 +38,11 @@ class ProductionLine extends Model
     public function category()
     {
         return $this->belongsTo(LineCategory::class, 'category_id');
+    }
+
+    public function factory()
+    {
+        return $this->belongsTo(Factory::class);
     }
 
     public function department()

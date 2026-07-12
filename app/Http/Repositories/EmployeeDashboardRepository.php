@@ -4,9 +4,25 @@ namespace App\Http\Repositories;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Support\FactoryContext;
 
 class EmployeeDashboardRepository
 {
+    /**
+     * DB::table('employees') pre-scoped to the current request's factory context.
+     * This repository uses the raw query builder (not the Employee Eloquent model),
+     * so it doesn't pick up Employee::boot()'s global factory scope automatically —
+     * every query here must go through this instead of DB::table('employees') directly.
+     */
+    private static function employeesQuery()
+    {
+        $query = DB::table('employees');
+        if (!FactoryContext::isBypassed() && FactoryContext::isResolved()) {
+            $query->whereIn('employees.factory_id', FactoryContext::ids());
+        }
+        return $query;
+    }
+
     public static function getDashboardData(?string $fromDate, ?string $toDate): array
     {
         $from = $fromDate ? Carbon::parse($fromDate)->startOfDay() : Carbon::now()->subMonths(11)->startOfMonth();
@@ -29,21 +45,21 @@ class EmployeeDashboardRepository
 
     private static function getKpis(): array
     {
-        $total = DB::table('employees')->count();
+        $total = self::employeesQuery()->count();
 
-        $active      = DB::table('employees')->where('employee_status', 'Active')->count();
-        $resigned    = DB::table('employees')->where('employee_status', 'Resigned')->count();
-        $terminated  = DB::table('employees')->where('employee_status', 'Terminated')->count();
+        $active      = self::employeesQuery()->where('employee_status', 'Active')->count();
+        $resigned    = self::employeesQuery()->where('employee_status', 'Resigned')->count();
+        $terminated  = self::employeesQuery()->where('employee_status', 'Terminated')->count();
 
         $currentMonth = Carbon::now()->month;
         $currentYear  = Carbon::now()->year;
 
-        $newThisMonth = DB::table('employees')
+        $newThisMonth = self::employeesQuery()
             ->whereMonth('joining_date', $currentMonth)
             ->whereYear('joining_date', $currentYear)
             ->count();
 
-        $pendingConfirmation = DB::table('employees')
+        $pendingConfirmation = self::employeesQuery()
             ->where('employee_status', 'Active')
             ->whereNotNull('joining_date')
             ->whereNull('confirmation_date')
@@ -64,7 +80,7 @@ class EmployeeDashboardRepository
 
     private static function getByStatus(): array
     {
-        return DB::table('employees')
+        return self::employeesQuery()
             ->select('employee_status as label', DB::raw('COUNT(*) as count'))
             ->groupBy('employee_status')
             ->orderByDesc('count')
@@ -74,7 +90,7 @@ class EmployeeDashboardRepository
 
     private static function getByDimension(string $table, string $fk): array
     {
-        return DB::table('employees')
+        return self::employeesQuery()
             ->join($table, "employees.{$fk}", '=', "{$table}.id")
             ->select("{$table}.description as label", DB::raw('COUNT(*) as count'))
             ->whereNotNull("employees.{$fk}")
@@ -86,7 +102,7 @@ class EmployeeDashboardRepository
 
     private static function getByDesignation(): array
     {
-        return DB::table('employees')
+        return self::employeesQuery()
             ->join('designations', 'employees.designation_id', '=', 'designations.id')
             ->select('designations.description as label', DB::raw('COUNT(*) as count'))
             ->whereNotNull('employees.designation_id')
@@ -99,7 +115,7 @@ class EmployeeDashboardRepository
 
     private static function getByEnumField(string $field): array
     {
-        return DB::table('employees')
+        return self::employeesQuery()
             ->select("{$field} as label", DB::raw('COUNT(*) as count'))
             ->whereNotNull($field)
             ->groupBy($field)
@@ -110,7 +126,7 @@ class EmployeeDashboardRepository
 
     private static function getJoiningTrend(Carbon $from, Carbon $to): array
     {
-        $rows = DB::table('employees')
+        $rows = self::employeesQuery()
             ->select(
                 DB::raw("DATE_FORMAT(joining_date, '%Y-%m') as month"),
                 DB::raw('COUNT(*) as count')
@@ -127,7 +143,7 @@ class EmployeeDashboardRepository
 
     private static function getAttritionTrend(Carbon $from, Carbon $to): array
     {
-        $rows = DB::table('employees')
+        $rows = self::employeesQuery()
             ->select(
                 DB::raw("DATE_FORMAT(leaving_date, '%Y-%m') as month"),
                 DB::raw('COUNT(*) as count')
@@ -165,7 +181,7 @@ class EmployeeDashboardRepository
         $today          = Carbon::today();
         $thirtyDaysLater = Carbon::today()->addDays(30);
 
-        $employees = DB::table('employees')
+        $employees = self::employeesQuery()
             ->select('id', 'employee_no', 'full_name', 'first_name', 'last_name', 'joining_date')
             ->where('employee_status', 'Active')
             ->whereNotNull('joining_date')

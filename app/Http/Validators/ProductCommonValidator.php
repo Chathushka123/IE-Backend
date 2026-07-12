@@ -20,6 +20,8 @@ class ProductCommonValidator
       'customer_requested_delivery_date' => 'nullable|date',
       'planned_efficiency_pct' => 'nullable|numeric|min:0|max:100',
       'is_active' => 'nullable|boolean',
+      'factory_ids' => 'nullable|array',
+      'factory_ids.*' => 'integer|exists:factories,id',
     ];
   }
 }

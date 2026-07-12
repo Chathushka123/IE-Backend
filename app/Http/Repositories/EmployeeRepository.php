@@ -4,6 +4,7 @@ namespace App\Http\Repositories;
 
 use App\Employee;
 use App\EmployeeCategory;
+use App\Factory;
 use App\Department;
 use App\Designation;
 use App\ProductionLine;
@@ -26,6 +27,7 @@ class EmployeeRepository
     if ($validator->fails()) {
       Utilities::extractError($validator);
     }
+    Utilities::assertFactoryIdAllowed($rec['factory_id']);
     try {
       $model = Employee::create($rec);
     } catch (Exception $e) {
@@ -50,6 +52,7 @@ class EmployeeRepository
     if ($validator->fails()) {
       Utilities::extractError($validator);
     }
+    Utilities::assertFactoryIdAllowed($rec['factory_id']);
     try {
       $model->update($rec);
     } catch (Exception $e) {
@@ -158,6 +161,7 @@ class EmployeeRepository
       'first_name' => trim((string) ($row['first_name'] ?? '')),
       'last_name' => trim((string) ($row['last_name'] ?? '')),
       'category_id' => self::resolveForeignKey(EmployeeCategory::class, $row['category'] ?? null, 'Category', true),
+      'factory_id' => self::resolveForeignKey(Factory::class, $row['factory'] ?? null, 'Factory', true),
     ];
 
     self::setIfNotNull($rec, 'full_name', self::blankToNull($row['full_name'] ?? null));

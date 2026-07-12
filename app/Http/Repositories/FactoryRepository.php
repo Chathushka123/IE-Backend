@@ -2,27 +2,26 @@
 
 namespace App\Http\Repositories;
 
-use App\ProductionLine;
+use App\Factory;
 use Illuminate\Support\Facades\Validator;
 use Exception;
 
-use App\Http\Validators\ProductionLineCreateValidator;
-use App\Http\Validators\ProductionLineUpdateValidator;
+use App\Http\Validators\FactoryCreateValidator;
+use App\Http\Validators\FactoryUpdateValidator;
 
-class ProductionLineRepository
+class FactoryRepository
 {
   public static function createRec(array $rec)
   {
     $validator = Validator::make(
       $rec,
-      ProductionLineCreateValidator::getCreateRules()
+      FactoryCreateValidator::getCreateRules()
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
     }
-    Utilities::assertFactoryIdAllowed($rec['factory_id']);
     try {
-      $model = ProductionLine::create($rec);
+      $model = Factory::create($rec);
     } catch (Exception $e) {
       throw new \App\Exceptions\GeneralException($e->getMessage());
     }
@@ -31,7 +30,7 @@ class ProductionLineRepository
 
   public static function updateRec($model_id, array $rec)
   {
-    $model = ProductionLine::findOrFail($model_id);
+    $model = Factory::findOrFail($model_id);
 
     if (!$model->updated_at->eq(\Carbon\Carbon::parse($rec['updated_at']))) {
       $entity = (new \ReflectionClass($model))->getShortName();
@@ -40,12 +39,11 @@ class ProductionLineRepository
     Utilities::hydrate($model, $rec);
     $validator = Validator::make(
       $rec,
-      ProductionLineUpdateValidator::getUpdateRules($model_id)
+      FactoryUpdateValidator::getUpdateRules($model_id)
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
     }
-    Utilities::assertFactoryIdAllowed($rec['factory_id']);
     try {
       $model->update($rec);
     } catch (Exception $e) {
@@ -86,6 +84,6 @@ class ProductionLineRepository
 
   public static function deleteRecs(array $recs)
   {
-    ProductionLine::destroy($recs);
+    Factory::destroy($recs);
   }
 }

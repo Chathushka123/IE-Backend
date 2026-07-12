@@ -9,8 +9,10 @@ class PermissionCommonValidator
     return [
  
          'screen_id' => ['numeric','sometimes','required','exists:screens,id'],
-  
-         'role_id' => ['numeric','sometimes','required','exists:roles,id'],  
+
+         'role_id' => ['numeric','sometimes','required','exists:roles,id'],
+
+         'factory_id' => ['nullable','integer','exists:factories,id'],
 
     ];
   }

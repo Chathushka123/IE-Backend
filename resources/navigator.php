@@ -9,15 +9,23 @@ $navigator_json = '
        "type":"folder",
        "permitted" : 0,
        "nodes":[
+        {
+  "caption": "Factories",
+  "icon": "fas fa-industry",
+  "type": "node",
+  "permitted": 0,
+  "path": "/ie/factories"
+},
+{
+  "caption": "Teams",
+  "icon": "fas fa-layer-group",
+  "type": "node",
+  "permitted": 0,
+  "path": "/ie/production-lines"
+},
+
          {
-            "caption":"Production Lines",
-            "icon":"fas fa-industry",
-            "type":"node",
-            "permitted" : 0,
-            "path":"/ie/production-lines"
-         },
-         {
-            "caption":"IE Departments",
+            "caption":"Departments",
             "icon":"fas fa-sitemap",
             "type":"node",
             "permitted" : 0,
@@ -84,7 +92,7 @@ $navigator_json = '
       "permitted" : 0,
       "nodes": [
         {
-          "caption": "Create User",
+          "caption": "Users",
           "icon": "fas fa-user-plus",
           "type": "node",
           "permitted" : 0,

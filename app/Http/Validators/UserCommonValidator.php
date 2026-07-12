@@ -8,6 +8,9 @@ class UserCommonValidator
 {
   public static function getCommonRules()
   {
-    return[];
+    return [
+      'factory_ids' => 'nullable|array',
+      'factory_ids.*' => 'integer|exists:factories,id',
+    ];
   }
 }
