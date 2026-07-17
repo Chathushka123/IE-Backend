@@ -3,47 +3,55 @@ $navigator_json = '
 [
 
     {
-       "caption":"Master Data",
-       "id":"master-data",
+       "caption":"Human Resource",
+       "id":"human-resource",
        "icon":"fas fa-database",
        "type":"folder",
        "permitted" : 0,
        "nodes":[
         {
-  "caption": "Factories",
-  "icon": "fas fa-industry",
-  "type": "node",
-  "permitted": 0,
-  "path": "/ie/factories"
-},
-{
-  "caption": "Teams",
-  "icon": "fas fa-layer-group",
-  "type": "node",
-  "permitted": 0,
-  "path": "/ie/production-lines"
-},
-
-         {
             "caption":"Departments",
             "icon":"fas fa-sitemap",
             "type":"node",
             "permitted" : 0,
             "path":"/ie/departments"
          },
+        {
+          "caption": "Teams",
+          "icon": "fas fa-layer-group",
+          "type": "node",
+          "permitted": 0,
+          "path": "/ie/production-lines"
+        },
          {
             "caption":"Employees",
             "icon":"fas fa-users",
             "type":"node",
             "permitted" : 0,
             "path":"/ie/employees"
-         },
+         }
+       ]
+    },
+    {
+       "caption":"Industrial Engineering",
+       "id":"industrial-engineering",
+       "icon":"fas fa-database",
+       "type":"folder",
+       "permitted" : 0,
+       "nodes":[
+        {
+          "caption": "Factories",
+          "icon": "fas fa-industry",
+          "type": "node",
+          "permitted": 0,
+          "path": "/ie/factories"
+        },
          {
-          "caption":"Products",
+          "caption":"Products Master",
           "icon":"fas fa-shirt",
           "type":"node",
           "permitted" : 0,
-          "path":"/ie/products"
+          "path":"/ie/product-masters"
          },
         {
           "caption":"Machines",
@@ -65,12 +73,19 @@ $navigator_json = '
           "type":"node",
           "permitted" : 0,
           "path":"/ie/operation-grading"
+        },
+        {
+          "caption":"Products",
+          "icon":"fas fa-shirt",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ie/products"
         }
        ]
     },
     {
-      "caption": "Product Management",
-      "id": "product-management",
+      "caption": "Planning",
+      "id": "planning",
       "icon": "fas fa-layer-group",
       "type": "folder",
       "permitted" : 0,

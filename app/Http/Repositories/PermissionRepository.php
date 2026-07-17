@@ -136,9 +136,7 @@ class PermissionRepository
   public function isAuthorized($screen_code)
   {
     $user = Auth::user();
-    if ($user->email != 'sysadmin@gmail.com') {
     $permitted = "";
-    $user = Auth::user();
     $screen = Screen::where('screen_name', $screen_code)->first();
     if (!(is_null($screen))) {
       $permission = Permission::where('screen_id', $screen->id)->where('role_id', $user->role_id)->first();
@@ -147,10 +145,7 @@ class PermissionRepository
           $permitted = $permission->grant;
       }
     }
-    return $permitted;}
-    else{
-      return "w";
-    }
+    return $permitted;
   }
 
   public function getNavigator()
@@ -159,55 +154,40 @@ class PermissionRepository
     //$json = file_get_contents(asset('navigator.json'));
     $user = Auth::user();
 
-    if ($user->email != 'sysadmin@gmail.com') {
-      $json =  json_decode($navigator_json, true);
-      $permission = Permission::where('role_id', Auth::user()->role_id)->whereNotNull('grant')->with('screen')->get();
+    $json =  json_decode($navigator_json, true);
+    $permission = Permission::where('role_id', $user->role_id)->whereNotNull('grant')->with('screen')->get();
 
-      //return $permission;
-      foreach ($permission as $perm) {
-        foreach ($json as $index => $rec) {
-          if (array_key_exists("nodes", $rec)) {
-            foreach ($rec["nodes"] as $nodeIndex => $node) {
-              if ($node["path"] == "/" . $perm->screen->screen_code) {
-                $json[$index]["nodes"][$nodeIndex]["permitted"] = 1;
-                $json[$index]["permitted"] = 1;
-              }
-            }
-          } else {
-            if ($rec["path"] ==  "/" . $perm->screen->screen_code) {
+    //return $permission;
+    foreach ($permission as $perm) {
+      foreach ($json as $index => $rec) {
+        if (array_key_exists("nodes", $rec)) {
+          foreach ($rec["nodes"] as $nodeIndex => $node) {
+            if ($node["path"] == "/" . $perm->screen->screen_code) {
+              $json[$index]["nodes"][$nodeIndex]["permitted"] = 1;
               $json[$index]["permitted"] = 1;
             }
           }
-        }
-      }
-      $intermediate =  array_filter($json, function ($v, $k) {
-        return $v['permitted'] == 1;
-      }, ARRAY_FILTER_USE_BOTH);
-
-      $intermediate =  array_values($intermediate);
-
-      foreach ($intermediate as $index => $element) {
-        $vararr =  array_filter($element["nodes"], function ($v, $k) {
-          return $v['permitted'] == 1;
-        }, ARRAY_FILTER_USE_BOTH);
-
-        $intermediate[$index]["nodes"] = array_values($vararr);
-      }
-      return $intermediate;
-    }
-    else {
-
-      $json = json_decode($navigator_json, true);
-      foreach ($json as $index => $rec) {
-        $json[$index]["permitted"] = 1;
-        if (array_key_exists("nodes", $rec)) {
-          foreach ($rec["nodes"] as $nodeIndex => $node) {
-            $json[$index]["nodes"][$nodeIndex]["permitted"] = 1;
+        } else {
+          if ($rec["path"] ==  "/" . $perm->screen->screen_code) {
+            $json[$index]["permitted"] = 1;
           }
         }
       }
-      return $json;
     }
+    $intermediate =  array_filter($json, function ($v, $k) {
+      return $v['permitted'] == 1;
+    }, ARRAY_FILTER_USE_BOTH);
+
+    $intermediate =  array_values($intermediate);
+
+    foreach ($intermediate as $index => $element) {
+      $vararr =  array_filter($element["nodes"], function ($v, $k) {
+        return $v['permitted'] == 1;
+      }, ARRAY_FILTER_USE_BOTH);
+
+      $intermediate[$index]["nodes"] = array_values($vararr);
+    }
+    return $intermediate;
   }
 
   public static function generatePermissionsGrid()
