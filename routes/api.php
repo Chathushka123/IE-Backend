@@ -34,6 +34,9 @@ Route::prefix('v1')->group(function () {
         Route::get('importExportView', 'ImportExportController@importExportView');
         Route::post('import', 'ImportExportController@import')->name('import');
 
+        // Dashboard
+        Route::get('dashboard/overview', 'Api\DashboardController@overview')->name('dashboard.overview');
+
         // Employees
         Route::get('employees/export', 'Api\EmployeeController@export')->name('employees.export');
         Route::post('employees/import', 'Api\EmployeeController@import')->name('employees.import');
