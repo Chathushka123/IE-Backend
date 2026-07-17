@@ -9,6 +9,13 @@ $navigator_json = '
        "type":"folder",
        "permitted" : 0,
        "nodes":[
+       {
+          "caption": "Factories",
+          "icon": "fas fa-industry",
+          "type": "node",
+          "permitted": 0,
+          "path": "/ie/factories"
+        },
         {
             "caption":"Departments",
             "icon":"fas fa-sitemap",
@@ -39,13 +46,6 @@ $navigator_json = '
        "type":"folder",
        "permitted" : 0,
        "nodes":[
-        {
-          "caption": "Factories",
-          "icon": "fas fa-industry",
-          "type": "node",
-          "permitted": 0,
-          "path": "/ie/factories"
-        },
          {
           "caption":"Products Master",
           "icon":"fas fa-shirt",
