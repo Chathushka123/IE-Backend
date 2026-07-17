@@ -25,7 +25,7 @@ Route::prefix('v1')->group(function () {
     Route::get('fpos/{fpo}/generateLayout', 'Api\FpoController@generateLayout')->name('fpos.generateLayout');
 
     // Route::get('search', 'Api\SearchController@search')->name('search.index');
-    Route::group(['middleware' => \App\Http\Middleware\JwtAuthenticate::class], function () {
+    Route::group(['middleware' => [\App\Http\Middleware\JwtAuthenticate::class, \App\Http\Middleware\ResolveFactoryScope::class]], function () {
         Route::post('novelSearch', 'Api\SearchController@novelSearch')->name('novelSearch');
         Route::post('getFunctionalPermission', 'Api\SearchController@getFunctionalPermission')->name('getFunctionalPermission');
 
@@ -36,10 +36,15 @@ Route::prefix('v1')->group(function () {
 
         // Employees
         Route::get('employees/export', 'Api\EmployeeController@export')->name('employees.export');
+        Route::post('employees/import', 'Api\EmployeeController@import')->name('employees.import');
         Route::get('employees/dashboard', 'Api\EmployeeController@dashboard')->name('employees.dashboard');
         Route::get('employees/{id}', 'Api\EmployeeController@show')->name('employees.show');
         Route::post('employees', 'Api\EmployeeController@store')->name('employees.store');
         Route::put('employees/{id}', 'Api\EmployeeController@update')->name('employees.update');
+
+        // Products — export/import only; CRUD goes through the generic masterDetails endpoint
+        Route::get('products/export', 'Api\ProductController@export')->name('products.export');
+        Route::post('products/import', 'Api\ProductController@import')->name('products.import');
 
         // Auth
         Route::get('user', 'Api\AuthController@user')->name('user.get');
@@ -82,6 +87,16 @@ Route::prefix('v1')->group(function () {
         Route::get('productOperationGradings/{id}', 'Api\ProductOperationGradingController@show')->name('productOperationGradings.show');
         Route::post('productOperationGradings', 'Api\ProductOperationGradingController@store')->name('productOperationGradings.store');
         Route::put('productOperationGradings/{id}', 'Api\ProductOperationGradingController@update')->name('productOperationGradings.update');
+
+        // Line Plans — specific paths must come before {id} wildcard
+        Route::get('linePlans', 'Api\LinePlanController@index')->name('linePlans.index');
+        Route::get('linePlans/suggestSchedule', 'Api\LinePlanController@suggestSchedule')->name('linePlans.suggestSchedule');
+        Route::get('linePlans/byProductionLine/{productionLineId}', 'Api\LinePlanController@getByProductionLine')->name('linePlans.byProductionLine');
+        Route::get('linePlans/byProduct/{productId}', 'Api\LinePlanController@getByProduct')->name('linePlans.byProduct');
+        Route::put('linePlans/resequence', 'Api\LinePlanController@resequence')->name('linePlans.resequence');
+        Route::get('linePlans/{id}', 'Api\LinePlanController@show')->name('linePlans.show');
+        Route::post('linePlans', 'Api\LinePlanController@store')->name('linePlans.store');
+        Route::put('linePlans/{id}', 'Api\LinePlanController@update')->name('linePlans.update');
 
         // HashStore
         Route::get('hashStores/getByUuid/{uuid}', 'Api\HashStoreController@getByUuid')->name('hashStores.getByUuid');

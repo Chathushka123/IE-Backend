@@ -20,6 +20,7 @@ class ProductionLineRepository
     if ($validator->fails()) {
       Utilities::extractError($validator);
     }
+    Utilities::assertFactoryIdAllowed($rec['factory_id']);
     try {
       $model = ProductionLine::create($rec);
     } catch (Exception $e) {
@@ -44,6 +45,7 @@ class ProductionLineRepository
     if ($validator->fails()) {
       Utilities::extractError($validator);
     }
+    Utilities::assertFactoryIdAllowed($rec['factory_id']);
     try {
       $model->update($rec);
     } catch (Exception $e) {

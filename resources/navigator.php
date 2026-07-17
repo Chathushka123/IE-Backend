@@ -3,62 +3,101 @@ $navigator_json = '
 [
 
     {
-       "caption":"Master Data",
-       "id":"master-data",
+       "caption":"Human Resource",
+       "id":"human-resource",
        "icon":"fas fa-database",
        "type":"folder",
        "permitted" : 0,
        "nodes":[
-         {
-            "caption":"Production Lines",
-            "icon":"fas fa-cubes",
-            "type":"node",
-            "permitted" : 0,
-            "path":"/ie/production-lines"
-         },
-         {
-            "caption":"IE Departments",
-            "icon":"fas fa-cubes",
+        {
+            "caption":"Departments",
+            "icon":"fas fa-sitemap",
             "type":"node",
             "permitted" : 0,
             "path":"/ie/departments"
          },
+        {
+          "caption": "Teams",
+          "icon": "fas fa-layer-group",
+          "type": "node",
+          "permitted": 0,
+          "path": "/ie/production-lines"
+        },
          {
             "caption":"Employees",
-            "icon":"fas fa-cubes",
+            "icon":"fas fa-users",
             "type":"node",
             "permitted" : 0,
             "path":"/ie/employees"
-         },
+         }
+       ]
+    },
+    {
+       "caption":"Industrial Engineering",
+       "id":"industrial-engineering",
+       "icon":"fas fa-database",
+       "type":"folder",
+       "permitted" : 0,
+       "nodes":[
+        {
+          "caption": "Factories",
+          "icon": "fas fa-industry",
+          "type": "node",
+          "permitted": 0,
+          "path": "/ie/factories"
+        },
          {
-          "caption":"Products",
-          "icon":"fas fa-cubes",
+          "caption":"Products Master",
+          "icon":"fas fa-shirt",
           "type":"node",
           "permitted" : 0,
-          "path":"/ie/products"
+          "path":"/ie/product-masters"
          },
         {
           "caption":"Machines",
-          "icon":"fas fa-cubes",
+          "icon":"fas fa-cogs",
           "type":"node",
           "permitted" : 0,
           "path":"/ie/machines"
         },
         {
           "caption":"Base Operations & Soft Skills",
-          "icon":"fas fa-cubes",
+          "icon":"fas fa-list-check",
           "type":"node",
           "permitted" : 0,
           "path":"/ie/op-skills"
         },
         {
           "caption":"Operations Master",
-          "icon":"fas fa-cubes",
+          "icon":"fas fa-diagram-project",
           "type":"node",
           "permitted" : 0,
           "path":"/ie/operation-grading"
+        },
+        {
+          "caption":"Products",
+          "icon":"fas fa-shirt",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ie/products"
         }
        ]
+    },
+    {
+      "caption": "Planning",
+      "id": "planning",
+      "icon": "fas fa-layer-group",
+      "type": "folder",
+      "permitted" : 0,
+      "nodes": [
+        {
+          "caption":"Team Schedule",
+          "icon":"fas fa-chart-gantt",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ie/line-schedule"
+        }
+      ]
     },
     {
       "caption": "User Management",
@@ -68,7 +107,7 @@ $navigator_json = '
       "permitted" : 0,
       "nodes": [
         {
-          "caption": "Create User",
+          "caption": "Users",
           "icon": "fas fa-user-plus",
           "type": "node",
           "permitted" : 0,

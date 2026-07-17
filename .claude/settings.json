@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(vendor/bin/pint --test app/Http/Repositories/PermissionRepository.php)",
+      "Bash(php -l app/Http/Repositories/PermissionRepository.php)",
+      "Bash(xargs -I{} sh -c 'echo ==={}===; cat {}')",
+      "Bash(mysql -h localhost -P 3306 -u app_user -pDoomdoom1@ ie_module -e ' *)",
+      "Bash(mysql -h localhost -P 3306 -u app_user -p'Doomdoom1@' ie_module -e \"SELECT id, screen_code, screen_name FROM screens ORDER BY id;\")"
+    ]
+  }
+}

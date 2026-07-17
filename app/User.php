@@ -6,10 +6,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+use App\Support\Concerns\ScopedToFactories;
 
 class User extends Authenticatable implements JWTSubject
 {
     use Notifiable;
+    use ScopedToFactories;
 
 
     /**
@@ -68,6 +70,11 @@ class User extends Authenticatable implements JWTSubject
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function factories()
+    {
+        return $this->belongsToMany(Factory::class, 'factory_user');
     }
 
     public function getJWTIdentifier()

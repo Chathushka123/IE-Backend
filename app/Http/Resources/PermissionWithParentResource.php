@@ -18,6 +18,7 @@ class PermissionWithParentsResource extends JsonResource
             'id' => $this->id,
                          'user_id' => $this-> user_id,
                           'role_id' => $this-> role_id,
+                          'factory_id' => $this-> factory_id,
                           'grant' => $this-> grant,
                      ];
     }

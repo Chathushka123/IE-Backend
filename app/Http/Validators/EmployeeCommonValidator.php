@@ -18,6 +18,7 @@ class EmployeeCommonValidator
       'marital_status' => 'nullable|in:Single,Married,Divorced,Other',
       'photo_url' => 'nullable|string|max:500',
       'category_id' => 'required|integer|exists:employee_categories,id',
+      'factory_id' => 'required|integer|exists:factories,id',
       'department_id' => 'nullable|integer|exists:departments,id',
       'designation_id' => 'nullable|integer|exists:designations,id',
       'joining_date' => 'nullable|date',

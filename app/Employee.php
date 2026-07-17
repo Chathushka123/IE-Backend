@@ -4,9 +4,12 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use App\Support\Concerns\ScopedToFactory;
 
 class Employee extends Model
 {
+    use ScopedToFactory;
+
     public static function boot()
     {
         parent::boot();
@@ -22,6 +25,7 @@ class Employee extends Model
     }
 
     protected $fillable = [
+        'factory_id',
         'employee_no',
         'nic_no',
         'full_name',
@@ -57,6 +61,11 @@ class Employee extends Model
     public function category()
     {
         return $this->belongsTo(EmployeeCategory::class, 'category_id');
+    }
+
+    public function factory()
+    {
+        return $this->belongsTo(Factory::class);
     }
 
     public function department()

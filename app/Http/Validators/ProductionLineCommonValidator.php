@@ -11,6 +11,7 @@ class ProductionLineCommonValidator
       'code' => 'nullable|string|max:50',
       'category_id' => 'required|integer|exists:line_categories,id',
       'department_id' => 'required|integer|exists:departments,id',
+      'factory_id' => 'required|integer|exists:factories,id',
       'is_active' => 'nullable|boolean',
     ];
   }

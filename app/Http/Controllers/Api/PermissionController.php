@@ -27,7 +27,7 @@ class PermissionController extends Controller
 
     public function getPermissions(Request $request)
     {
-       return $this->repo->getPermissions();
+       return $this->repo->getPermissions($request->factory_id);
     }
 
     public function getNavigator(Request $request)

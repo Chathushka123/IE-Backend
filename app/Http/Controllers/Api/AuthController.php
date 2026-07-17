@@ -90,9 +90,17 @@ class AuthController extends Controller
         $refreshToken = $refreshToken ?? RefreshTokenRepository::issue($user->id);
         $user->load('role');
 
+        // sysadmin isn't assigned to factories via factory_user (it bypasses factory
+        // scoping entirely, same as it bypasses screen permissions) — give it the
+        // full factory list so the frontend's factory picker isn't empty for it.
+        $factories = $user->email === 'sysadmin@gmail.com'
+            ? \App\Factory::orderBy('description')->get()
+            : $user->factories()->orderBy('description')->get();
+
         $response = response()->json([
             'user' => $user,
             'roles' => $user->role ? [$user->role] : [],
+            'factories' => $factories,
             'access_token' => $accessToken,
             'token_type' => 'Bearer',
             'expires_in' => config('jwt.ttl') * 60,
