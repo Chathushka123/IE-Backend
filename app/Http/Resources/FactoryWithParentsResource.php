@@ -10,7 +10,7 @@ class FactoryWithParentsResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'description' => $this->description,
+            'name' => $this->name,
             'code' => $this->code,
             'is_active' => $this->is_active,
             'created_by_id' => $this->created_by_id,

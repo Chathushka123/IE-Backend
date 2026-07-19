@@ -25,7 +25,7 @@ class Product extends Model
     }
 
     protected $fillable = [
-        'description',
+        'name',
         'style_code',
         'style_description',
         'product_category_id',
@@ -55,9 +55,9 @@ class Product extends Model
         return $this->belongsTo(Customer::class, 'customer_id');
     }
 
-    public function productOperationGradings()
+    public function productOperations()
     {
-        return $this->hasMany(ProductOperationGrading::class, 'product_id');
+        return $this->hasMany(ProductOperation::class, 'product_id');
     }
 
     public function linePlans()

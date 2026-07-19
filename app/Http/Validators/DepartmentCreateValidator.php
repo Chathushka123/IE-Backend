@@ -9,7 +9,7 @@ class DepartmentCreateValidator
   public static function getCreateRules()
   {
     return array_merge(DepartmentCommonValidator::getCommonRules(), [
-      'description' => 'required|string|max:255|unique:departments,description',
+      'name' => 'required|string|max:255|unique:departments,name',
     ]);
   }
 }

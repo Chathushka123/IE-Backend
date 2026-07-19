@@ -10,7 +10,7 @@ class DepartmentUpdateValidator
   public static function getUpdateRules($keyIgnore)
   {
     return array_merge(DepartmentCommonValidator::getCommonRules(), [
-      'description' => ['required', 'string', 'max:255', Rule::unique('departments', 'description')->ignore($keyIgnore)],
+      'name' => ['required', 'string', 'max:255', Rule::unique('departments', 'name')->ignore($keyIgnore)],
     ]);
   }
 }

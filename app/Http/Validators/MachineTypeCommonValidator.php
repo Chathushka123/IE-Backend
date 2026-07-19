@@ -7,7 +7,7 @@ class MachineTypeCommonValidator
   public static function getCommonRules()
   {
     return [
-      'description' => 'required|string|max:255',
+      'name' => 'required|string|max:255',
       'code' => 'nullable|string|max:50',
       'machine_category_id' => 'required|integer|exists:machine_categories,id',
       'is_active' => 'nullable|boolean',

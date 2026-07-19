@@ -10,7 +10,7 @@ class ProductWithParentsResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'description' => $this->description,
+            'name' => $this->name,
             'style_code' => $this->style_code,
             'style_description' => $this->style_description,
             'product_category_id' => $this->product_category_id,

@@ -22,7 +22,7 @@ class MachineCategory extends Model
     }
 
     protected $fillable = [
-        'description',
+        'name',
         'code',
         'is_active',
     ];

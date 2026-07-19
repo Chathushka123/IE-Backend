@@ -10,7 +10,7 @@ class MachineTypeWithParentsResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'description' => $this->description,
+            'name' => $this->name,
             'code' => $this->code,
             'machine_category_id' => $this->machine_category_id,
             'is_active' => $this->is_active,

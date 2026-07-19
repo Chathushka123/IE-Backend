@@ -94,8 +94,8 @@ class AuthController extends Controller
         // scoping entirely, same as it bypasses screen permissions) — give it the
         // full factory list so the frontend's factory picker isn't empty for it.
         $factories = $user->email === 'sysadmin@gmail.com'
-            ? \App\Factory::orderBy('description')->get()
-            : $user->factories()->orderBy('description')->get();
+            ? \App\Factory::orderBy('name')->get()
+            : $user->factories()->orderBy('name')->get();
 
         $response = response()->json([
             'user' => $user,

@@ -22,19 +22,43 @@ class Operation extends Model
     }
 
     protected $fillable = [
+        'base_operation_id',
+        'product_category_id',
+        'machine_type_id',
         'description',
         'code',
-        'operation_category_id',
+        'grade_id',
+        'sequence_no',
+        'smv',
         'is_active',
     ];
 
-    public function category()
+    protected $casts = [
+        'smv' => 'decimal:4',
+    ];
+
+    public function baseOperation()
     {
-        return $this->belongsTo(OperationCategory::class, 'operation_category_id');
+        return $this->belongsTo(BaseOperation::class, 'base_operation_id');
     }
 
-    public function operationGradings()
+    public function productCategory()
     {
-        return $this->hasMany(OperationGrading::class, 'operation_id');
+        return $this->belongsTo(ProductCategory::class, 'product_category_id');
+    }
+
+    public function machineType()
+    {
+        return $this->belongsTo(MachineType::class, 'machine_type_id');
+    }
+
+    public function softSkills()
+    {
+        return $this->belongsToMany(SoftSkill::class, 'operation_skill', 'operation_id', 'soft_skill_id');
+    }
+
+    public function grade()
+    {
+        return $this->belongsTo(OperationGrade::class, 'grade_id');
     }
 }

@@ -9,7 +9,7 @@ class MachineCategoryCreateValidator
   public static function getCreateRules()
   {
     return array_merge(MachineCategoryCommonValidator::getCommonRules(), [
-      'description' => 'required|string|max:255|unique:machine_categories,description',
+      'name' => 'required|string|max:255|unique:machine_categories,name',
       'code' => 'nullable|string|max:50|unique:machine_categories,code',
     ]);
   }

@@ -36,7 +36,7 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
     public function headings(): array
     {
         return [
-            'Description',
+            'Name',
             'Style Code',
             'Style Description',
             'Product Category',
@@ -53,10 +53,10 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
     public function map($product): array
     {
         return [
-            $product->description,
+            $product->name,
             $product->style_code,
             $product->style_description,
-            optional($product->productCategory)->description,
+            optional($product->productCategory)->name,
             optional($product->customer)->description,
             $product->season,
             $product->colors ? implode(', ', $product->colors) : null,
@@ -130,7 +130,7 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
         $listSheet->setTitle('Lists');
 
         $columns = [
-            'A' => ProductCategory::where('is_active', true)->orderBy('description')->pluck('description'),
+            'A' => ProductCategory::where('is_active', true)->orderBy('name')->pluck('name'),
             'B' => Customer::where('is_active', true)->orderBy('description')->pluck('description'),
         ];
 

@@ -14,7 +14,7 @@ class LinePlanUpdateValidator
         'required',
         'integer',
         'min:1',
-        Rule::unique('line_plans')->where('production_line_id', $rec['production_line_id'] ?? null)->ignore($keyIgnore),
+        Rule::unique('line_plans')->where('team_id', $rec['team_id'] ?? null)->ignore($keyIgnore),
       ],
     ]);
   }

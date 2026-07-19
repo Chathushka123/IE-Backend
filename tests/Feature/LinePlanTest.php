@@ -34,22 +34,22 @@ class LinePlanTest extends TestCase
         return ['Authorization' => "Bearer $token"];
     }
 
-    private function makeProductionLine(array $overrides = []): int
+    private function makeTeam(array $overrides = []): int
     {
-        $categoryId = DB::table('line_categories')->insertGetId([
-            'description' => 'Sewing',
+        $sectionId = DB::table('sections')->insertGetId([
+            'name' => 'Sewing',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
         $departmentId = DB::table('departments')->insertGetId([
-            'description' => 'Production',
+            'name' => 'Production',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        return DB::table('production_lines')->insertGetId(array_merge([
-            'description' => 'Line A',
-            'category_id' => $categoryId,
+        return DB::table('teams')->insertGetId(array_merge([
+            'name' => 'Line A',
+            'section_id' => $sectionId,
             'department_id' => $departmentId,
             'is_active' => true,
             'working_minutes_per_day' => 480,
@@ -62,18 +62,18 @@ class LinePlanTest extends TestCase
     private function makeProduct(float $smv = 0.5): int
     {
         $groupId = DB::table('product_groups')->insertGetId([
-            'description' => 'Knits',
+            'name' => 'Knits',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
         $categoryId = DB::table('product_categories')->insertGetId([
-            'description' => 'T-Shirts',
+            'name' => 'T-Shirts',
             'product_group_id' => $groupId,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
         $productId = DB::table('products')->insertGetId([
-            'description' => 'Style 123',
+            'name' => 'Style 123',
             'product_category_id' => $categoryId,
             'is_active' => true,
             'created_at' => now(),
@@ -81,32 +81,32 @@ class LinePlanTest extends TestCase
         ]);
 
         if ($smv > 0) {
-            $operationCategoryId = DB::table('operation_categories')->insertGetId([
-                'description' => 'Sewing Operations',
+            $baseOperationCategoryId = DB::table('base_operation_categories')->insertGetId([
+                'name' => 'Sewing Operations',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            $operationId = DB::table('operations')->insertGetId([
-                'description' => 'Stitch Sleeve',
-                'operation_category_id' => $operationCategoryId,
+            $baseOperationId = DB::table('base_operations')->insertGetId([
+                'name' => 'Stitch Sleeve',
+                'base_operation_category_id' => $baseOperationCategoryId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
             $gradeId = DB::table('operation_grades')->insertGetId([
-                'description' => 'Grade A',
+                'name' => 'Grade A',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            $gradingId = DB::table('operation_gradings')->insertGetId([
-                'operation_id' => $operationId,
+            $operationId = DB::table('operations')->insertGetId([
+                'base_operation_id' => $baseOperationId,
                 'grade_id' => $gradeId,
                 'product_category_id' => $categoryId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            DB::table('product_operation_gradings')->insert([
+            DB::table('product_operations')->insert([
                 'product_id' => $productId,
-                'operation_grading_id' => $gradingId,
+                'operation_id' => $operationId,
                 'sequence_no' => 1,
                 'smv' => $smv,
                 'is_active' => true,
@@ -121,7 +121,7 @@ class LinePlanTest extends TestCase
     private function makeActiveEmployee(int $productionLineId): int
     {
         $categoryId = DB::table('employee_categories')->insertGetId([
-            'description' => 'Operator',
+            'name' => 'Operator',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -132,7 +132,7 @@ class LinePlanTest extends TestCase
             'first_name' => 'Jane',
             'last_name' => 'Doe',
             'category_id' => $categoryId,
-            'production_line_id' => $productionLineId,
+            'team_id' => $productionLineId,
             'employee_status' => 'Active',
             'created_at' => now(),
             'updated_at' => now(),
@@ -141,11 +141,11 @@ class LinePlanTest extends TestCase
 
     public function testCreatesALinePlanForAuthenticatedUser()
     {
-        $lineId = $this->makeProductionLine();
+        $lineId = $this->makeTeam();
         $productId = $this->makeProduct();
 
         $response = $this->withHeaders($this->authHeaders())->postJson('/api/v1/linePlans', [
-            'production_line_id' => $lineId,
+            'team_id' => $lineId,
             'product_id' => $productId,
             'sequence_no' => 1,
             'planned_quantity' => 500,
@@ -154,7 +154,7 @@ class LinePlanTest extends TestCase
 
         $response->assertStatus(200)->assertJson(['status' => 'success']);
         $this->assertDatabaseHas('line_plans', [
-            'production_line_id' => $lineId,
+            'team_id' => $lineId,
             'product_id' => $productId,
             'planned_quantity' => 500,
         ]);
@@ -162,11 +162,11 @@ class LinePlanTest extends TestCase
 
     public function testRejectsUnauthenticatedRequests()
     {
-        $lineId = $this->makeProductionLine();
+        $lineId = $this->makeTeam();
         $productId = $this->makeProduct();
 
         $response = $this->postJson('/api/v1/linePlans', [
-            'production_line_id' => $lineId,
+            'team_id' => $lineId,
             'product_id' => $productId,
             'sequence_no' => 1,
             'planned_quantity' => 500,
@@ -177,12 +177,12 @@ class LinePlanTest extends TestCase
 
     public function testBlocksASecondInProgressAllocationOnTheSameLine()
     {
-        $lineId = $this->makeProductionLine();
+        $lineId = $this->makeTeam();
         $productId = $this->makeProduct();
         $headers = $this->authHeaders();
 
         $this->withHeaders($headers)->postJson('/api/v1/linePlans', [
-            'production_line_id' => $lineId,
+            'team_id' => $lineId,
             'product_id' => $productId,
             'sequence_no' => 1,
             'planned_quantity' => 500,
@@ -190,7 +190,7 @@ class LinePlanTest extends TestCase
         ])->assertStatus(200);
 
         $response = $this->withHeaders($headers)->postJson('/api/v1/linePlans', [
-            'production_line_id' => $lineId,
+            'team_id' => $lineId,
             'product_id' => $productId,
             'sequence_no' => 2,
             'planned_quantity' => 200,
@@ -203,13 +203,13 @@ class LinePlanTest extends TestCase
 
     public function testAllowsTheSameStyleToBeAllocatedToMultipleLines()
     {
-        $lineOne = $this->makeProductionLine(['description' => 'Line A']);
-        $lineTwo = $this->makeProductionLine(['description' => 'Line B']);
+        $lineOne = $this->makeTeam(['name' => 'Line A']);
+        $lineTwo = $this->makeTeam(['name' => 'Line B']);
         $productId = $this->makeProduct();
         $headers = $this->authHeaders();
 
         $this->withHeaders($headers)->postJson('/api/v1/linePlans', [
-            'production_line_id' => $lineOne,
+            'team_id' => $lineOne,
             'product_id' => $productId,
             'sequence_no' => 1,
             'planned_quantity' => 300,
@@ -217,7 +217,7 @@ class LinePlanTest extends TestCase
         ])->assertStatus(200);
 
         $response = $this->withHeaders($headers)->postJson('/api/v1/linePlans', [
-            'production_line_id' => $lineTwo,
+            'team_id' => $lineTwo,
             'product_id' => $productId,
             'sequence_no' => 1,
             'planned_quantity' => 400,
@@ -230,19 +230,19 @@ class LinePlanTest extends TestCase
 
     public function testRejectsADuplicateSequenceNumberOnTheSameLine()
     {
-        $lineId = $this->makeProductionLine();
+        $lineId = $this->makeTeam();
         $productId = $this->makeProduct();
         $headers = $this->authHeaders();
 
         $this->withHeaders($headers)->postJson('/api/v1/linePlans', [
-            'production_line_id' => $lineId,
+            'team_id' => $lineId,
             'product_id' => $productId,
             'sequence_no' => 1,
             'planned_quantity' => 300,
         ])->assertStatus(200);
 
         $response = $this->withHeaders($headers)->postJson('/api/v1/linePlans', [
-            'production_line_id' => $lineId,
+            'team_id' => $lineId,
             'product_id' => $productId,
             'sequence_no' => 1,
             'planned_quantity' => 100,
@@ -254,26 +254,26 @@ class LinePlanTest extends TestCase
 
     public function testResequencesQueueOrderForALine()
     {
-        $lineId = $this->makeProductionLine();
+        $lineId = $this->makeTeam();
         $productId = $this->makeProduct();
         $headers = $this->authHeaders();
 
         $first = $this->withHeaders($headers)->postJson('/api/v1/linePlans', [
-            'production_line_id' => $lineId,
+            'team_id' => $lineId,
             'product_id' => $productId,
             'sequence_no' => 1,
             'planned_quantity' => 100,
         ])->json('data.id');
 
         $second = $this->withHeaders($headers)->postJson('/api/v1/linePlans', [
-            'production_line_id' => $lineId,
+            'team_id' => $lineId,
             'product_id' => $productId,
             'sequence_no' => 2,
             'planned_quantity' => 200,
         ])->json('data.id');
 
         $response = $this->withHeaders($headers)->putJson('/api/v1/linePlans/resequence', [
-            'production_line_id' => $lineId,
+            'team_id' => $lineId,
             'ids' => [$second, $first],
         ]);
 
@@ -284,14 +284,14 @@ class LinePlanTest extends TestCase
 
     public function testSuggestsAScheduleFromLineCapacityAndProductSmv()
     {
-        $lineId = $this->makeProductionLine();
+        $lineId = $this->makeTeam();
         $this->makeActiveEmployee($lineId);
         $productId = $this->makeProduct(0.5);
         $headers = $this->authHeaders();
 
         // capacity = (1 operator x 60 min x 55%) / 0.5 smv = 66 pcs/hour; hoursNeeded = ceil(1000/66) = 16
         $response = $this->withHeaders($headers)->getJson(
-            "/api/v1/linePlans/suggestSchedule?production_line_id={$lineId}&product_id={$productId}&planned_quantity=1000"
+            "/api/v1/linePlans/suggestSchedule?team_id={$lineId}&product_id={$productId}&planned_quantity=1000"
         );
 
         $response->assertStatus(200)->assertJson([
@@ -306,12 +306,12 @@ class LinePlanTest extends TestCase
 
     public function testSuggestionFailsCleanlyWhenLineHasNoActiveOperators()
     {
-        $lineId = $this->makeProductionLine();
+        $lineId = $this->makeTeam();
         $productId = $this->makeProduct(0.5);
         $headers = $this->authHeaders();
 
         $response = $this->withHeaders($headers)->getJson(
-            "/api/v1/linePlans/suggestSchedule?production_line_id={$lineId}&product_id={$productId}&planned_quantity=1000"
+            "/api/v1/linePlans/suggestSchedule?team_id={$lineId}&product_id={$productId}&planned_quantity=1000"
         );
 
         $response->assertStatus(400);
@@ -320,11 +320,11 @@ class LinePlanTest extends TestCase
 
     public function testCreatesAChangeoverTaskWithoutProductOrQuantity()
     {
-        $lineId = $this->makeProductionLine();
+        $lineId = $this->makeTeam();
         $headers = $this->authHeaders();
 
         $response = $this->withHeaders($headers)->postJson('/api/v1/linePlans', [
-            'production_line_id' => $lineId,
+            'team_id' => $lineId,
             'sequence_no' => 1,
             'is_changeover' => true,
             'notes' => 'Style changeover: knit to woven',
@@ -334,7 +334,7 @@ class LinePlanTest extends TestCase
 
         $response->assertStatus(200)->assertJson(['status' => 'success']);
         $this->assertDatabaseHas('line_plans', [
-            'production_line_id' => $lineId,
+            'team_id' => $lineId,
             'is_changeover' => 1,
             'product_id' => null,
             'planned_quantity' => null,
@@ -344,11 +344,11 @@ class LinePlanTest extends TestCase
 
     public function testRejectsAMissingProductWhenNotAChangeover()
     {
-        $lineId = $this->makeProductionLine();
+        $lineId = $this->makeTeam();
         $headers = $this->authHeaders();
 
         $response = $this->withHeaders($headers)->postJson('/api/v1/linePlans', [
-            'production_line_id' => $lineId,
+            'team_id' => $lineId,
             'sequence_no' => 1,
             'planned_quantity' => 100,
         ]);
@@ -359,12 +359,12 @@ class LinePlanTest extends TestCase
 
     public function testPersistsHourPrecisionOnPlannedDates()
     {
-        $lineId = $this->makeProductionLine();
+        $lineId = $this->makeTeam();
         $productId = $this->makeProduct();
         $headers = $this->authHeaders();
 
         $response = $this->withHeaders($headers)->postJson('/api/v1/linePlans', [
-            'production_line_id' => $lineId,
+            'team_id' => $lineId,
             'product_id' => $productId,
             'sequence_no' => 1,
             'planned_quantity' => 500,
@@ -374,7 +374,7 @@ class LinePlanTest extends TestCase
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('line_plans', [
-            'production_line_id' => $lineId,
+            'team_id' => $lineId,
             'planned_start_date' => '2026-07-01 08:30:00',
             'planned_end_date' => '2026-07-01 16:00:00',
         ]);

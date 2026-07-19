@@ -7,7 +7,7 @@ class ProductCommonValidator
   public static function getCommonRules()
   {
     return [
-      'description' => 'required|string|max:255',
+      'name' => 'required|string|max:255',
       'style_code' => 'nullable|string|max:50',
       'style_description' => 'nullable|string|max:255',
       'product_category_id' => 'required|integer|exists:product_categories,id',

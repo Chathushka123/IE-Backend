@@ -7,7 +7,7 @@ use App\EmployeeCategory;
 use App\Factory;
 use App\Department;
 use App\Designation;
-use App\ProductionLine;
+use App\Team;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -178,8 +178,11 @@ class EmployeeRepository
     self::setIfNotNull($rec, 'confirmation_date', self::parseImportDate($row['confirmation_date'] ?? null));
     self::setIfNotNull($rec, 'employment_type', self::blankToNull($row['employment_type'] ?? null));
     self::setIfNotNull($rec, 'reporting_manager_id', self::resolveReportingManager($row['reporting_manager'] ?? null));
-    self::setIfNotNull($rec, 'production_line_id', self::resolveForeignKey(ProductionLine::class, $row['production_line'] ?? null, 'Production Line', false));
-    self::setIfNotNull($rec, 'base_line_id', self::resolveForeignKey(ProductionLine::class, $row['base_line'] ?? null, 'Base Line', false));
+    // NOTE: the Excel import-row keys 'production_line'/'base_line' are intentionally left as-is —
+    // the exported column headers still read "Production Line"/"Base Line" (see EmployeesExport.php),
+    // only the DB-facing $rec output keys change to match the renamed team_id/base_team_id columns.
+    self::setIfNotNull($rec, 'team_id', self::resolveForeignKey(Team::class, $row['production_line'] ?? null, 'Production Line', false));
+    self::setIfNotNull($rec, 'base_team_id', self::resolveForeignKey(Team::class, $row['base_line'] ?? null, 'Base Line', false));
     self::setIfNotNull($rec, 'employee_status', self::blankToNull($row['employee_status'] ?? null));
 
     return $rec;
@@ -235,7 +238,7 @@ class EmployeeRepository
       }
       return null;
     }
-    $match = $modelClass::whereRaw('LOWER(description) = ?', [Str::lower(trim($value))])->first();
+    $match = $modelClass::whereRaw('LOWER(name) = ?', [Str::lower(trim($value))])->first();
     if (!$match) {
       throw new Exception("{$label} '{$value}' not found");
     }

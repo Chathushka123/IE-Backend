@@ -5,7 +5,7 @@ namespace App\Support\Concerns;
 use App\Support\FactoryContext;
 
 /**
- * For models with a single `factory_id` column (Employee, ProductionLine).
+ * For models with a single `factory_id` column (Employee, Team).
  * Laravel auto-calls bootScopedToFactory() for any model using this trait —
  * no changes needed to the model's own boot() override.
  */

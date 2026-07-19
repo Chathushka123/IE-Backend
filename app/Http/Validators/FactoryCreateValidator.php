@@ -9,7 +9,7 @@ class FactoryCreateValidator
   public static function getCreateRules()
   {
     return array_merge(FactoryCommonValidator::getCommonRules(), [
-      'description' => 'required|string|max:255|unique:factories,description',
+      'name' => 'required|string|max:255|unique:factories,name',
       'code' => 'nullable|string|max:50|unique:factories,code',
     ]);
   }

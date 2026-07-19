@@ -22,14 +22,14 @@ class Department extends Model
     }
 
     protected $fillable = [
-        'description',
+        'name',
         'code',
         'is_active',
     ];
 
     public function productionLines()
     {
-        return $this->hasMany(ProductionLine::class);
+        return $this->hasMany(Team::class);
     }
 
     public function employees()

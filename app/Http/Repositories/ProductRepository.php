@@ -105,32 +105,32 @@ class ProductRepository
 
   /**
    * Bulk create/update from an Excel import. Rows are matched to an existing product
-   * by Description (case-insensitively, so a manual casing tweak doesn't create a
+   * by Name (case-insensitively, so a manual casing tweak doesn't create a
    * duplicate). Each row is processed in its own transaction so one bad row doesn't
    * affect the rest — failures are collected and returned instead of aborting the file.
    */
   public static function importRows($rows)
   {
     $summary = ['total' => 0, 'created' => 0, 'updated' => 0, 'failed' => []];
-    $seenDescriptions = [];
+    $seenNames = [];
 
     foreach ($rows as $index => $row) {
       $rowNumber = $index + 2; // +1 for 0-index, +1 for the heading row
       $summary['total']++;
-      $description = trim((string) ($row['description'] ?? ''));
-      $descriptionKey = Str::lower($description);
+      $name = trim((string) ($row['name'] ?? ''));
+      $nameKey = Str::lower($name);
 
       try {
-        if ($description === '') {
-          throw new Exception('Description is required');
+        if ($name === '') {
+          throw new Exception('Name is required');
         }
-        if (isset($seenDescriptions[$descriptionKey])) {
-          throw new Exception("Duplicate Description '{$description}' in file (first seen at row {$seenDescriptions[$descriptionKey]})");
+        if (isset($seenNames[$nameKey])) {
+          throw new Exception("Duplicate Name '{$name}' in file (first seen at row {$seenNames[$nameKey]})");
         }
-        $seenDescriptions[$descriptionKey] = $rowNumber;
+        $seenNames[$nameKey] = $rowNumber;
 
-        $rec = self::mapImportRow($row, $description);
-        $existing = Product::whereRaw('LOWER(description) = ?', [$descriptionKey])->first();
+        $rec = self::mapImportRow($row, $name);
+        $existing = Product::whereRaw('LOWER(name) = ?', [$nameKey])->first();
 
         DB::beginTransaction();
         if ($existing) {
@@ -146,7 +146,7 @@ class ProductRepository
         DB::rollBack();
         $summary['failed'][] = [
           'row' => $rowNumber,
-          'description' => $description ?: null,
+          'name' => $name ?: null,
           'error' => self::unwrapExceptionMessage($e),
         ];
       }
@@ -161,11 +161,11 @@ class ProductRepository
    * value untouched on update (Utilities::hydrate fills missing keys) and lets the DB
    * column default apply on create.
    */
-  private static function mapImportRow($row, $description)
+  private static function mapImportRow($row, $name)
   {
     $rec = [
-      'description' => $description,
-      'product_category_id' => self::resolveForeignKey(ProductCategory::class, $row['product_category'] ?? null, 'Product Category', true),
+      'name' => $name,
+      'product_category_id' => self::resolveForeignKey(ProductCategory::class, $row['product_category'] ?? null, 'Product Category', true, 'name'),
     ];
 
     self::setIfNotNull($rec, 'style_code', self::blankToUpper($row['style_code'] ?? null));
@@ -270,7 +270,7 @@ class ProductRepository
     }
   }
 
-  private static function resolveForeignKey($modelClass, $value, $label, $required)
+  private static function resolveForeignKey($modelClass, $value, $label, $required, $column = 'description')
   {
     $value = self::blankToNull($value);
     if ($value === null) {
@@ -279,7 +279,7 @@ class ProductRepository
       }
       return null;
     }
-    $match = $modelClass::whereRaw('LOWER(description) = ?', [Str::lower(trim($value))])->first();
+    $match = $modelClass::whereRaw("LOWER({$column}) = ?", [Str::lower(trim($value))])->first();
     if (!$match) {
       throw new Exception("{$label} '{$value}' not found");
     }

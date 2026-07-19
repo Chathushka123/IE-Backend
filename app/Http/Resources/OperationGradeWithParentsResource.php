@@ -10,7 +10,7 @@ class OperationGradeWithParentsResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'description' => $this->description,
+            'name' => $this->name,
             'code' => $this->code,
             'level' => $this->level,
             'is_active' => $this->is_active,

@@ -22,14 +22,14 @@ class EmployeeCategory extends Model
     }
 
     protected $fillable = [
-        'description',
+        'name',
         'code',
         'is_active',
     ];
 
     public function productionLines()
     {
-        return $this->hasMany(ProductionLine::class, 'category_id');
+        return $this->hasMany(Team::class, 'category_id');
     }
 
     public function employees()

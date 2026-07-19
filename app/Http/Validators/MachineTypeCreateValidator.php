@@ -9,7 +9,7 @@ class MachineTypeCreateValidator
   public static function getCreateRules()
   {
     return array_merge(MachineTypeCommonValidator::getCommonRules(), [
-      'description' => 'required|string|max:255|unique:machine_types,description',
+      'name' => 'required|string|max:255|unique:machine_types,name',
       'code' => 'nullable|string|max:50|unique:machine_types,code',
     ]);
   }

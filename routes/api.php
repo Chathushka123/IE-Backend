@@ -59,42 +59,42 @@ Route::prefix('v1')->group(function () {
         Route::post('searchByParameters', 'Api\SearchController@searchByParameters')->name('search.queryString');
         Route::post('searchByParametersJson', 'Api\SearchController@searchByParametersJson')->name('search.queryStringJson');
 
-        // Operations
+        // Base Operations
+        Route::get('baseOperations/export', 'Api\BaseOperationController@export')->name('baseOperations.export');
+        Route::get('baseOperations/byCategories', 'Api\BaseOperationController@getByCategories')->name('baseOperations.byCategories');
+
+        // Operations (was Operation Gradings) — specific paths must come before {id} wildcard
         Route::get('operations/export', 'Api\OperationController@export')->name('operations.export');
-        Route::get('operations/byCategories', 'Api\OperationController@getByCategories')->name('operations.byCategories');
+        Route::get('operations', 'Api\OperationController@index')->name('operations.index');
+        Route::get('operations/byOperation/{operationId}', 'Api\OperationController@getByOperation')->name('operations.byOperation');
+        Route::get('operations/byGrade/{gradeId}', 'Api\OperationController@getByGrade')->name('operations.byGrade');
+        Route::get('operations/byProductCategory/{productCategoryId}', 'Api\OperationController@getByProductCategory')->name('operations.byProductCategory');
+        Route::put('operations/resequence', 'Api\OperationController@resequence')->name('operations.resequence');
+        Route::get('operations/{id}', 'Api\OperationController@show')->name('operations.show');
+        Route::post('operations', 'Api\OperationController@store')->name('operations.store');
+        Route::put('operations/{id}', 'Api\OperationController@update')->name('operations.update');
 
-        // Operation Gradings — specific paths must come before {id} wildcard
-        Route::get('operationGradings/export', 'Api\OperationGradingController@export')->name('operationGradings.export');
-        Route::get('operationGradings', 'Api\OperationGradingController@index')->name('operationGradings.index');
-        Route::get('operationGradings/byOperation/{operationId}', 'Api\OperationGradingController@getByOperation')->name('operationGradings.byOperation');
-        Route::get('operationGradings/byGrade/{gradeId}', 'Api\OperationGradingController@getByGrade')->name('operationGradings.byGrade');
-        Route::get('operationGradings/byProductCategory/{productCategoryId}', 'Api\OperationGradingController@getByProductCategory')->name('operationGradings.byProductCategory');
-        Route::put('operationGradings/resequence', 'Api\OperationGradingController@resequence')->name('operationGradings.resequence');
-        Route::get('operationGradings/{id}', 'Api\OperationGradingController@show')->name('operationGradings.show');
-        Route::post('operationGradings', 'Api\OperationGradingController@store')->name('operationGradings.store');
-        Route::put('operationGradings/{id}', 'Api\OperationGradingController@update')->name('operationGradings.update');
+        // Operation Skills
+        Route::get('operationSkills', 'Api\OperationSkillController@index')->name('operationSkills.index');
+        Route::get('operationSkills/{id}', 'Api\OperationSkillController@show')->name('operationSkills.show');
+        Route::get('operationSkills/byOperation/{operationId}', 'Api\OperationSkillController@getByOperation')->name('operationSkills.byOperation');
+        Route::get('operationSkills/bySkill/{skillId}', 'Api\OperationSkillController@getBySkill')->name('operationSkills.bySkill');
+        Route::post('operationSkills', 'Api\OperationSkillController@store')->name('operationSkills.store');
+        Route::put('operationSkills/{id}', 'Api\OperationSkillController@update')->name('operationSkills.update');
 
-        // Operation Grading Skills
-        Route::get('operationGradingSkills', 'Api\OperationGradingSkillController@index')->name('operationGradingSkills.index');
-        Route::get('operationGradingSkills/{id}', 'Api\OperationGradingSkillController@show')->name('operationGradingSkills.show');
-        Route::get('operationGradingSkills/byOperationGrading/{operationGradingId}', 'Api\OperationGradingSkillController@getByOperationGrading')->name('operationGradingSkills.byOperationGrading');
-        Route::get('operationGradingSkills/bySkill/{skillId}', 'Api\OperationGradingSkillController@getBySkill')->name('operationGradingSkills.bySkill');
-        Route::post('operationGradingSkills', 'Api\OperationGradingSkillController@store')->name('operationGradingSkills.store');
-        Route::put('operationGradingSkills/{id}', 'Api\OperationGradingSkillController@update')->name('operationGradingSkills.update');
-
-        // Product Operation Gradings — specific paths must come before {id} wildcard
-        Route::get('productOperationGradings', 'Api\ProductOperationGradingController@index')->name('productOperationGradings.index');
-        Route::get('productOperationGradings/byProduct/{productId}', 'Api\ProductOperationGradingController@getByProduct')->name('productOperationGradings.byProduct');
-        Route::get('productOperationGradings/byOperationGrading/{operationGradingId}', 'Api\ProductOperationGradingController@getByOperationGrading')->name('productOperationGradings.byOperationGrading');
-        Route::put('productOperationGradings/resequence', 'Api\ProductOperationGradingController@resequence')->name('productOperationGradings.resequence');
-        Route::get('productOperationGradings/{id}', 'Api\ProductOperationGradingController@show')->name('productOperationGradings.show');
-        Route::post('productOperationGradings', 'Api\ProductOperationGradingController@store')->name('productOperationGradings.store');
-        Route::put('productOperationGradings/{id}', 'Api\ProductOperationGradingController@update')->name('productOperationGradings.update');
+        // Product Operations — specific paths must come before {id} wildcard
+        Route::get('productOperations', 'Api\ProductOperationController@index')->name('productOperations.index');
+        Route::get('productOperations/byProduct/{productId}', 'Api\ProductOperationController@getByProduct')->name('productOperations.byProduct');
+        Route::get('productOperations/byOperation/{operationId}', 'Api\ProductOperationController@getByOperation')->name('productOperations.byOperation');
+        Route::put('productOperations/resequence', 'Api\ProductOperationController@resequence')->name('productOperations.resequence');
+        Route::get('productOperations/{id}', 'Api\ProductOperationController@show')->name('productOperations.show');
+        Route::post('productOperations', 'Api\ProductOperationController@store')->name('productOperations.store');
+        Route::put('productOperations/{id}', 'Api\ProductOperationController@update')->name('productOperations.update');
 
         // Line Plans — specific paths must come before {id} wildcard
         Route::get('linePlans', 'Api\LinePlanController@index')->name('linePlans.index');
         Route::get('linePlans/suggestSchedule', 'Api\LinePlanController@suggestSchedule')->name('linePlans.suggestSchedule');
-        Route::get('linePlans/byProductionLine/{productionLineId}', 'Api\LinePlanController@getByProductionLine')->name('linePlans.byProductionLine');
+        Route::get('linePlans/byTeam/{teamId}', 'Api\LinePlanController@getByTeam')->name('linePlans.byTeam');
         Route::get('linePlans/byProduct/{productId}', 'Api\LinePlanController@getByProduct')->name('linePlans.byProduct');
         Route::put('linePlans/resequence', 'Api\LinePlanController@resequence')->name('linePlans.resequence');
         Route::get('linePlans/{id}', 'Api\LinePlanController@show')->name('linePlans.show');

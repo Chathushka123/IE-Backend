@@ -29,10 +29,10 @@ class EmployeeImportTest extends TestCase
         Auth::login(User::find($userId));
     }
 
-    private function makeCategory(string $description = 'Machine Operator'): int
+    private function makeCategory(string $name = 'Machine Operator'): int
     {
         return DB::table('employee_categories')->insertGetId([
-            'description' => $description,
+            'name' => $name,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

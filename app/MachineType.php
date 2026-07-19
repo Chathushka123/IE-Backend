@@ -22,7 +22,7 @@ class MachineType extends Model
     }
 
     protected $fillable = [
-        'description',
+        'name',
         'code',
         'machine_category_id',
         'is_active',
