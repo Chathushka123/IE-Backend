@@ -10,6 +10,7 @@ class SectionCreateValidator
   {
     return array_merge(SectionCommonValidator::getCommonRules(), [
       'name' => 'required|string|max:255|unique:sections,name',
+      'code' => 'required|string|max:50|unique:sections,code',
     ]);
   }
 }

@@ -8,7 +8,7 @@ class TeamCommonValidator
   {
     return [
       'name' => 'required|string|max:255',
-      'code' => 'nullable|string|max:50',
+      'code' => 'required|string|max:50',
       'section_id' => 'required|integer|exists:sections,id',
       'department_id' => 'required|integer|exists:departments,id',
       'factory_id' => 'required|integer|exists:factories,id',

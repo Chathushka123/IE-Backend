@@ -11,7 +11,7 @@ class SoftSkillUpdateValidator
   {
     return array_merge(SoftSkillCommonValidator::getCommonRules(), [
       'name' => ['required', 'string', 'max:255', Rule::unique('soft_skills', 'name')->ignore($keyIgnore)],
-      'code' => ['nullable', 'string', 'max:50', Rule::unique('soft_skills', 'code')->ignore($keyIgnore)],
+      'code' => ['required', 'string', 'max:50', Rule::unique('soft_skills', 'code')->ignore($keyIgnore)],
     ]);
   }
 }

@@ -19,7 +19,7 @@ class OperationCreateValidator
           ->where('machine_type_id', $rec['machine_type_id'] ?? null),
       ],
       'code' => [
-        'nullable',
+        'required',
         'string',
         'max:50',
         Rule::unique('operations'),

@@ -8,7 +8,7 @@ class OperationGradeCommonValidator
   {
     return [
       'name' => 'required|string|max:255',
-      'code' => 'nullable|string|max:50',
+      'code' => 'required|string|max:50',
       'level' => 'nullable|integer|min:1',
       'is_active' => 'nullable|boolean',
     ];

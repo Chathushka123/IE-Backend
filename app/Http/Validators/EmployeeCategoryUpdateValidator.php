@@ -11,6 +11,7 @@ class EmployeeCategoryUpdateValidator
   {
     return array_merge(EmployeeCategoryCommonValidator::getCommonRules(), [
       'name' => ['required', 'string', 'max:255', Rule::unique('employee_categories', 'name')->ignore($keyIgnore)],
+      'code' => ['nullable', 'string', 'max:50', Rule::unique('employee_categories', 'code')->ignore($keyIgnore)],
     ]);
   }
 }

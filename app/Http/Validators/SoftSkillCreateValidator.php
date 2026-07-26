@@ -10,7 +10,7 @@ class SoftSkillCreateValidator
   {
     return array_merge(SoftSkillCommonValidator::getCommonRules(), [
       'name' => 'required|string|max:255|unique:soft_skills,name',
-      'code' => 'nullable|string|max:50|unique:soft_skills,code',
+      'code' => 'required|string|max:50|unique:soft_skills,code',
     ]);
   }
 }

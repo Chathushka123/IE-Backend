@@ -15,7 +15,7 @@ class TeamRepository
   {
     $validator = Validator::make(
       $rec,
-      TeamCreateValidator::getCreateRules()
+      TeamCreateValidator::getCreateRules($rec)
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
@@ -40,7 +40,7 @@ class TeamRepository
     Utilities::hydrate($model, $rec);
     $validator = Validator::make(
       $rec,
-      TeamUpdateValidator::getUpdateRules($model_id)
+      TeamUpdateValidator::getUpdateRules($model_id, $rec)
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);

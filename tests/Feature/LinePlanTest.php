@@ -36,21 +36,34 @@ class LinePlanTest extends TestCase
 
     private function makeTeam(array $overrides = []): int
     {
+        $unique = strtoupper(substr(md5(uniqid()), 0, 6));
+
         $sectionId = DB::table('sections')->insertGetId([
-            'name' => 'Sewing',
+            'name' => 'Sewing '.$unique,
+            'code' => 'SEW'.$unique,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
         $departmentId = DB::table('departments')->insertGetId([
-            'name' => 'Production',
+            'name' => 'Production '.$unique,
+            'code' => 'PRD'.$unique,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $factoryId = DB::table('factories')->insertGetId([
+            'name' => 'Plant '.$unique,
+            'code' => 'PL'.$unique,
+            'is_active' => true,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         return DB::table('teams')->insertGetId(array_merge([
             'name' => 'Line A',
+            'code' => 'LA'.$unique,
             'section_id' => $sectionId,
             'department_id' => $departmentId,
+            'factory_id' => $factoryId,
             'is_active' => true,
             'working_minutes_per_day' => 480,
             'target_efficiency_pct' => 55,
@@ -61,20 +74,40 @@ class LinePlanTest extends TestCase
 
     private function makeProduct(float $smv = 0.5): int
     {
+        $unique = strtoupper(substr(md5(uniqid()), 0, 6));
+
         $groupId = DB::table('product_groups')->insertGetId([
-            'name' => 'Knits',
+            'name' => 'Knits'.$unique,
+            'code' => 'KN'.$unique,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
         $categoryId = DB::table('product_categories')->insertGetId([
-            'name' => 'T-Shirts',
+            'name' => 'T-Shirts'.$unique,
+            'code' => 'TS'.$unique,
             'product_group_id' => $groupId,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+        $customerId = DB::table('customers')->insertGetId([
+            'description' => 'Decathlon'.$unique,
+            'code' => 'DC'.$unique,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $seasonId = DB::table('seasons')->insertGetId([
+            'name' => 'Summer 27',
+            'code' => 'SU'.$unique,
+            'customer_id' => $customerId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
         $productId = DB::table('products')->insertGetId([
-            'name' => 'Style 123',
+            'name' => 'Style 123'.$unique,
+            'style_code' => 'ST'.$unique,
             'product_category_id' => $categoryId,
+            'customer_id' => $customerId,
+            'season_id' => $seasonId,
             'is_active' => true,
             'created_at' => now(),
             'updated_at' => now(),
@@ -82,25 +115,41 @@ class LinePlanTest extends TestCase
 
         if ($smv > 0) {
             $baseOperationCategoryId = DB::table('base_operation_categories')->insertGetId([
-                'name' => 'Sewing Operations',
+                'name' => 'Sewing Operations'.$unique,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
             $baseOperationId = DB::table('base_operations')->insertGetId([
-                'name' => 'Stitch Sleeve',
+                'name' => 'Stitch Sleeve'.$unique,
+                'code' => 'BO'.$unique,
                 'base_operation_category_id' => $baseOperationCategoryId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
             $gradeId = DB::table('operation_grades')->insertGetId([
-                'name' => 'Grade A',
+                'name' => 'Grade A'.$unique,
+                'code' => 'OG'.$unique,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $machineCategoryId = DB::table('machine_categories')->insertGetId([
+                'name' => 'Sewing Machines'.$unique,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $machineTypeId = DB::table('machine_types')->insertGetId([
+                'name' => 'Single Needle'.$unique,
+                'code' => 'MT'.$unique,
+                'machine_category_id' => $machineCategoryId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
             $operationId = DB::table('operations')->insertGetId([
+                'code' => 'OP'.$unique,
                 'base_operation_id' => $baseOperationId,
                 'grade_id' => $gradeId,
                 'product_category_id' => $categoryId,
+                'machine_type_id' => $machineTypeId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -121,10 +170,11 @@ class LinePlanTest extends TestCase
     private function makeActiveEmployee(int $productionLineId): int
     {
         $categoryId = DB::table('employee_categories')->insertGetId([
-            'name' => 'Operator',
+            'name' => 'Operator'.uniqid(),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+        $factoryId = DB::table('teams')->where('id', $productionLineId)->value('factory_id');
 
         return DB::table('employees')->insertGetId([
             'employee_no' => 'EMP-'.uniqid(),
@@ -133,6 +183,7 @@ class LinePlanTest extends TestCase
             'last_name' => 'Doe',
             'category_id' => $categoryId,
             'team_id' => $productionLineId,
+            'factory_id' => $factoryId,
             'employee_status' => 'Active',
             'created_at' => now(),
             'updated_at' => now(),

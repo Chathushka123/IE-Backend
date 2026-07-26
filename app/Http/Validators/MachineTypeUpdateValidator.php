@@ -11,7 +11,7 @@ class MachineTypeUpdateValidator
   {
     return array_merge(MachineTypeCommonValidator::getCommonRules(), [
       'name' => ['required', 'string', 'max:255', Rule::unique('machine_types', 'name')->ignore($keyIgnore)],
-      'code' => ['nullable', 'string', 'max:50', Rule::unique('machine_types', 'code')->ignore($keyIgnore)],
+      'code' => ['required', 'string', 'max:50', Rule::unique('machine_types', 'code')->ignore($keyIgnore)],
     ]);
   }
 }

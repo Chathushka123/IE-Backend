@@ -6,7 +6,21 @@
       "Bash(xargs -I{} sh -c 'echo ==={}===; cat {}')",
       "Bash(mysql -h localhost -P 3306 -u app_user -pDoomdoom1@ ie_module -e ' *)",
       "Bash(mysql -h localhost -P 3306 -u app_user -p'Doomdoom1@' ie_module -e \"SELECT id, screen_code, screen_name FROM screens ORDER BY id;\")",
-      "Bash(xargs -I{} sh -c 'echo ===={}====; cat {}')"
+      "Bash(xargs -I{} sh -c 'echo ===={}====; cat {}')",
+      "Bash(vendor/bin/phpunit tests/Unit/Repositories/DepartmentRepositoryTest.php)",
+      "Bash(vendor/bin/phpunit tests/Feature/LinePlanTest.php)",
+      "Bash(mysql -h localhost -u app_user -p'Doomdoom1@' -e \"SHOW DATABASES;\")",
+      "Bash(mysql -h localhost -u app_user -p'Doomdoom1@' -e \"CREATE DATABASE IF NOT EXISTS ie_module_test; SHOW DATABASES LIKE 'ie_module_test';\")",
+      "Bash(git checkout *)",
+      "Bash(echo \"exit:$?\")",
+      "Bash(vendor/bin/phpunit tests/Unit/Repositories)",
+      "Bash(vendor/bin/phpunit tests/Unit/Repositories --display-deprecations)",
+      "Bash(mysql -h localhost -u app_user -p'Doomdoom1@' ie_module_test -e \"SHOW TABLES;\")",
+      "Bash(DB_DATABASE=ie_module_test php artisan tinker '--execute= *)",
+      "Bash(mysql -h localhost -u app_user -pDoomdoom1@ ie_module -e ' *)",
+      "Bash(mysql -h localhost -u app_user -p'Doomdoom1@' ie_module -e \"DESCRIBE factories;\")",
+      "Bash(mysql -h localhost -u app_user -p'Doomdoom1@' ie_module -e \"DESCRIBE operations;\")",
+      "Bash(mysql -h localhost -u app_user -p'Doomdoom1@' ie_module -e \"DESCRIBE employees;\")"
     ]
   }
 }

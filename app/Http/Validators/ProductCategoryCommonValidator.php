@@ -8,7 +8,7 @@ class ProductCategoryCommonValidator
   {
     return [
       'name' => 'required|string|max:255',
-      'code' => 'nullable|string|max:50',
+      'code' => 'required|string|max:50',
       'product_group_id' => 'required|integer|exists:product_groups,id',
       'is_active' => 'nullable|boolean',
     ];

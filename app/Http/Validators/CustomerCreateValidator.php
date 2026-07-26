@@ -10,7 +10,7 @@ class CustomerCreateValidator
   {
     return array_merge(CustomerCommonValidator::getCommonRules(), [
       'description' => 'required|string|max:255|unique:customers,description',
-      'code' => 'nullable|string|max:50|unique:customers,code',
+      'code' => 'required|string|max:50|unique:customers,code',
     ]);
   }
 }

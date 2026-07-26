@@ -11,6 +11,7 @@ class SectionUpdateValidator
   {
     return array_merge(SectionCommonValidator::getCommonRules(), [
       'name' => ['required', 'string', 'max:255', Rule::unique('sections', 'name')->ignore($keyIgnore)],
+      'code' => ['required', 'string', 'max:50', Rule::unique('sections', 'code')->ignore($keyIgnore)],
     ]);
   }
 }

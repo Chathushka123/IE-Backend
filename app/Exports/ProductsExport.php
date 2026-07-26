@@ -30,7 +30,7 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
 
     public function collection()
     {
-        return Product::with(['productCategory', 'customer'])->get();
+        return Product::with(['productCategory', 'customer', 'season'])->get();
     }
 
     public function headings(): array
@@ -58,7 +58,7 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
             $product->style_description,
             optional($product->productCategory)->name,
             optional($product->customer)->description,
-            $product->season,
+            optional($product->season)->name,
             $product->colors ? implode(', ', $product->colors) : null,
             $product->sizes ? implode(', ', $product->sizes) : null,
             $this->toExcelDate($product->customer_requested_delivery_date),
@@ -112,7 +112,7 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
         $this->applyInlineList($sheet, 'K', $lastRow, 'Yes,No');
 
         $this->applyRangeList($sheet, 'D', $lastRow, $ranges['category'], 'Product Category', 'Pick from the list — must match an existing product category exactly.');
-        $this->applyRangeList($sheet, 'E', $lastRow, $ranges['customer'], 'Customer', 'Pick from the list, or leave blank.');
+        $this->applyRangeList($sheet, 'E', $lastRow, $ranges['customer'], 'Customer', 'Pick from the list — must match an existing customer exactly.');
 
         foreach (self::DATE_COLUMNS as $column) {
             $this->applyDateValidation($sheet, $column, $lastRow);

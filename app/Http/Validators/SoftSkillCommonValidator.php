@@ -8,7 +8,7 @@ class SoftSkillCommonValidator
   {
     return [
       'name' => 'required|string|max:255',
-      'code' => 'nullable|string|max:50',
+      'code' => 'required|string|max:50',
       'is_active' => 'nullable|boolean',
     ];
   }

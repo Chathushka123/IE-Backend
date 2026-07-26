@@ -10,6 +10,7 @@ class DesignationCreateValidator
   {
     return array_merge(DesignationCommonValidator::getCommonRules(), [
       'name' => 'required|string|max:255|unique:designations,name',
+      'code' => 'required|string|max:50|unique:designations,code',
     ]);
   }
 }

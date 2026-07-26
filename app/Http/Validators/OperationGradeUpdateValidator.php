@@ -11,7 +11,7 @@ class OperationGradeUpdateValidator
   {
     return array_merge(OperationGradeCommonValidator::getCommonRules(), [
       'name' => ['required', 'string', 'max:255', Rule::unique('operation_grades', 'name')->ignore($keyIgnore)],
-      'code' => ['nullable', 'string', 'max:50', Rule::unique('operation_grades', 'code')->ignore($keyIgnore)],
+      'code' => ['required', 'string', 'max:50', Rule::unique('operation_grades', 'code')->ignore($keyIgnore)],
     ]);
   }
 }

@@ -10,7 +10,7 @@ class BaseOperationCreateValidator
   {
     return array_merge(BaseOperationCommonValidator::getCommonRules(), [
       'name' => 'required|string|max:255|unique:base_operations,name',
-      'code' => 'nullable|string|max:50|unique:base_operations,code',
+      'code' => 'required|string|max:50|unique:base_operations,code',
     ]);
   }
 }

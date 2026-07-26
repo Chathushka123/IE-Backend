@@ -5,6 +5,7 @@ namespace App\Http\Repositories;
 use App\Product;
 use App\ProductCategory;
 use App\Customer;
+use App\Season;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -19,7 +20,7 @@ class ProductRepository
   {
     $validator = Validator::make(
       $rec,
-      ProductCreateValidator::getCreateRules()
+      ProductCreateValidator::getCreateRules($rec)
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
@@ -49,7 +50,7 @@ class ProductRepository
     Utilities::hydrate($model, $rec);
     $validator = Validator::make(
       $rec,
-      ProductUpdateValidator::getUpdateRules($model_id)
+      ProductUpdateValidator::getUpdateRules($model_id, $rec)
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
@@ -163,15 +164,17 @@ class ProductRepository
    */
   private static function mapImportRow($row, $name)
   {
+    $customerId = self::resolveForeignKey(Customer::class, $row['customer'] ?? null, 'Customer', true);
+
     $rec = [
       'name' => $name,
       'product_category_id' => self::resolveForeignKey(ProductCategory::class, $row['product_category'] ?? null, 'Product Category', true, 'name'),
+      'customer_id' => $customerId,
     ];
 
     self::setIfNotNull($rec, 'style_code', self::blankToUpper($row['style_code'] ?? null));
     self::setIfNotNull($rec, 'style_description', self::blankToNull($row['style_description'] ?? null));
-    self::setIfNotNull($rec, 'customer_id', self::resolveForeignKey(Customer::class, $row['customer'] ?? null, 'Customer', false));
-    self::setIfNotNull($rec, 'season', self::blankToUpper($row['season'] ?? null));
+    self::setIfNotNull($rec, 'season_id', self::resolveSeason($row['season'] ?? null, $customerId));
     self::setIfNotNull($rec, 'colors', self::parseListField($row['colors'] ?? null));
     self::setIfNotNull($rec, 'sizes', self::parseListField($row['sizes'] ?? null));
     self::setIfNotNull($rec, 'customer_requested_delivery_date', self::parseImportDate($row['customer_requested_delivery_date'] ?? null));
@@ -282,6 +285,20 @@ class ProductRepository
     $match = $modelClass::whereRaw("LOWER({$column}) = ?", [Str::lower(trim($value))])->first();
     if (!$match) {
       throw new Exception("{$label} '{$value}' not found");
+    }
+    return $match->id;
+  }
+
+  /** Seasons are scoped to a customer, so resolution needs the row's already-resolved customer_id, not just a global name lookup. */
+  private static function resolveSeason($value, $customerId)
+  {
+    $value = self::blankToNull($value);
+    if ($value === null) {
+      return null;
+    }
+    $match = Season::whereRaw('LOWER(name) = ?', [Str::lower(trim($value))])->where('customer_id', $customerId)->first();
+    if (!$match) {
+      throw new Exception("Season '{$value}' not found for this Customer");
     }
     return $match->id;
   }

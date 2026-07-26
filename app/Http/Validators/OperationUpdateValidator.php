@@ -20,7 +20,7 @@ class OperationUpdateValidator
           ->ignore($keyIgnore),
       ],
       'code' => [
-        'nullable',
+        'required',
         'string',
         'max:50',
         Rule::unique('operations')->ignore($keyIgnore),

@@ -30,7 +30,7 @@ class Product extends Model
         'style_description',
         'product_category_id',
         'customer_id',
-        'season',
+        'season_id',
         'colors',
         'sizes',
         'customer_requested_delivery_date',
@@ -53,6 +53,11 @@ class Product extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class, 'customer_id');
+    }
+
+    public function season()
+    {
+        return $this->belongsTo(Season::class);
     }
 
     public function productOperations()

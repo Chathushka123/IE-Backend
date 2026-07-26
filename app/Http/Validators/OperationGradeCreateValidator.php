@@ -10,7 +10,7 @@ class OperationGradeCreateValidator
   {
     return array_merge(OperationGradeCommonValidator::getCommonRules(), [
       'name' => 'required|string|max:255|unique:operation_grades,name',
-      'code' => 'nullable|string|max:50|unique:operation_grades,code',
+      'code' => 'required|string|max:50|unique:operation_grades,code',
     ]);
   }
 }

@@ -11,7 +11,7 @@ class BaseOperationUpdateValidator
   {
     return array_merge(BaseOperationCommonValidator::getCommonRules(), [
       'name' => ['required', 'string', 'max:255', Rule::unique('base_operations', 'name')->ignore($keyIgnore)],
-      'code' => ['nullable', 'string', 'max:50', Rule::unique('base_operations', 'code')->ignore($keyIgnore)],
+      'code' => ['required', 'string', 'max:50', Rule::unique('base_operations', 'code')->ignore($keyIgnore)],
     ]);
   }
 }

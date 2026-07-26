@@ -11,6 +11,7 @@ class DepartmentUpdateValidator
   {
     return array_merge(DepartmentCommonValidator::getCommonRules(), [
       'name' => ['required', 'string', 'max:255', Rule::unique('departments', 'name')->ignore($keyIgnore)],
+      'code' => ['required', 'string', 'max:50', Rule::unique('departments', 'code')->ignore($keyIgnore)],
     ]);
   }
 }
