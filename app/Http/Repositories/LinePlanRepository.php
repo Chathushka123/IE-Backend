@@ -5,8 +5,8 @@ namespace App\Http\Repositories;
 use App\Employee;
 use App\LinePlan;
 use App\Product;
-use App\ProductionLine;
-use App\ProductOperationGrading;
+use App\Team;
+use App\ProductOperation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Exception;
@@ -22,7 +22,7 @@ class LinePlanRepository
       return;
     }
 
-    $query = LinePlan::where('production_line_id', $rec['production_line_id'])
+    $query = LinePlan::where('team_id', $rec['team_id'])
       ->where('status', 'in_progress');
     if ($ignoreId) {
       $query->where('id', '!=', $ignoreId);
@@ -119,10 +119,10 @@ class LinePlanRepository
     LinePlan::destroy($recs);
   }
 
-  public static function resequence(int $productionLineId, array $ids)
+  public static function resequence(int $teamId, array $ids)
   {
     $records = LinePlan::whereIn('id', $ids)
-      ->where('production_line_id', $productionLineId)
+      ->where('team_id', $teamId)
       ->get()
       ->keyBy('id');
 
@@ -149,16 +149,16 @@ class LinePlanRepository
    * Treats the line as continuously available for the needed duration — it does not model
    * shift/working-hours calendars. Returned as a suggestion only; nothing here is persisted.
    */
-  public static function suggestSchedule(int $productionLineId, int $productId, int $plannedQuantity, ?string $startDate = null)
+  public static function suggestSchedule(int $teamId, int $productId, int $plannedQuantity, ?string $startDate = null)
   {
-    $line = ProductionLine::findOrFail($productionLineId);
+    $line = Team::findOrFail($teamId);
     Product::findOrFail($productId);
 
-    $operatorCount = Employee::where('production_line_id', $productionLineId)
+    $operatorCount = Employee::where('team_id', $teamId)
       ->where('employee_status', 'Active')
       ->count();
 
-    $totalSmv = (float) ProductOperationGrading::where('product_id', $productId)
+    $totalSmv = (float) ProductOperation::where('product_id', $productId)
       ->where('is_active', true)
       ->sum('smv');
 
@@ -179,7 +179,7 @@ class LinePlanRepository
       throw new \App\Exceptions\GeneralException('Computed hourly capacity is zero — check the operator count, efficiency and SMV inputs.');
     }
 
-    $start = $startDate ? Carbon::parse($startDate) : self::nextAvailableStartDateTime($productionLineId);
+    $start = $startDate ? Carbon::parse($startDate) : self::nextAvailableStartDateTime($teamId);
     $hoursNeeded = (int) ceil($plannedQuantity / $hourlyCapacity);
     $end = $start->copy()->addHours($hoursNeeded);
 
@@ -194,9 +194,9 @@ class LinePlanRepository
     ];
   }
 
-  private static function nextAvailableStartDateTime(int $productionLineId)
+  private static function nextAvailableStartDateTime(int $teamId)
   {
-    $lastEnd = LinePlan::where('production_line_id', $productionLineId)
+    $lastEnd = LinePlan::where('team_id', $teamId)
       ->whereIn('status', ['planned', 'in_progress'])
       ->max('planned_end_date');
 

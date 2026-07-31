@@ -9,7 +9,8 @@ class ProductCategoryCreateValidator
   public static function getCreateRules()
   {
     return array_merge(ProductCategoryCommonValidator::getCommonRules(), [
-      'description' => 'required|string|max:255|unique:product_categories,description',
+      'name' => 'required|string|max:255|unique:product_categories,name',
+      'code' => 'required|string|max:50|unique:product_categories,code',
     ]);
   }
 }

@@ -7,7 +7,7 @@ use App\Designation;
 use App\Employee;
 use App\EmployeeCategory;
 use App\Factory;
-use App\ProductionLine;
+use App\Team;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
@@ -87,9 +87,9 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             $employee->contact_no,
             $employee->address,
             $employee->marital_status,
-            optional($employee->category)->description,
-            optional($employee->department)->description,
-            optional($employee->designation)->description,
+            optional($employee->category)->name,
+            optional($employee->department)->name,
+            optional($employee->designation)->name,
             $this->toExcelDate($employee->joining_date),
             $this->toExcelDate($employee->leaving_date),
             $this->toExcelDate($employee->confirmation_date),
@@ -98,10 +98,10 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             // instead of the name so the value always round-trips unambiguously, and so
             // it matches the dropdown list built in addDataValidation().
             optional($employee->reportingManager)->employee_no,
-            optional($employee->productionLine)->description,
-            optional($employee->baseLine)->description,
+            optional($employee->productionLine)->name,
+            optional($employee->baseLine)->name,
             $employee->employee_status,
-            optional($employee->factory)->description,
+            optional($employee->factory)->name,
         ];
     }
 
@@ -179,12 +179,12 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
         $listSheet->setTitle('Lists');
 
         $columns = [
-            'A' => EmployeeCategory::where('is_active', true)->orderBy('description')->pluck('description'),
-            'B' => Department::where('is_active', true)->orderBy('description')->pluck('description'),
-            'C' => Designation::where('is_active', true)->orderBy('description')->pluck('description'),
+            'A' => EmployeeCategory::where('is_active', true)->orderBy('name')->pluck('name'),
+            'B' => Department::where('is_active', true)->orderBy('name')->pluck('name'),
+            'C' => Designation::where('is_active', true)->orderBy('name')->pluck('name'),
             'D' => Employee::where('employee_status', 'Active')->orderBy('employee_no')->pluck('employee_no'),
-            'E' => ProductionLine::where('is_active', true)->orderBy('description')->pluck('description'),
-            'F' => Factory::where('is_active', true)->orderBy('description')->pluck('description'),
+            'E' => Team::where('is_active', true)->orderBy('name')->pluck('name'),
+            'F' => Factory::where('is_active', true)->orderBy('name')->pluck('name'),
         ];
 
         $lastRows = [];

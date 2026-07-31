@@ -25,7 +25,7 @@ class LinePlan extends Model
     }
 
     protected $fillable = [
-        'production_line_id',
+        'team_id',
         'product_id',
         'sequence_no',
         'planned_quantity',
@@ -48,9 +48,9 @@ class LinePlan extends Model
         'is_changeover' => 'boolean',
     ];
 
-    public function productionLine()
+    public function team()
     {
-        return $this->belongsTo(ProductionLine::class, 'production_line_id');
+        return $this->belongsTo(Team::class, 'team_id');
     }
 
     public function product()

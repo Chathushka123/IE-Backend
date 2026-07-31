@@ -9,7 +9,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- =====================================================
 -- 1. MACHINE CATEGORIES
 -- =====================================================
-INSERT INTO machine_categories (id, description, code, is_active) VALUES
+INSERT INTO machine_categories (id, name, code, is_active) VALUES
 (1, 'Sewing',            'SEW', 1),
 (2, 'Cutting',           'CUT', 1),
 (3, 'Pressing & Fusing', 'PRS', 1),
@@ -21,7 +21,7 @@ INSERT INTO machine_categories (id, description, code, is_active) VALUES
 -- =====================================================
 -- 2. MACHINE TYPES
 -- =====================================================
-INSERT INTO machine_types (id, description, code, machine_category_id, is_active) VALUES
+INSERT INTO machine_types (id, name, code, machine_category_id, is_active) VALUES
 -- Sewing (cat 1)
 (1,  'Single Needle Lockstitch', 'SNLS', 1, 1),
 (2,  '5-Thread Overlock',        'OVL5', 1, 1),
@@ -59,9 +59,9 @@ INSERT INTO machine_types (id, description, code, machine_category_id, is_active
 (28, 'Linking Machine',          'LNKM', 7, 1);
 
 -- =====================================================
--- 3. OPERATION CATEGORIES
+-- 3. BASE OPERATION CATEGORIES
 -- =====================================================
-INSERT INTO operation_categories (id, description, code, is_active) VALUES
+INSERT INTO base_operation_categories (id, name, code, is_active) VALUES
 (1, 'Cutting',              'CAT-CUT', 1),
 (2, 'Preparation & Fusing', 'CAT-PRE', 1),
 (3, 'Assembly',             'CAT-ASM', 1),
@@ -74,7 +74,7 @@ INSERT INTO operation_categories (id, description, code, is_active) VALUES
 -- =====================================================
 -- 4. SKILLS
 -- =====================================================
-INSERT INTO skills (id, description, code, is_active) VALUES
+INSERT INTO skills (id, name, code, is_active) VALUES
 (1,  'Single Needle Lockstitch',   'SK-SNLS', 1),
 (2,  'Overlock Operation',         'SK-OVL',  1),
 (3,  'Flatlock Coverstitch',       'SK-FLK',  1),
@@ -99,7 +99,7 @@ INSERT INTO skills (id, description, code, is_active) VALUES
 -- =====================================================
 -- 5. OPERATION GRADES
 -- =====================================================
-INSERT INTO operation_grades (id, description, code, level, is_active) VALUES
+INSERT INTO operation_grades (id, name, code, level, is_active) VALUES
 (1, 'Trainee',  'GR-TRN', 1, 1),
 (2, 'Junior',   'GR-JNR', 2, 1),
 (3, 'Standard', 'GR-STD', 3, 1),
@@ -107,9 +107,9 @@ INSERT INTO operation_grades (id, description, code, level, is_active) VALUES
 (5, 'Expert',   'GR-EXP', 5, 1);
 
 -- =====================================================
--- 6. OPERATIONS
+-- 6. BASE OPERATIONS
 -- =====================================================
-INSERT INTO operations (id, description, code, operation_category_id, is_active) VALUES
+INSERT INTO base_operations (id, name, code, base_operation_category_id, is_active) VALUES
 -- Cutting (cat 1)
 (1,  'Fabric Laying',             'CUT-001', 1, 1),
 (2,  'Marker Spreading',          'CUT-002', 1, 1),
@@ -171,14 +171,14 @@ INSERT INTO operations (id, description, code, operation_category_id, is_active)
 (51, 'Measurement Check',         'QCI-004', 8, 1);
 
 -- =====================================================
--- 7. OPERATION GRADINGS
--- Columns: id, operation_id, product_category_id, machine_type_id,
+-- 7. OPERATIONS (was OPERATION GRADINGS)
+-- Columns: id, base_operation_id, product_category_id, machine_type_id,
 --          description, code, grade_id, sequence_no, smv, is_active
--- Unique: (operation_id, product_category_id, machine_type_id)
+-- Unique: (base_operation_id, product_category_id, machine_type_id)
 -- Unique: (product_category_id, sequence_no)
 -- =====================================================
-INSERT INTO operation_gradings
-  (id, operation_id, product_category_id, machine_type_id, description, code, grade_id, sequence_no, smv, is_active)
+INSERT INTO operations
+  (id, base_operation_id, product_category_id, machine_type_id, description, code, grade_id, sequence_no, smv, is_active)
 VALUES
 -- BRA (product_category_id = 2) — IDs 1-17
 (1,  1,  2, 27, 'Bra - Fabric Laying',          'OG-BRA-001', 3,  1, 0.5000, 1),
@@ -364,10 +364,10 @@ VALUES
 (157, 50, 52, 26, 'Swimwear - Needle Detection',       'OG-SWM-012', 1, 12, 0.2500, 1);
 
 -- =====================================================
--- 8. OPERATION GRADING SKILLS
--- Maps skills required per operation grading
+-- 8. OPERATION SKILLS (was OPERATION GRADING SKILLS)
+-- Maps skills required per operation
 -- =====================================================
-INSERT INTO operation_grading_skill (operation_grading_id, skill_id, is_active) VALUES
+INSERT INTO operation_skill (operation_id, soft_skill_id, is_active) VALUES
 -- BRA gradings (1-17)
 (1,  19, 1), -- Fabric Laying → Quality Inspection
 (2,  11, 1), (2,  12, 1), -- Cutting → Fabric Cutting, Pattern Matching
@@ -555,7 +555,7 @@ INSERT INTO operation_grading_skill (operation_grading_id, skill_id, is_active) 
 -- 9. PRODUCTS (62 products)
 -- product_category_id references existing categories
 -- =====================================================
-INSERT INTO products (id, description, style_code, product_category_id, is_active) VALUES
+INSERT INTO products (id, name, style_code, product_category_id, is_active) VALUES
 -- BRA (cat 2)
 (1,  'Ladies Underwire Bra Classic',    'P-BRA-001', 2,  1),
 (2,  'Ladies Push-Up Bra Deluxe',       'P-BRA-002', 2,  1),
@@ -639,274 +639,274 @@ INSERT INTO products (id, description, style_code, product_category_id, is_activ
 (62, 'Rash Guard Top',                  'P-SWM-003', 52, 1);
 
 -- =====================================================
--- 10. PRODUCT OPERATION GRADINGS
--- Links each product to its operation grading sequence
+-- 10. PRODUCT OPERATIONS (was PRODUCT OPERATION GRADINGS)
+-- Links each product to its operation sequence
 -- SMV values vary slightly per product style (±5-10%)
 -- =====================================================
 
 -- BRA products (1-6) → OG IDs 1-17
 -- Product 1: P-BRA-001 Classic (base SMV)
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (1,1,1,0.5000,1),(1,2,2,1.2000,1),(1,3,3,0.8000,1),(1,4,4,3.5000,1),(1,5,5,2.8000,1),
 (1,6,6,1.5000,1),(1,7,7,2.2000,1),(1,8,8,1.8000,1),(1,9,9,2.5000,1),(1,10,10,3.0000,1),
 (1,11,11,1.5000,1),(1,12,12,1.8000,1),(1,13,13,0.4000,1),(1,14,14,1.8000,1),(1,15,15,1.2000,1),
 (1,16,16,1.5000,1),(1,17,17,0.3000,1);
 
 -- Product 2: P-BRA-002 Push-Up (slightly higher SMV - more complex)
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (2,1,1,0.5000,1),(2,2,2,1.2000,1),(2,3,3,0.9000,1),(2,4,4,3.8000,1),(2,5,5,3.0000,1),
 (2,6,6,1.6000,1),(2,7,7,2.4000,1),(2,8,8,1.9000,1),(2,9,9,2.6000,1),(2,10,10,3.2000,1),
 (2,11,11,1.6000,1),(2,12,12,1.9000,1),(2,13,13,0.4000,1),(2,14,14,2.0000,1),(2,15,15,1.2000,1),
 (2,16,16,1.5000,1),(2,17,17,0.3000,1);
 
 -- Product 3: P-BRA-003 Seamless (lower SMV - simpler construction)
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (3,1,1,0.5000,1),(3,2,2,1.1000,1),(3,3,3,0.7000,1),(3,4,4,3.2000,1),(3,5,5,2.5000,1),
 (3,6,6,1.3000,1),(3,7,7,2.0000,1),(3,8,8,1.6000,1),(3,9,9,2.3000,1),(3,10,10,2.8000,1),
 (3,11,11,1.4000,1),(3,12,12,1.7000,1),(3,13,13,0.4000,1),(3,14,14,1.6000,1),(3,15,15,1.1000,1),
 (3,16,16,1.5000,1),(3,17,17,0.3000,1);
 
 -- Product 4: P-BRA-004 Strapless
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (4,1,1,0.5000,1),(4,2,2,1.2000,1),(4,3,3,0.8000,1),(4,4,4,3.6000,1),(4,5,5,2.9000,1),
 (4,6,6,1.5000,1),(4,7,7,2.3000,1),(4,8,8,1.8000,1),(4,9,9,NULL,1),(4,10,10,3.1000,1),
 (4,11,11,1.5000,1),(4,12,12,2.0000,1),(4,13,13,0.4000,1),(4,14,14,1.8000,1),(4,15,15,1.2000,1),
 (4,16,16,1.5000,1),(4,17,17,0.3000,1);
 
 -- Product 5: P-BRA-005 Nursing Bra
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (5,1,1,0.5000,1),(5,2,2,1.3000,1),(5,3,3,0.9000,1),(5,4,4,3.7000,1),(5,5,5,2.9000,1),
 (5,6,6,1.5000,1),(5,7,7,2.2000,1),(5,8,8,1.8000,1),(5,9,9,2.5000,1),(5,10,10,3.0000,1),
 (5,11,11,1.5000,1),(5,12,12,1.8000,1),(5,13,13,0.4000,1),(5,14,14,1.9000,1),(5,15,15,1.2000,1),
 (5,16,16,1.5000,1),(5,17,17,0.3000,1);
 
 -- Product 6: P-BRA-006 Minimizer
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (6,1,1,0.5000,1),(6,2,2,1.2000,1),(6,3,3,0.8000,1),(6,4,4,3.5000,1),(6,5,5,2.8000,1),
 (6,6,6,1.5000,1),(6,7,7,2.2000,1),(6,8,8,1.8000,1),(6,9,9,2.5000,1),(6,10,10,3.0000,1),
 (6,11,11,1.5000,1),(6,12,12,1.8000,1),(6,13,13,0.4000,1),(6,14,14,1.8000,1),(6,15,15,1.3000,1),
 (6,16,16,1.5000,1),(6,17,17,0.3000,1);
 
 -- BRALETTE products (7-9) → OG IDs 111-122
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (7,111,1,0.4500,1),(7,112,2,0.9000,1),(7,113,3,2.5000,1),(7,114,4,1.5000,1),(7,115,5,1.2000,1),
 (7,116,6,2.0000,1),(7,117,7,1.8000,1),(7,118,8,2.8000,1),(7,119,9,0.4000,1),(7,120,10,0.9000,1),
 (7,121,11,1.1000,1),(7,122,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (8,111,1,0.4500,1),(8,112,2,0.9000,1),(8,113,3,2.6000,1),(8,114,4,1.5000,1),(8,115,5,1.2000,1),
 (8,116,6,2.0000,1),(8,117,7,1.9000,1),(8,118,8,3.1000,1),(8,119,9,0.4000,1),(8,120,10,0.9000,1),
 (8,121,11,1.1000,1),(8,122,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (9,111,1,0.4500,1),(9,112,2,0.8500,1),(9,113,3,2.3000,1),(9,114,4,1.4000,1),(9,115,5,1.1000,1),
 (9,116,6,1.9000,1),(9,117,7,1.7000,1),(9,118,8,2.6000,1),(9,119,9,0.4000,1),(9,120,10,0.8000,1),
 (9,121,11,1.1000,1),(9,122,12,0.2500,1);
 
 -- SPORTS BRA products (10-13) → OG IDs 78-89
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (10,78,1,0.5500,1),(10,79,2,1.0000,1),(10,80,3,2.5000,1),(10,81,4,2.2000,1),(10,82,5,1.8000,1),
 (10,83,6,2.5000,1),(10,84,7,2.0000,1),(10,85,8,1.5000,1),(10,86,9,0.4000,1),(10,87,10,1.0000,1),
 (10,88,11,1.2000,1),(10,89,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (11,78,1,0.5500,1),(11,79,2,1.0000,1),(11,80,3,2.3000,1),(11,81,4,2.0000,1),(11,82,5,1.6000,1),
 (11,83,6,2.3000,1),(11,84,7,1.8000,1),(11,85,8,1.4000,1),(11,86,9,0.4000,1),(11,87,10,0.9000,1),
 (11,88,11,1.2000,1),(11,89,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (12,78,1,0.5000,1),(12,79,2,0.9500,1),(12,80,3,2.1000,1),(12,81,4,1.8000,1),(12,82,5,1.5000,1),
 (12,83,6,2.1000,1),(12,84,7,1.7000,1),(12,85,8,1.3000,1),(12,86,9,0.4000,1),(12,87,10,0.9000,1),
 (12,88,11,1.2000,1),(12,89,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (13,78,1,0.5500,1),(13,79,2,1.0000,1),(13,80,3,2.4000,1),(13,81,4,2.1000,1),(13,82,5,1.7000,1),
 (13,83,6,2.4000,1),(13,84,7,1.9000,1),(13,85,8,1.4000,1),(13,86,9,0.4000,1),(13,87,10,1.0000,1),
 (13,88,11,1.2000,1),(13,89,12,0.2500,1);
 
 -- THONG products (14-16) → OG IDs 18-28
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (14,18,1,0.4000,1),(14,19,2,0.8000,1),(14,20,3,1.2000,1),(14,21,4,1.5000,1),(14,22,5,1.0000,1),
 (14,23,6,2.0000,1),(14,24,7,2.5000,1),(14,25,8,3.0000,1),(14,26,9,0.3500,1),(14,27,10,1.0000,1),
 (14,28,11,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (15,18,1,0.4000,1),(15,19,2,0.8000,1),(15,20,3,1.2000,1),(15,21,4,1.5000,1),(15,22,5,1.0000,1),
 (15,23,6,2.0000,1),(15,24,7,2.5000,1),(15,25,8,3.3000,1),(15,26,9,0.3500,1),(15,27,10,1.0000,1),
 (15,28,11,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (16,18,1,0.4000,1),(16,19,2,0.8000,1),(16,20,3,1.3000,1),(16,21,4,1.6000,1),(16,22,5,1.1000,1),
 (16,23,6,2.1000,1),(16,24,7,2.6000,1),(16,25,8,3.0000,1),(16,26,9,0.3500,1),(16,27,10,1.0000,1),
 (16,28,11,0.2500,1);
 
 -- HIPSTER products (17-19) → OG IDs 90-99
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (17,90,1,0.4000,1),(17,91,2,0.8500,1),(17,92,3,1.2000,1),(17,93,4,1.5000,1),(17,94,5,1.4000,1),
 (17,95,6,2.0000,1),(17,96,7,1.8000,1),(17,97,8,0.3500,1),(17,98,9,0.9000,1),(17,99,10,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (18,90,1,0.4000,1),(18,91,2,0.8000,1),(18,92,3,1.1000,1),(18,93,4,1.4000,1),(18,94,5,1.3000,1),
 (18,95,6,1.9000,1),(18,96,7,1.7000,1),(18,97,8,0.3500,1),(18,98,9,0.9000,1),(18,99,10,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (19,90,1,0.4000,1),(19,91,2,0.8500,1),(19,92,3,1.2000,1),(19,93,4,1.5000,1),(19,94,5,1.4000,1),
 (19,95,6,2.0000,1),(19,96,7,1.8000,1),(19,97,8,0.3500,1),(19,98,9,0.9000,1),(19,99,10,0.2500,1);
 
 -- BRIEF products (20-23) → OG IDs 29-41
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (20,29,1,0.4500,1),(20,30,2,0.9000,1),(20,31,3,1.3000,1),(20,32,4,1.6000,1),(20,33,5,1.2000,1),
 (20,34,6,1.5000,1),(20,35,7,2.2000,1),(20,36,8,2.0000,1),(20,37,9,2.8000,1),(20,38,10,0.3500,1),
 (20,39,11,0.8000,1),(20,40,12,1.0000,1),(20,41,13,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (21,29,1,0.4500,1),(21,30,2,0.9000,1),(21,31,3,1.4000,1),(21,32,4,1.7000,1),(21,33,5,1.3000,1),
 (21,34,6,1.6000,1),(21,35,7,2.3000,1),(21,36,8,2.1000,1),(21,37,9,2.9000,1),(21,38,10,0.3500,1),
 (21,39,11,0.8000,1),(21,40,12,1.0000,1),(21,41,13,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (22,29,1,0.4500,1),(22,30,2,0.8500,1),(22,31,3,1.2000,1),(22,32,4,1.5000,1),(22,33,5,1.1000,1),
 (22,34,6,1.4000,1),(22,35,7,2.1000,1),(22,36,8,1.9000,1),(22,37,9,2.7000,1),(22,38,10,0.3500,1),
 (22,39,11,0.8000,1),(22,40,12,1.0000,1),(22,41,13,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (23,29,1,0.4500,1),(23,30,2,0.9000,1),(23,31,3,1.3000,1),(23,32,4,1.6000,1),(23,33,5,1.2000,1),
 (23,34,6,1.5000,1),(23,35,7,2.2000,1),(23,36,8,2.0000,1),(23,37,9,2.8000,1),(23,38,10,0.3500,1),
 (23,39,11,0.8000,1),(23,40,12,1.0000,1),(23,41,13,0.2500,1);
 
 -- BOYSHORT products (24-26) → OG IDs 100-110
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (24,100,1,0.4500,1),(24,101,2,0.8500,1),(24,102,3,1.5000,1),(24,103,4,1.5000,1),(24,104,5,1.5000,1),
 (24,105,6,2.2000,1),(24,106,7,1.8000,1),(24,107,8,0.3500,1),(24,108,9,0.8000,1),(24,109,10,0.9000,1),
 (24,110,11,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (25,100,1,0.4500,1),(25,101,2,0.8500,1),(25,102,3,1.5000,1),(25,103,4,1.5000,1),(25,104,5,1.5000,1),
 (25,105,6,2.4000,1),(25,106,7,1.8000,1),(25,107,8,0.3500,1),(25,108,9,0.8000,1),(25,109,10,0.9000,1),
 (25,110,11,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (26,100,1,0.4500,1),(26,101,2,0.8000,1),(26,102,3,1.4000,1),(26,103,4,1.4000,1),(26,104,5,1.4000,1),
 (26,105,6,2.1000,1),(26,106,7,1.7000,1),(26,107,8,0.3500,1),(26,108,9,0.8000,1),(26,109,10,0.9000,1),
 (26,110,11,0.2500,1);
 
 -- T-SHIRT products (34-38) → OG IDs 54-65
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (34,54,1,0.5500,1),(34,55,2,1.0000,1),(34,56,3,1.5000,1),(34,57,4,2.0000,1),(34,58,5,1.8000,1),
 (34,59,6,2.2000,1),(34,60,7,1.8000,1),(34,61,8,1.5000,1),(34,62,9,0.4000,1),(34,63,10,1.0000,1),
 (34,64,11,1.2000,1),(34,65,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (35,54,1,0.5500,1),(35,55,2,1.0500,1),(35,56,3,1.6000,1),(35,57,4,2.1000,1),(35,58,5,1.9000,1),
 (35,59,6,2.2000,1),(35,60,7,1.9000,1),(35,61,8,1.5000,1),(35,62,9,0.4000,1),(35,63,10,1.0000,1),
 (35,64,11,1.2000,1),(35,65,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (36,54,1,0.5500,1),(36,55,2,1.0000,1),(36,56,3,1.5000,1),(36,57,4,2.0000,1),(36,58,5,1.8000,1),
 (36,59,6,2.0000,1),(36,60,7,1.8000,1),(36,61,8,1.5000,1),(36,62,9,0.4000,1),(36,63,10,1.0000,1),
 (36,64,11,1.2000,1),(36,65,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (37,54,1,0.5500,1),(37,55,2,1.1000,1),(37,56,3,1.6000,1),(37,57,4,2.1000,1),(37,58,5,1.9000,1),
 (37,59,6,2.3000,1),(37,60,7,1.9000,1),(37,61,8,1.6000,1),(37,62,9,0.4000,1),(37,63,10,1.0000,1),
 (37,64,11,1.2000,1),(37,65,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (38,54,1,0.5500,1),(38,55,2,1.0000,1),(38,56,3,1.5000,1),(38,57,4,2.0000,1),(38,58,5,1.9000,1),
 (38,59,6,2.2000,1),(38,60,7,1.9000,1),(38,61,8,1.7000,1),(38,62,9,0.4000,1),(38,63,10,1.0000,1),
 (38,64,11,1.2000,1),(38,65,12,0.2500,1);
 
 -- TANK products (41-43) → OG IDs 123-133
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (41,123,1,0.5000,1),(41,124,2,0.9000,1),(41,125,3,1.4000,1),(41,126,4,1.8000,1),(41,127,5,2.0000,1),
 (41,128,6,2.0000,1),(41,129,7,1.5000,1),(41,130,8,0.3500,1),(41,131,9,0.8000,1),(41,132,10,1.0000,1),
 (41,133,11,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (42,123,1,0.5000,1),(42,124,2,0.9000,1),(42,125,3,1.4000,1),(42,126,4,1.8000,1),(42,127,5,2.0000,1),
 (42,128,6,2.0000,1),(42,129,7,1.5000,1),(42,130,8,0.3500,1),(42,131,9,0.8000,1),(42,132,10,1.0000,1),
 (42,133,11,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (43,123,1,0.5000,1),(43,124,2,0.9000,1),(43,125,3,1.4000,1),(43,126,4,1.9000,1),(43,127,5,2.1000,1),
 (43,128,6,2.1000,1),(43,129,7,1.7000,1),(43,130,8,0.3500,1),(43,131,9,0.8000,1),(43,132,10,1.0000,1),
 (43,133,11,0.2500,1);
 
 -- LEGGING products (48-52) → OG IDs 42-53
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (48,42,1,0.6000,1),(48,43,2,1.1000,1),(48,44,3,2.5000,1),(48,45,4,2.5000,1),(48,46,5,1.8000,1),
 (48,47,6,2.0000,1),(48,48,7,2.2000,1),(48,49,8,2.8000,1),(48,50,9,0.3500,1),(48,51,10,1.0000,1),
 (48,52,11,1.2000,1),(48,53,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (49,42,1,0.5500,1),(49,43,2,1.0000,1),(49,44,3,2.2000,1),(49,45,4,2.2000,1),(49,46,5,1.7000,1),
 (49,47,6,1.9000,1),(49,48,7,2.1000,1),(49,49,8,2.5000,1),(49,50,9,0.3500,1),(49,51,10,1.0000,1),
 (49,52,11,1.2000,1),(49,53,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (50,42,1,0.6000,1),(50,43,2,1.1000,1),(50,44,3,2.6000,1),(50,45,4,2.6000,1),(50,46,5,1.9000,1),
 (50,47,6,2.1000,1),(50,48,7,2.3000,1),(50,49,8,2.9000,1),(50,50,9,0.3500,1),(50,51,10,1.0000,1),
 (50,52,11,1.2000,1),(50,53,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (51,42,1,0.6000,1),(51,43,2,1.1000,1),(51,44,3,2.7000,1),(51,45,4,2.7000,1),(51,46,5,2.0000,1),
 (51,47,6,2.2000,1),(51,48,7,2.4000,1),(51,49,8,3.0000,1),(51,50,9,0.3500,1),(51,51,10,1.0000,1),
 (51,52,11,1.2000,1),(51,53,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (52,42,1,0.5500,1),(52,43,2,1.0000,1),(52,44,3,2.3000,1),(52,45,4,2.3000,1),(52,46,5,1.7000,1),
 (52,47,6,1.9000,1),(52,48,7,2.0000,1),(52,49,8,2.6000,1),(52,50,9,0.3500,1),(52,51,10,1.0000,1),
 (52,52,11,1.2000,1),(52,53,12,0.2500,1);
 
 -- JOGGER products (53-55) → OG IDs 134-145
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (53,134,1,0.6000,1),(53,135,2,1.1000,1),(53,136,3,2.0000,1),(53,137,4,2.0000,1),(53,138,5,1.8000,1),
 (53,139,6,2.0000,1),(53,140,7,2.5000,1),(53,141,8,2.5000,1),(53,142,9,0.3500,1),(53,143,10,1.0000,1),
 (53,144,11,1.2000,1),(53,145,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (54,134,1,0.6000,1),(54,135,2,1.1000,1),(54,136,3,2.0000,1),(54,137,4,2.0000,1),(54,138,5,1.8000,1),
 (54,139,6,2.0000,1),(54,140,7,2.5000,1),(54,141,8,2.5000,1),(54,142,9,0.3500,1),(54,143,10,1.0000,1),
 (54,144,11,1.2000,1),(54,145,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (55,134,1,0.6000,1),(55,135,2,1.0500,1),(55,136,3,1.9000,1),(55,137,4,1.9000,1),(55,138,5,1.7000,1),
 (55,139,6,1.9000,1),(55,140,7,2.4000,1),(55,141,8,2.4000,1),(55,142,9,0.3500,1),(55,143,10,1.0000,1),
 (55,144,11,1.2000,1),(55,145,12,0.2500,1);
 
 -- SHORT products (56-59) → OG IDs 66-77
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (56,66,1,0.5000,1),(56,67,2,0.9000,1),(56,68,3,1.8000,1),(56,69,4,1.8000,1),(56,70,5,1.5000,1),
 (56,71,6,1.8000,1),(56,72,7,2.0000,1),(56,73,8,2.5000,1),(56,74,9,0.3500,1),(56,75,10,0.8000,1),
 (56,76,11,1.0000,1),(56,77,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (57,66,1,0.5000,1),(57,67,2,0.9500,1),(57,68,3,1.9000,1),(57,69,4,1.9000,1),(57,70,5,1.6000,1),
 (57,71,6,1.9000,1),(57,72,7,2.1000,1),(57,73,8,2.6000,1),(57,74,9,0.3500,1),(57,75,10,0.8000,1),
 (57,76,11,1.0000,1),(57,77,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (58,66,1,0.5000,1),(58,67,2,0.9000,1),(58,68,3,1.8000,1),(58,69,4,1.8000,1),(58,70,5,1.5000,1),
 (58,71,6,1.8000,1),(58,72,7,2.0000,1),(58,73,8,2.5000,1),(58,74,9,0.3500,1),(58,75,10,0.8000,1),
 (58,76,11,1.0000,1),(58,77,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (59,66,1,0.5000,1),(59,67,2,0.9000,1),(59,68,3,1.7000,1),(59,69,4,1.7000,1),(59,70,5,1.5000,1),
 (59,71,6,1.8000,1),(59,72,7,2.0000,1),(59,73,8,2.4000,1),(59,74,9,0.3500,1),(59,75,10,0.8000,1),
 (59,76,11,1.0000,1),(59,77,12,0.2500,1);
 
 -- SWIMWEAR products (60-62) → OG IDs 146-157
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (60,146,1,0.5500,1),(60,147,2,1.0000,1),(60,148,3,0.7000,1),(60,149,4,2.5000,1),(60,150,5,1.8000,1),
 (60,151,6,1.5000,1),(60,152,7,2.0000,1),(60,153,8,2.5000,1),(60,154,9,0.4000,1),(60,155,10,1.0000,1),
 (60,156,11,1.3000,1),(60,157,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (61,146,1,0.5500,1),(61,147,2,1.0000,1),(61,148,3,0.6500,1),(61,149,4,2.3000,1),(61,150,5,1.7000,1),
 (61,151,6,1.4000,1),(61,152,7,1.9000,1),(61,153,8,2.3000,1),(61,154,9,0.4000,1),(61,155,10,1.0000,1),
 (61,156,11,1.3000,1),(61,157,12,0.2500,1);
 
-INSERT INTO product_operation_gradings (product_id, operation_grading_id, sequence_no, smv, is_active) VALUES
+INSERT INTO product_operations (product_id, operation_id, sequence_no, smv, is_active) VALUES
 (62,146,1,0.5000,1),(62,147,2,0.9500,1),(62,148,3,0.6000,1),(62,149,4,2.2000,1),(62,150,5,1.6000,1),
 (62,151,6,1.3000,1),(62,152,7,1.8000,1),(62,153,8,2.2000,1),(62,154,9,0.4000,1),(62,155,10,0.9000,1),
 (62,156,11,1.3000,1),(62,157,12,0.2500,1);

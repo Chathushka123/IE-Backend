@@ -22,14 +22,14 @@ class OperationGrade extends Model
     }
 
     protected $fillable = [
-        'description',
+        'name',
         'code',
         'level',
         'is_active',
     ];
 
-    public function operationGradings()
+    public function operations()
     {
-        return $this->hasMany(OperationGrading::class, 'grade_id');
+        return $this->hasMany(Operation::class, 'grade_id');
     }
 }

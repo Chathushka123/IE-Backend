@@ -53,6 +53,13 @@ $navigator_json = '
           "permitted" : 0,
           "path":"/ie/product-masters"
          },
+         {
+          "caption":"Customers & Related",
+          "icon":"fas fa-handshake",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ie/customer-and-related"
+         },
         {
           "caption":"Machines",
           "icon":"fas fa-cogs",

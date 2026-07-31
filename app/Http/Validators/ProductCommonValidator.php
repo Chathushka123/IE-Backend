@@ -2,17 +2,23 @@
 
 namespace App\Http\Validators;
 
+use Illuminate\Validation\Rule;
+
 class ProductCommonValidator
 {
-  public static function getCommonRules()
+  public static function getCommonRules(array $rec = [])
   {
     return [
-      'description' => 'required|string|max:255',
-      'style_code' => 'nullable|string|max:50',
+      'name' => 'required|string|max:255',
+      'style_code' => 'required|string|max:50',
       'style_description' => 'nullable|string|max:255',
       'product_category_id' => 'required|integer|exists:product_categories,id',
-      'customer_id' => 'nullable|integer|exists:customers,id',
-      'season' => 'nullable|string|max:50',
+      'customer_id' => 'required|integer|exists:customers,id',
+      'season_id' => [
+        'required',
+        'integer',
+        Rule::exists('seasons', 'id')->where('customer_id', $rec['customer_id'] ?? null),
+      ],
       'colors' => 'nullable|array',
       'colors.*' => 'string|max:50',
       'sizes' => 'nullable|array',

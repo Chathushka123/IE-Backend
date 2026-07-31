@@ -25,12 +25,12 @@ class Product extends Model
     }
 
     protected $fillable = [
-        'description',
+        'name',
         'style_code',
         'style_description',
         'product_category_id',
         'customer_id',
-        'season',
+        'season_id',
         'colors',
         'sizes',
         'customer_requested_delivery_date',
@@ -55,9 +55,14 @@ class Product extends Model
         return $this->belongsTo(Customer::class, 'customer_id');
     }
 
-    public function productOperationGradings()
+    public function season()
     {
-        return $this->hasMany(ProductOperationGrading::class, 'product_id');
+        return $this->belongsTo(Season::class);
+    }
+
+    public function productOperations()
+    {
+        return $this->hasMany(ProductOperation::class, 'product_id');
     }
 
     public function linePlans()

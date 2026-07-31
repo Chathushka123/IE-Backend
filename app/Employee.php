@@ -46,8 +46,8 @@ class Employee extends Model
         'confirmation_date',
         'employment_type',
         'reporting_manager_id',
-        'production_line_id',
-        'base_line_id',
+        'team_id',
+        'base_team_id',
         'employee_status',
     ];
 
@@ -90,11 +90,11 @@ class Employee extends Model
 
     public function productionLine()
     {
-        return $this->belongsTo(ProductionLine::class, 'production_line_id');
+        return $this->belongsTo(Team::class, 'team_id');
     }
 
     public function baseLine()
     {
-        return $this->belongsTo(ProductionLine::class, 'base_line_id');
+        return $this->belongsTo(Team::class, 'base_team_id');
     }
 }

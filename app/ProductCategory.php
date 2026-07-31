@@ -22,7 +22,7 @@ class ProductCategory extends Model
     }
 
     protected $fillable = [
-        'description',
+        'name',
         'code',
         'product_group_id',
         'is_active',
@@ -33,9 +33,9 @@ class ProductCategory extends Model
         return $this->belongsTo(ProductGroup::class, 'product_group_id');
     }
 
-    public function operationGradings()
+    public function operations()
     {
-        return $this->hasMany(OperationGrading::class, 'product_category_id');
+        return $this->hasMany(Operation::class, 'product_category_id');
     }
 
     public function products()

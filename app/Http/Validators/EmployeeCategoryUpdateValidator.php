@@ -10,7 +10,8 @@ class EmployeeCategoryUpdateValidator
   public static function getUpdateRules($keyIgnore)
   {
     return array_merge(EmployeeCategoryCommonValidator::getCommonRules(), [
-      'description' => ['required', 'string', 'max:255', Rule::unique('employee_categories', 'description')->ignore($keyIgnore)],
+      'name' => ['required', 'string', 'max:255', Rule::unique('employee_categories', 'name')->ignore($keyIgnore)],
+      'code' => ['nullable', 'string', 'max:50', Rule::unique('employee_categories', 'code')->ignore($keyIgnore)],
     ]);
   }
 }

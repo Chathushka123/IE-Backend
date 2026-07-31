@@ -36,7 +36,7 @@ class EmployeeDashboardRepository
             'by_designation'        => self::getByDesignation(),
             'by_employment_type'    => self::getByEnumField('employment_type'),
             'by_gender'             => self::getByEnumField('gender'),
-            'by_production_line'    => self::getByDimension('production_lines', 'production_line_id'),
+            'by_production_line'    => self::getByDimension('teams', 'team_id'),
             'headcount_trend'       => self::getJoiningTrend($from, $to),
             'attrition_trend'       => self::getAttritionTrend($from, $to),
             'upcoming_anniversaries' => self::getUpcomingAnniversaries(),
@@ -92,9 +92,9 @@ class EmployeeDashboardRepository
     {
         return self::employeesQuery()
             ->join($table, "employees.{$fk}", '=', "{$table}.id")
-            ->select("{$table}.description as label", DB::raw('COUNT(*) as count'))
+            ->select("{$table}.name as label", DB::raw('COUNT(*) as count'))
             ->whereNotNull("employees.{$fk}")
-            ->groupBy("{$table}.id", "{$table}.description")
+            ->groupBy("{$table}.id", "{$table}.name")
             ->orderByDesc('count')
             ->get()
             ->toArray();
@@ -104,9 +104,9 @@ class EmployeeDashboardRepository
     {
         return self::employeesQuery()
             ->join('designations', 'employees.designation_id', '=', 'designations.id')
-            ->select('designations.description as label', DB::raw('COUNT(*) as count'))
+            ->select('designations.name as label', DB::raw('COUNT(*) as count'))
             ->whereNotNull('employees.designation_id')
-            ->groupBy('designations.id', 'designations.description')
+            ->groupBy('designations.id', 'designations.name')
             ->orderByDesc('count')
             ->limit(10)
             ->get()

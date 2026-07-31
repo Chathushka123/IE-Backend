@@ -9,7 +9,8 @@ class EmployeeCategoryCreateValidator
   public static function getCreateRules()
   {
     return array_merge(EmployeeCategoryCommonValidator::getCommonRules(), [
-      'description' => 'required|string|max:255|unique:employee_categories,description',
+      'name' => 'required|string|max:255|unique:employee_categories,name',
+      'code' => 'nullable|string|max:50|unique:employee_categories,code',
     ]);
   }
 }

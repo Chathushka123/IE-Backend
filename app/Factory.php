@@ -22,14 +22,26 @@ class Factory extends Model
     }
 
     protected $fillable = [
-        'description',
+        'name',
         'code',
         'is_active',
+        'country_id',
+        'region_id',
     ];
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
+
+    public function region()
+    {
+        return $this->belongsTo(Region::class);
+    }
 
     public function productionLines()
     {
-        return $this->hasMany(ProductionLine::class);
+        return $this->hasMany(Team::class);
     }
 
     public function employees()

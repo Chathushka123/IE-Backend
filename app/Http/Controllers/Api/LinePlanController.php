@@ -13,7 +13,7 @@ class LinePlanController extends Controller
 {
     private function withRelations()
     {
-        return ['productionLine', 'product'];
+        return ['team', 'product'];
     }
 
     public function index(Request $request)
@@ -22,17 +22,17 @@ class LinePlanController extends Controller
             $request->validate([
                 'product_id'          => 'nullable|integer|exists:products,id',
                 'product_category_id' => 'nullable|integer|exists:product_categories,id',
-                'production_line_id'  => 'nullable|integer|exists:production_lines,id',
+                'team_id'             => 'nullable|integer|exists:teams,id',
                 'start_date'          => 'nullable|date',
                 'end_date'            => 'nullable|date',
             ]);
 
             $query = LinePlan::with($this->withRelations())
-                ->orderBy('production_line_id')
+                ->orderBy('team_id')
                 ->orderBy('sequence_no');
 
-            if ($request->filled('production_line_id')) {
-                $query->where('production_line_id', $request->integer('production_line_id'));
+            if ($request->filled('team_id')) {
+                $query->where('team_id', $request->integer('team_id'));
             }
 
             if ($request->filled('product_id')) {
@@ -76,11 +76,11 @@ class LinePlanController extends Controller
         }
     }
 
-    public function getByProductionLine($productionLineId)
+    public function getByTeam($teamId)
     {
         try {
             $records = LinePlan::with(['product'])
-                ->where('production_line_id', $productionLineId)
+                ->where('team_id', $teamId)
                 ->orderBy('sequence_no')
                 ->get();
 
@@ -93,9 +93,9 @@ class LinePlanController extends Controller
     public function getByProduct($productId)
     {
         try {
-            $records = LinePlan::with(['productionLine'])
+            $records = LinePlan::with(['team'])
                 ->where('product_id', $productId)
-                ->orderBy('production_line_id')
+                ->orderBy('team_id')
                 ->get();
 
             return response()->json(['status' => 'success', 'data' => $records], 200);
@@ -107,7 +107,7 @@ class LinePlanController extends Controller
     public function suggestSchedule(Request $request)
     {
         $request->validate([
-            'production_line_id' => 'required|integer|exists:production_lines,id',
+            'team_id'             => 'required|integer|exists:teams,id',
             'product_id'          => 'required|integer|exists:products,id',
             'planned_quantity'    => 'required|integer|min:1',
             'start_date'          => 'nullable|date',
@@ -115,7 +115,7 @@ class LinePlanController extends Controller
 
         try {
             $suggestion = LinePlanRepository::suggestSchedule(
-                $request->production_line_id,
+                $request->team_id,
                 $request->product_id,
                 $request->planned_quantity,
                 $request->start_date
@@ -130,7 +130,7 @@ class LinePlanController extends Controller
     public function resequence(Request $request)
     {
         $request->validate([
-            'production_line_id' => 'required|integer|exists:production_lines,id',
+            'team_id'             => 'required|integer|exists:teams,id',
             'ids'                 => 'required|array|min:1',
             'ids.*'               => 'integer|exists:line_plans,id',
         ]);
@@ -138,7 +138,7 @@ class LinePlanController extends Controller
         try {
             DB::beginTransaction();
             $records = LinePlanRepository::resequence(
-                $request->production_line_id,
+                $request->team_id,
                 $request->ids
             );
             DB::commit();

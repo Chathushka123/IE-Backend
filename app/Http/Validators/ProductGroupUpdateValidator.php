@@ -10,7 +10,8 @@ class ProductGroupUpdateValidator
   public static function getUpdateRules($keyIgnore)
   {
     return array_merge(ProductGroupCommonValidator::getCommonRules(), [
-      'description' => ['required', 'string', 'max:255', Rule::unique('product_groups', 'description')->ignore($keyIgnore)],
+      'name' => ['required', 'string', 'max:255', Rule::unique('product_groups', 'name')->ignore($keyIgnore)],
+      'code' => ['required', 'string', 'max:50', Rule::unique('product_groups', 'code')->ignore($keyIgnore)],
     ]);
   }
 }

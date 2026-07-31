@@ -11,7 +11,7 @@ class CustomerUpdateValidator
   {
     return array_merge(CustomerCommonValidator::getCommonRules(), [
       'description' => ['required', 'string', 'max:255', Rule::unique('customers', 'description')->ignore($keyIgnore)],
-      'code' => ['nullable', 'string', 'max:50', Rule::unique('customers', 'code')->ignore($keyIgnore)],
+      'code' => ['required', 'string', 'max:50', Rule::unique('customers', 'code')->ignore($keyIgnore)],
     ]);
   }
 }

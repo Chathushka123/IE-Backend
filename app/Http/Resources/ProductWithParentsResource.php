@@ -10,12 +10,12 @@ class ProductWithParentsResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'description' => $this->description,
+            'name' => $this->name,
             'style_code' => $this->style_code,
             'style_description' => $this->style_description,
             'product_category_id' => $this->product_category_id,
             'customer_id' => $this->customer_id,
-            'season' => $this->season,
+            'season_id' => $this->season_id,
             'colors' => $this->colors,
             'sizes' => $this->sizes,
             'customer_requested_delivery_date' => $this->customer_requested_delivery_date,
@@ -27,6 +27,7 @@ class ProductWithParentsResource extends JsonResource
             'updated_at' => $this->updated_at,
             'productCategory' => $this->whenLoaded('productCategory'),
             'customer' => $this->whenLoaded('customer'),
+            'season' => $this->whenLoaded('season'),
             'factories' => $this->whenLoaded('factories'),
         ];
     }

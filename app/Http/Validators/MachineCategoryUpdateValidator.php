@@ -10,7 +10,7 @@ class MachineCategoryUpdateValidator
   public static function getUpdateRules($keyIgnore)
   {
     return array_merge(MachineCategoryCommonValidator::getCommonRules(), [
-      'description' => ['required', 'string', 'max:255', Rule::unique('machine_categories', 'description')->ignore($keyIgnore)],
+      'name' => ['required', 'string', 'max:255', Rule::unique('machine_categories', 'name')->ignore($keyIgnore)],
       'code' => ['nullable', 'string', 'max:50', Rule::unique('machine_categories', 'code')->ignore($keyIgnore)],
     ]);
   }

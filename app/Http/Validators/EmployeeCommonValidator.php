@@ -26,8 +26,8 @@ class EmployeeCommonValidator
       'confirmation_date' => 'nullable|date',
       'employment_type' => 'nullable|in:Permanent,Contract,Casual',
       'reporting_manager_id' => 'nullable|integer|exists:employees,id',
-      'production_line_id' => 'nullable|integer|exists:production_lines,id',
-      'base_line_id' => 'nullable|integer|exists:production_lines,id',
+      'team_id' => 'nullable|integer|exists:teams,id',
+      'base_team_id' => 'nullable|integer|exists:teams,id',
       'employee_status' => 'nullable|in:Active,Resigned,Terminated',
     ];
   }

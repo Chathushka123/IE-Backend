@@ -82,11 +82,11 @@ class IEModuleSeeder extends Seeder
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 3. OPERATION CATEGORIES
+    // 3. BASE OPERATION CATEGORIES
     // ─────────────────────────────────────────────────────────────
     private function seedOperationCategories(): void
     {
-        DB::table('operation_categories')->insertOrIgnore([
+        DB::table('base_operation_categories')->insertOrIgnore([
             ['description' => 'Cutting Operations',      'code' => 'CAT-CUT', 'is_active' => 1],
             ['description' => 'Body Seaming',            'code' => 'CAT-SEA', 'is_active' => 1],
             ['description' => 'Lingerie Attachment',     'code' => 'CAT-ATT', 'is_active' => 1],
@@ -113,82 +113,82 @@ class IEModuleSeeder extends Seeder
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 5. OPERATIONS
+    // 5. BASE OPERATIONS
     // ─────────────────────────────────────────────────────────────
     private function seedOperations(): void
     {
-        $catId = fn(string $desc) => DB::table('operation_categories')
+        $catId = fn(string $desc) => DB::table('base_operation_categories')
             ->where('description', $desc)->value('id');
 
         $cutCat  = $catId('Cutting Operations');
-        $preCat  = DB::table('operation_categories')->where('description', 'Preparation Operations')->value('id');
-        $asmCat  = DB::table('operation_categories')->where('description', 'Assembly Operations')->value('id');
+        $preCat  = DB::table('base_operation_categories')->where('description', 'Preparation Operations')->value('id');
+        $asmCat  = DB::table('base_operation_categories')->where('description', 'Assembly Operations')->value('id');
         $seaCat  = $catId('Body Seaming');
-        $hemCat  = DB::table('operation_categories')->where('description', 'Bottom/Hem Operations')->value('id');
+        $hemCat  = DB::table('base_operation_categories')->where('description', 'Bottom/Hem Operations')->value('id');
         $attCat  = $catId('Lingerie Attachment');
         $prsCat  = $catId('Pressing Operations');
         $qciCat  = $catId('Quality & Inspection');
 
-        DB::table('operations')->insertOrIgnore([
+        DB::table('base_operations')->insertOrIgnore([
             // Cutting
-            ['description' => 'Fabric Laying',            'code' => 'OP-C01', 'operation_category_id' => $cutCat, 'is_active' => 1],
-            ['description' => 'Straight Knife Cutting',   'code' => 'OP-C02', 'operation_category_id' => $cutCat, 'is_active' => 1],
-            ['description' => 'Band Knife Cutting',       'code' => 'OP-C03', 'operation_category_id' => $cutCat, 'is_active' => 1],
-            ['description' => 'Notching',                 'code' => 'OP-C04', 'operation_category_id' => $cutCat, 'is_active' => 1],
-            ['description' => 'Numbering and Bundling',   'code' => 'OP-C05', 'operation_category_id' => $cutCat, 'is_active' => 1],
+            ['description' => 'Fabric Laying',            'code' => 'OP-C01', 'base_operation_category_id' => $cutCat, 'is_active' => 1],
+            ['description' => 'Straight Knife Cutting',   'code' => 'OP-C02', 'base_operation_category_id' => $cutCat, 'is_active' => 1],
+            ['description' => 'Band Knife Cutting',       'code' => 'OP-C03', 'base_operation_category_id' => $cutCat, 'is_active' => 1],
+            ['description' => 'Notching',                 'code' => 'OP-C04', 'base_operation_category_id' => $cutCat, 'is_active' => 1],
+            ['description' => 'Numbering and Bundling',   'code' => 'OP-C05', 'base_operation_category_id' => $cutCat, 'is_active' => 1],
             // Preparation
-            ['description' => 'Front Panel Fusing',       'code' => 'OP-P01', 'operation_category_id' => $preCat, 'is_active' => 1],
-            ['description' => 'Waistband Fusing',         'code' => 'OP-P02', 'operation_category_id' => $preCat, 'is_active' => 1],
-            ['description' => 'Interlining Application',  'code' => 'OP-P03', 'operation_category_id' => $preCat, 'is_active' => 1],
+            ['description' => 'Front Panel Fusing',       'code' => 'OP-P01', 'base_operation_category_id' => $preCat, 'is_active' => 1],
+            ['description' => 'Waistband Fusing',         'code' => 'OP-P02', 'base_operation_category_id' => $preCat, 'is_active' => 1],
+            ['description' => 'Interlining Application',  'code' => 'OP-P03', 'base_operation_category_id' => $preCat, 'is_active' => 1],
             // Assembly
-            ['description' => 'Cup Assembly',             'code' => 'OP-A01', 'operation_category_id' => $asmCat, 'is_active' => 1],
-            ['description' => 'Gusset Attach',            'code' => 'OP-A02', 'operation_category_id' => $asmCat, 'is_active' => 1],
-            ['description' => 'Liner Attach',             'code' => 'OP-A03', 'operation_category_id' => $asmCat, 'is_active' => 1],
-            ['description' => 'Band Attach',              'code' => 'OP-A04', 'operation_category_id' => $asmCat, 'is_active' => 1],
-            ['description' => 'Front Back Panel Join',    'code' => 'OP-A05', 'operation_category_id' => $asmCat, 'is_active' => 1],
+            ['description' => 'Cup Assembly',             'code' => 'OP-A01', 'base_operation_category_id' => $asmCat, 'is_active' => 1],
+            ['description' => 'Gusset Attach',            'code' => 'OP-A02', 'base_operation_category_id' => $asmCat, 'is_active' => 1],
+            ['description' => 'Liner Attach',             'code' => 'OP-A03', 'base_operation_category_id' => $asmCat, 'is_active' => 1],
+            ['description' => 'Band Attach',              'code' => 'OP-A04', 'base_operation_category_id' => $asmCat, 'is_active' => 1],
+            ['description' => 'Front Back Panel Join',    'code' => 'OP-A05', 'base_operation_category_id' => $asmCat, 'is_active' => 1],
             // Body Seaming
-            ['description' => 'Inseam Sewing',            'code' => 'OP-S01', 'operation_category_id' => $seaCat, 'is_active' => 1],
-            ['description' => 'Outseam Sewing',           'code' => 'OP-S02', 'operation_category_id' => $seaCat, 'is_active' => 1],
-            ['description' => 'Crotch Seam',              'code' => 'OP-S03', 'operation_category_id' => $seaCat, 'is_active' => 1],
-            ['description' => 'Back Seam',                'code' => 'OP-S04', 'operation_category_id' => $seaCat, 'is_active' => 1],
-            ['description' => 'Front Rise Seam',          'code' => 'OP-S05', 'operation_category_id' => $seaCat, 'is_active' => 1],
-            ['description' => 'Armhole Seam',             'code' => 'OP-S06', 'operation_category_id' => $seaCat, 'is_active' => 1],
-            ['description' => 'Neckline Seam',            'code' => 'OP-S07', 'operation_category_id' => $seaCat, 'is_active' => 1],
-            ['description' => 'Underwire Casing Seam',    'code' => 'OP-S08', 'operation_category_id' => $seaCat, 'is_active' => 1],
-            ['description' => 'Bridge Seam',              'code' => 'OP-S09', 'operation_category_id' => $seaCat, 'is_active' => 1],
-            ['description' => 'Wing Seam',                'code' => 'OP-S10', 'operation_category_id' => $seaCat, 'is_active' => 1],
+            ['description' => 'Inseam Sewing',            'code' => 'OP-S01', 'base_operation_category_id' => $seaCat, 'is_active' => 1],
+            ['description' => 'Outseam Sewing',           'code' => 'OP-S02', 'base_operation_category_id' => $seaCat, 'is_active' => 1],
+            ['description' => 'Crotch Seam',              'code' => 'OP-S03', 'base_operation_category_id' => $seaCat, 'is_active' => 1],
+            ['description' => 'Back Seam',                'code' => 'OP-S04', 'base_operation_category_id' => $seaCat, 'is_active' => 1],
+            ['description' => 'Front Rise Seam',          'code' => 'OP-S05', 'base_operation_category_id' => $seaCat, 'is_active' => 1],
+            ['description' => 'Armhole Seam',             'code' => 'OP-S06', 'base_operation_category_id' => $seaCat, 'is_active' => 1],
+            ['description' => 'Neckline Seam',            'code' => 'OP-S07', 'base_operation_category_id' => $seaCat, 'is_active' => 1],
+            ['description' => 'Underwire Casing Seam',    'code' => 'OP-S08', 'base_operation_category_id' => $seaCat, 'is_active' => 1],
+            ['description' => 'Bridge Seam',              'code' => 'OP-S09', 'base_operation_category_id' => $seaCat, 'is_active' => 1],
+            ['description' => 'Wing Seam',                'code' => 'OP-S10', 'base_operation_category_id' => $seaCat, 'is_active' => 1],
             // Hemming
-            ['description' => 'Leg Hem',                  'code' => 'OP-H01', 'operation_category_id' => $hemCat, 'is_active' => 1],
-            ['description' => 'Waist Hem',                'code' => 'OP-H02', 'operation_category_id' => $hemCat, 'is_active' => 1],
-            ['description' => 'Neck Hem',                 'code' => 'OP-H03', 'operation_category_id' => $hemCat, 'is_active' => 1],
-            ['description' => 'Coverstitch Leg Hem',      'code' => 'OP-H04', 'operation_category_id' => $hemCat, 'is_active' => 1],
-            ['description' => 'Shoulder Hem',             'code' => 'OP-H05', 'operation_category_id' => $hemCat, 'is_active' => 1],
+            ['description' => 'Leg Hem',                  'code' => 'OP-H01', 'base_operation_category_id' => $hemCat, 'is_active' => 1],
+            ['description' => 'Waist Hem',                'code' => 'OP-H02', 'base_operation_category_id' => $hemCat, 'is_active' => 1],
+            ['description' => 'Neck Hem',                 'code' => 'OP-H03', 'base_operation_category_id' => $hemCat, 'is_active' => 1],
+            ['description' => 'Coverstitch Leg Hem',      'code' => 'OP-H04', 'base_operation_category_id' => $hemCat, 'is_active' => 1],
+            ['description' => 'Shoulder Hem',             'code' => 'OP-H05', 'base_operation_category_id' => $hemCat, 'is_active' => 1],
             // Attachment
-            ['description' => 'Elastic Attach Waist',     'code' => 'OP-AT1', 'operation_category_id' => $attCat, 'is_active' => 1],
-            ['description' => 'Elastic Attach Leg',       'code' => 'OP-AT2', 'operation_category_id' => $attCat, 'is_active' => 1],
-            ['description' => 'Lace Trim Attach',         'code' => 'OP-AT3', 'operation_category_id' => $attCat, 'is_active' => 1],
-            ['description' => 'Underwire Insert',         'code' => 'OP-AT4', 'operation_category_id' => $attCat, 'is_active' => 1],
-            ['description' => 'Strap Attach',             'code' => 'OP-AT5', 'operation_category_id' => $attCat, 'is_active' => 1],
-            ['description' => 'Clasp Attach',             'code' => 'OP-AT6', 'operation_category_id' => $attCat, 'is_active' => 1],
+            ['description' => 'Elastic Attach Waist',     'code' => 'OP-AT1', 'base_operation_category_id' => $attCat, 'is_active' => 1],
+            ['description' => 'Elastic Attach Leg',       'code' => 'OP-AT2', 'base_operation_category_id' => $attCat, 'is_active' => 1],
+            ['description' => 'Lace Trim Attach',         'code' => 'OP-AT3', 'base_operation_category_id' => $attCat, 'is_active' => 1],
+            ['description' => 'Underwire Insert',         'code' => 'OP-AT4', 'base_operation_category_id' => $attCat, 'is_active' => 1],
+            ['description' => 'Strap Attach',             'code' => 'OP-AT5', 'base_operation_category_id' => $attCat, 'is_active' => 1],
+            ['description' => 'Clasp Attach',             'code' => 'OP-AT6', 'base_operation_category_id' => $attCat, 'is_active' => 1],
             // Pressing
-            ['description' => 'Final Pressing',           'code' => 'OP-PR1', 'operation_category_id' => $prsCat, 'is_active' => 1],
-            ['description' => 'Cup Pressing',             'code' => 'OP-PR2', 'operation_category_id' => $prsCat, 'is_active' => 1],
-            ['description' => 'Seam Pressing',            'code' => 'OP-PR3', 'operation_category_id' => $prsCat, 'is_active' => 1],
+            ['description' => 'Final Pressing',           'code' => 'OP-PR1', 'base_operation_category_id' => $prsCat, 'is_active' => 1],
+            ['description' => 'Cup Pressing',             'code' => 'OP-PR2', 'base_operation_category_id' => $prsCat, 'is_active' => 1],
+            ['description' => 'Seam Pressing',            'code' => 'OP-PR3', 'base_operation_category_id' => $prsCat, 'is_active' => 1],
             // Quality & Inspection
-            ['description' => 'In-line Inspection',       'code' => 'OP-Q01', 'operation_category_id' => $qciCat, 'is_active' => 1],
-            ['description' => 'Final Inspection',         'code' => 'OP-Q02', 'operation_category_id' => $qciCat, 'is_active' => 1],
-            ['description' => 'Needle Detection Scan',    'code' => 'OP-Q03', 'operation_category_id' => $qciCat, 'is_active' => 1],
-            ['description' => 'Measurement Check',        'code' => 'OP-Q04', 'operation_category_id' => $qciCat, 'is_active' => 1],
+            ['description' => 'In-line Inspection',       'code' => 'OP-Q01', 'base_operation_category_id' => $qciCat, 'is_active' => 1],
+            ['description' => 'Final Inspection',         'code' => 'OP-Q02', 'base_operation_category_id' => $qciCat, 'is_active' => 1],
+            ['description' => 'Needle Detection Scan',    'code' => 'OP-Q03', 'base_operation_category_id' => $qciCat, 'is_active' => 1],
+            ['description' => 'Measurement Check',        'code' => 'OP-Q04', 'base_operation_category_id' => $qciCat, 'is_active' => 1],
         ]);
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 6. OPERATION GRADINGS
+    // 6. OPERATIONS (was OPERATION GRADINGS)
     // ─────────────────────────────────────────────────────────────
     private function seedOperationGradings(): void
     {
         // Helpers to look up IDs by description
-        $op  = fn(string $d) => DB::table('operations')->where('description', $d)->value('id');
+        $op  = fn(string $d) => DB::table('base_operations')->where('description', $d)->value('id');
         $mt  = fn(string $d) => DB::table('machine_types')->where('description', $d)->value('id');
         $gr  = fn(string $c) => DB::table('operation_grades')->where('code', $c)->value('id');
 
@@ -465,20 +465,20 @@ class IEModuleSeeder extends Seeder
     }
 
     /**
-     * Insert operation_grading rows for a given product_category_id.
+     * Insert operation rows (table `operations`, was `operation_gradings`) for a given product_category_id.
      * Skips rows whose code or (op, product_cat, machine_type) unique key already exists.
      *
      * @param  int    $productCategoryId
-     * @param  array  $rows  Each: [sequence_no, operation_id, machine_type_id, grade_id, smv, code, description]
+     * @param  array  $rows  Each: [sequence_no, base_operation_id, machine_type_id, grade_id, smv, code, description]
      */
     private function insertGradings(int $productCategoryId, array $rows): void
     {
         foreach ($rows as [$seq, $opId, $mtId, $gradeId, $smv, $code, $desc]) {
             // Skip if any unique key already present
-            $exists = DB::table('operation_gradings')
+            $exists = DB::table('operations')
                 ->where('code', $code)
                 ->orWhere(function ($q) use ($opId, $productCategoryId, $mtId) {
-                    $q->where('operation_id', $opId)
+                    $q->where('base_operation_id', $opId)
                       ->where('product_category_id', $productCategoryId)
                       ->where('machine_type_id', $mtId);
                 })
@@ -489,20 +489,20 @@ class IEModuleSeeder extends Seeder
             }
 
             // Check if this sequence_no is already taken for this product_category
-            $seqTaken = DB::table('operation_gradings')
+            $seqTaken = DB::table('operations')
                 ->where('product_category_id', $productCategoryId)
                 ->where('sequence_no', $seq)
                 ->exists();
 
             // Find next available sequence if taken
             $seqNo = $seqTaken
-                ? (DB::table('operation_gradings')
+                ? (DB::table('operations')
                     ->where('product_category_id', $productCategoryId)
                     ->max('sequence_no') + 1)
                 : $seq;
 
-            DB::table('operation_gradings')->insert([
-                'operation_id'       => $opId,
+            DB::table('operations')->insert([
+                'base_operation_id'  => $opId,
                 'product_category_id'=> $productCategoryId,
                 'machine_type_id'    => $mtId,
                 'description'        => $desc,
@@ -613,7 +613,7 @@ class IEModuleSeeder extends Seeder
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 8. PRODUCT OPERATION GRADINGS
+    // 8. PRODUCT OPERATIONS (was PRODUCT OPERATION GRADINGS)
     // ─────────────────────────────────────────────────────────────
     private function seedProductOperationGradings(): void
     {
@@ -690,16 +690,16 @@ class IEModuleSeeder extends Seeder
             }
 
             // Get all operation gradings whose code starts with the prefix, sorted by sequence
-            $gradings = DB::table('operation_gradings')
+            $gradings = DB::table('operations')
                 ->where('code', 'LIKE', $ogPrefix . '%')
                 ->orderBy('sequence_no')
                 ->get(['id', 'smv', 'sequence_no']);
 
             $seqNo = 1;
             foreach ($gradings as $grading) {
-                $alreadyLinked = DB::table('product_operation_gradings')
+                $alreadyLinked = DB::table('product_operations')
                     ->where('product_id', $productId)
-                    ->where('operation_grading_id', $grading->id)
+                    ->where('operation_id', $grading->id)
                     ->exists();
 
                 if ($alreadyLinked) {
@@ -708,20 +708,20 @@ class IEModuleSeeder extends Seeder
                 }
 
                 // Check if this sequence_no is already used for this product
-                $seqTaken = DB::table('product_operation_gradings')
+                $seqTaken = DB::table('product_operations')
                     ->where('product_id', $productId)
                     ->where('sequence_no', $seqNo)
                     ->exists();
 
                 $finalSeq = $seqTaken
-                    ? (DB::table('product_operation_gradings')
+                    ? (DB::table('product_operations')
                         ->where('product_id', $productId)
                         ->max('sequence_no') + 1)
                     : $seqNo;
 
-                DB::table('product_operation_gradings')->insert([
+                DB::table('product_operations')->insert([
                     'product_id'           => $productId,
-                    'operation_grading_id' => $grading->id,
+                    'operation_id'         => $grading->id,
                     'sequence_no'          => $finalSeq,
                     'smv'                  => $grading->smv !== null
                         ? round($grading->smv * $smvMult, 4)

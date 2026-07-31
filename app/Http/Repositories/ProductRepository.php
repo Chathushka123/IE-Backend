@@ -5,6 +5,7 @@ namespace App\Http\Repositories;
 use App\Product;
 use App\ProductCategory;
 use App\Customer;
+use App\Season;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -19,7 +20,7 @@ class ProductRepository
   {
     $validator = Validator::make(
       $rec,
-      ProductCreateValidator::getCreateRules()
+      ProductCreateValidator::getCreateRules($rec)
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
@@ -49,7 +50,7 @@ class ProductRepository
     Utilities::hydrate($model, $rec);
     $validator = Validator::make(
       $rec,
-      ProductUpdateValidator::getUpdateRules($model_id)
+      ProductUpdateValidator::getUpdateRules($model_id, $rec)
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
@@ -105,32 +106,32 @@ class ProductRepository
 
   /**
    * Bulk create/update from an Excel import. Rows are matched to an existing product
-   * by Description (case-insensitively, so a manual casing tweak doesn't create a
+   * by Name (case-insensitively, so a manual casing tweak doesn't create a
    * duplicate). Each row is processed in its own transaction so one bad row doesn't
    * affect the rest — failures are collected and returned instead of aborting the file.
    */
   public static function importRows($rows)
   {
     $summary = ['total' => 0, 'created' => 0, 'updated' => 0, 'failed' => []];
-    $seenDescriptions = [];
+    $seenNames = [];
 
     foreach ($rows as $index => $row) {
       $rowNumber = $index + 2; // +1 for 0-index, +1 for the heading row
       $summary['total']++;
-      $description = trim((string) ($row['description'] ?? ''));
-      $descriptionKey = Str::lower($description);
+      $name = trim((string) ($row['name'] ?? ''));
+      $nameKey = Str::lower($name);
 
       try {
-        if ($description === '') {
-          throw new Exception('Description is required');
+        if ($name === '') {
+          throw new Exception('Name is required');
         }
-        if (isset($seenDescriptions[$descriptionKey])) {
-          throw new Exception("Duplicate Description '{$description}' in file (first seen at row {$seenDescriptions[$descriptionKey]})");
+        if (isset($seenNames[$nameKey])) {
+          throw new Exception("Duplicate Name '{$name}' in file (first seen at row {$seenNames[$nameKey]})");
         }
-        $seenDescriptions[$descriptionKey] = $rowNumber;
+        $seenNames[$nameKey] = $rowNumber;
 
-        $rec = self::mapImportRow($row, $description);
-        $existing = Product::whereRaw('LOWER(description) = ?', [$descriptionKey])->first();
+        $rec = self::mapImportRow($row, $name);
+        $existing = Product::whereRaw('LOWER(name) = ?', [$nameKey])->first();
 
         DB::beginTransaction();
         if ($existing) {
@@ -146,7 +147,7 @@ class ProductRepository
         DB::rollBack();
         $summary['failed'][] = [
           'row' => $rowNumber,
-          'description' => $description ?: null,
+          'name' => $name ?: null,
           'error' => self::unwrapExceptionMessage($e),
         ];
       }
@@ -161,17 +162,19 @@ class ProductRepository
    * value untouched on update (Utilities::hydrate fills missing keys) and lets the DB
    * column default apply on create.
    */
-  private static function mapImportRow($row, $description)
+  private static function mapImportRow($row, $name)
   {
+    $customerId = self::resolveForeignKey(Customer::class, $row['customer'] ?? null, 'Customer', true);
+
     $rec = [
-      'description' => $description,
-      'product_category_id' => self::resolveForeignKey(ProductCategory::class, $row['product_category'] ?? null, 'Product Category', true),
+      'name' => $name,
+      'product_category_id' => self::resolveForeignKey(ProductCategory::class, $row['product_category'] ?? null, 'Product Category', true, 'name'),
+      'customer_id' => $customerId,
     ];
 
     self::setIfNotNull($rec, 'style_code', self::blankToUpper($row['style_code'] ?? null));
     self::setIfNotNull($rec, 'style_description', self::blankToNull($row['style_description'] ?? null));
-    self::setIfNotNull($rec, 'customer_id', self::resolveForeignKey(Customer::class, $row['customer'] ?? null, 'Customer', false));
-    self::setIfNotNull($rec, 'season', self::blankToUpper($row['season'] ?? null));
+    self::setIfNotNull($rec, 'season_id', self::resolveSeason($row['season'] ?? null, $customerId));
     self::setIfNotNull($rec, 'colors', self::parseListField($row['colors'] ?? null));
     self::setIfNotNull($rec, 'sizes', self::parseListField($row['sizes'] ?? null));
     self::setIfNotNull($rec, 'customer_requested_delivery_date', self::parseImportDate($row['customer_requested_delivery_date'] ?? null));
@@ -270,7 +273,7 @@ class ProductRepository
     }
   }
 
-  private static function resolveForeignKey($modelClass, $value, $label, $required)
+  private static function resolveForeignKey($modelClass, $value, $label, $required, $column = 'description')
   {
     $value = self::blankToNull($value);
     if ($value === null) {
@@ -279,9 +282,23 @@ class ProductRepository
       }
       return null;
     }
-    $match = $modelClass::whereRaw('LOWER(description) = ?', [Str::lower(trim($value))])->first();
+    $match = $modelClass::whereRaw("LOWER({$column}) = ?", [Str::lower(trim($value))])->first();
     if (!$match) {
       throw new Exception("{$label} '{$value}' not found");
+    }
+    return $match->id;
+  }
+
+  /** Seasons are scoped to a customer, so resolution needs the row's already-resolved customer_id, not just a global name lookup. */
+  private static function resolveSeason($value, $customerId)
+  {
+    $value = self::blankToNull($value);
+    if ($value === null) {
+      return null;
+    }
+    $match = Season::whereRaw('LOWER(name) = ?', [Str::lower(trim($value))])->where('customer_id', $customerId)->first();
+    if (!$match) {
+      throw new Exception("Season '{$value}' not found for this Customer");
     }
     return $match->id;
   }

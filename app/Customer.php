@@ -31,4 +31,14 @@ class Customer extends Model
     {
         return $this->hasMany(Product::class, 'customer_id');
     }
+
+    public function seasons()
+    {
+        return $this->hasMany(Season::class);
+    }
+
+    public function destinations()
+    {
+        return $this->belongsToMany(Destination::class, 'customer_destination');
+    }
 }

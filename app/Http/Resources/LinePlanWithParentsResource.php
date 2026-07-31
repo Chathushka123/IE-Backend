@@ -10,7 +10,7 @@ class LinePlanWithParentsResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'production_line_id' => $this->production_line_id,
+            'team_id' => $this->team_id,
             'product_id' => $this->product_id,
             'sequence_no' => $this->sequence_no,
             'planned_quantity' => $this->planned_quantity,
@@ -24,7 +24,7 @@ class LinePlanWithParentsResource extends JsonResource
             'updated_by_id' => $this->updated_by_id,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'productionLine' => $this->whenLoaded('productionLine'),
+            'team' => $this->whenLoaded('team'),
             'product' => $this->whenLoaded('product'),
         ];
     }

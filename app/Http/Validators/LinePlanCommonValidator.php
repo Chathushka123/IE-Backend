@@ -11,7 +11,7 @@ class LinePlanCommonValidator
     $isChangeover = !empty($rec['is_changeover']);
 
     return [
-      'production_line_id' => 'required|integer|exists:production_lines,id',
+      'team_id' => 'required|integer|exists:teams,id',
       'product_id' => [Rule::requiredIf(!$isChangeover), 'nullable', 'integer', 'exists:products,id'],
       'sequence_no' => 'required|integer|min:1',
       'planned_quantity' => [Rule::requiredIf(!$isChangeover), 'nullable', 'integer', 'min:1'],

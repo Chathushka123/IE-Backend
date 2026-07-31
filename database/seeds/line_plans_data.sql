@@ -17,7 +17,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE line_plans;
 
 INSERT INTO line_plans
-  (production_line_id, product_id, sequence_no,
+  (team_id, product_id, sequence_no,
    planned_quantity, planned_start_date, planned_end_date,
    actual_start_date, status, notes, is_changeover, is_active)
 SELECT pl.id, p.id, lp.seq, lp.qty, lp.ps, lp.pe, lp.act, lp.st, lp.ref, 0, 1
@@ -141,7 +141,7 @@ FROM (
   UNION ALL SELECT 'DRS-A','P-DRS-001',3, 350,'2026-07-10 08:00:00','2026-07-11 17:00:00',NULL,'planned','SO-2026-0778'
 
 ) lp
-JOIN production_lines pl ON pl.code = lp.ln
-JOIN products         p  ON p.code  = lp.pc;
+JOIN teams    pl ON pl.code = lp.ln
+JOIN products p  ON p.code  = lp.pc;
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -10,8 +10,8 @@ class FactoryUpdateValidator
   public static function getUpdateRules($keyIgnore)
   {
     return array_merge(FactoryCommonValidator::getCommonRules(), [
-      'description' => ['required', 'string', 'max:255', Rule::unique('factories', 'description')->ignore($keyIgnore)],
-      'code' => ['nullable', 'string', 'max:50', Rule::unique('factories', 'code')->ignore($keyIgnore)],
+      'name' => ['required', 'string', 'max:255', Rule::unique('factories', 'name')->ignore($keyIgnore)],
+      'code' => ['required', 'string', 'max:50', Rule::unique('factories', 'code')->ignore($keyIgnore)],
     ]);
   }
 }

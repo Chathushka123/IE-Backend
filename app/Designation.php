@@ -22,7 +22,7 @@ class Designation extends Model
     }
 
     protected $fillable = [
-        'description',
+        'name',
         'code',
         'is_active',
     ];
