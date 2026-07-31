@@ -24,7 +24,21 @@
       "Bash(php -l database/migrations/2026_07_26_000001_add_unique_code_to_departments_table.php)",
       "Bash(DB_CONNECTION=sqlite DB_DATABASE=/tmp/claude-1000/-home-chathura-jayawardane-Documents-Programming-WithChathushka-SkillMatrix-IE-Backend/55333c2b-cfff-4b0a-b79b-4fa17cb6d4a9/scratchpad/test_migration.sqlite php artisan migrate --path=database/migrations/2026_06_12_223416_create_departments_table.php --force)",
       "Bash(DB_CONNECTION=sqlite DB_DATABASE=/tmp/claude-1000/-home-chathura-jayawardane-Documents-Programming-WithChathushka-SkillMatrix-IE-Backend/55333c2b-cfff-4b0a-b79b-4fa17cb6d4a9/scratchpad/test_migration.sqlite php artisan tinker '--execute= *)",
-      "Bash(DB_CONNECTION=sqlite DB_DATABASE=/tmp/claude-1000/-home-chathura-jayawardane-Documents-Programming-WithChathushka-SkillMatrix-IE-Backend/55333c2b-cfff-4b0a-b79b-4fa17cb6d4a9/scratchpad/test_migration.sqlite php artisan migrate --path=database/migrations/2026_07_26_000001_add_unique_code_to_departments_table.php --force)"
+      "Bash(DB_CONNECTION=sqlite DB_DATABASE=/tmp/claude-1000/-home-chathura-jayawardane-Documents-Programming-WithChathushka-SkillMatrix-IE-Backend/55333c2b-cfff-4b0a-b79b-4fa17cb6d4a9/scratchpad/test_migration.sqlite php artisan migrate --path=database/migrations/2026_07_26_000001_add_unique_code_to_departments_table.php --force)",
+      "Bash(find /home/chathura-jayawardane/Documents/Programming/WithChathushka/SkillMatrix/ie_module_fe/src/components/ui -iname *select* -o -iname *combobox*)",
+      "Bash(php -r \"var_dump\\(in_array\\('Asia/Colombo', DateTimeZone::listIdentifiers\\(\\)\\)\\);\")",
+      "Bash(php -l database/migrations/2026_07_31_000001_add_timezone_to_countries_and_regions_tables.php)",
+      "Bash(php -l app/Country.php)",
+      "Bash(php -l app/Region.php)",
+      "Bash(php -l app/Factory.php)",
+      "Bash(php -l app/Http/Validators/CountryCommonValidator.php)",
+      "Bash(DB_CONNECTION=sqlite DB_DATABASE=/tmp/claude-1000/-home-chathura-jayawardane-Documents-Programming-WithChathushka-SkillMatrix-IE-Backend/55333c2b-cfff-4b0a-b79b-4fa17cb6d4a9/scratchpad/tz_test.sqlite php artisan tinker '--execute=Schema::create\\('\\\\''users'\\\\'', function \\($t\\) { $t->id\\(\\); }\\);')",
+      "Bash(DB_CONNECTION=sqlite DB_DATABASE=/tmp/claude-1000/-home-chathura-jayawardane-Documents-Programming-WithChathushka-SkillMatrix-IE-Backend/55333c2b-cfff-4b0a-b79b-4fa17cb6d4a9/scratchpad/tz_test.sqlite php artisan tinker '--execute= *)",
+      "Bash(find /home/chathura-jayawardane/Documents/Programming/WithChathushka/SkillMatrix/ie_module_fe -maxdepth 1 -iname tsconfig*.json)",
+      "Bash(vendor/bin/phpunit tests/Unit/Repositories/CountryRepositoryTest.php tests/Unit/Repositories/FactoryRepositoryTest.php)",
+      "Bash(php -r ' *)",
+      "Bash(php -r 'var_dump\\(in_array\\(\"Asia/Vientiane\", DateTimeZone::listIdentifiers\\(\\)\\)\\);')",
+      "Bash(vendor/bin/phpunit --filter \"CountryRepositoryTest|FactoryRepositoryTest|RegionRepositoryTest\")"
     ]
   }
 }

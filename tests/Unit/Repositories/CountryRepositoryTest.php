@@ -11,7 +11,7 @@ class CountryRepositoryTest extends RepositoryTestCase
     {
         $this->actingAsTestUser();
 
-        $model = CountryRepository::createRec(['name' => 'Sri Lanka', 'code' => 'LK']);
+        $model = CountryRepository::createRec(['name' => 'Sri Lanka', 'code' => 'LK', 'timezone' => 'Asia/Colombo']);
 
         $this->assertDatabaseHas('countries', ['id' => $model->id, 'code' => 'LK']);
     }
@@ -23,27 +23,27 @@ class CountryRepositoryTest extends RepositoryTestCase
         $this->expectException(GeneralException::class);
         $this->expectExceptionMessageMatches('/code/i');
 
-        CountryRepository::createRec(['name' => 'Sri Lanka']);
+        CountryRepository::createRec(['name' => 'Sri Lanka', 'timezone' => 'Asia/Colombo']);
     }
 
     public function testRejectsADuplicateCodeOnCreate()
     {
         $this->actingAsTestUser();
 
-        CountryRepository::createRec(['name' => 'Sri Lanka', 'code' => 'LK']);
+        CountryRepository::createRec(['name' => 'Sri Lanka', 'code' => 'LK', 'timezone' => 'Asia/Colombo']);
 
         $this->expectException(GeneralException::class);
         $this->expectExceptionMessageMatches('/code/i');
 
-        CountryRepository::createRec(['name' => 'Laos', 'code' => 'LK']);
+        CountryRepository::createRec(['name' => 'Laos', 'code' => 'LK', 'timezone' => 'Asia/Vientiane']);
     }
 
     public function testRejectsAnUpdateThatDuplicatesAnotherRecordsCode()
     {
         $this->actingAsTestUser();
 
-        $model = CountryRepository::createRec(['name' => 'Sri Lanka', 'code' => 'LK']);
-        CountryRepository::createRec(['name' => 'India', 'code' => 'IN']);
+        $model = CountryRepository::createRec(['name' => 'Sri Lanka', 'code' => 'LK', 'timezone' => 'Asia/Colombo']);
+        CountryRepository::createRec(['name' => 'India', 'code' => 'IN', 'timezone' => 'Asia/Kolkata']);
 
         $this->expectException(GeneralException::class);
         $this->expectExceptionMessageMatches('/code/i');
