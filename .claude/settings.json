@@ -20,7 +20,11 @@
       "Bash(mysql -h localhost -u app_user -pDoomdoom1@ ie_module -e ' *)",
       "Bash(mysql -h localhost -u app_user -p'Doomdoom1@' ie_module -e \"DESCRIBE factories;\")",
       "Bash(mysql -h localhost -u app_user -p'Doomdoom1@' ie_module -e \"DESCRIBE operations;\")",
-      "Bash(mysql -h localhost -u app_user -p'Doomdoom1@' ie_module -e \"DESCRIBE employees;\")"
+      "Bash(mysql -h localhost -u app_user -p'Doomdoom1@' ie_module -e \"DESCRIBE employees;\")",
+      "Bash(php -l database/migrations/2026_07_26_000001_add_unique_code_to_departments_table.php)",
+      "Bash(DB_CONNECTION=sqlite DB_DATABASE=/tmp/claude-1000/-home-chathura-jayawardane-Documents-Programming-WithChathushka-SkillMatrix-IE-Backend/55333c2b-cfff-4b0a-b79b-4fa17cb6d4a9/scratchpad/test_migration.sqlite php artisan migrate --path=database/migrations/2026_06_12_223416_create_departments_table.php --force)",
+      "Bash(DB_CONNECTION=sqlite DB_DATABASE=/tmp/claude-1000/-home-chathura-jayawardane-Documents-Programming-WithChathushka-SkillMatrix-IE-Backend/55333c2b-cfff-4b0a-b79b-4fa17cb6d4a9/scratchpad/test_migration.sqlite php artisan tinker '--execute= *)",
+      "Bash(DB_CONNECTION=sqlite DB_DATABASE=/tmp/claude-1000/-home-chathura-jayawardane-Documents-Programming-WithChathushka-SkillMatrix-IE-Backend/55333c2b-cfff-4b0a-b79b-4fa17cb6d4a9/scratchpad/test_migration.sqlite php artisan migrate --path=database/migrations/2026_07_26_000001_add_unique_code_to_departments_table.php --force)"
     ]
   }
 }
