@@ -29,6 +29,24 @@ class Factory extends Model
         'region_id',
     ];
 
+    protected $appends = [
+        'effective_timezone',
+    ];
+
+    // Region's timezone overrides the country's default; only resolvable when
+    // those relations are eager-loaded (callers must request them explicitly
+    // to avoid an N+1 lazy-load per factory row).
+    public function getEffectiveTimezoneAttribute()
+    {
+        if ($this->relationLoaded('region') && $this->region && $this->region->timezone) {
+            return $this->region->timezone;
+        }
+        if ($this->relationLoaded('country') && $this->country) {
+            return $this->country->timezone;
+        }
+        return null;
+    }
+
     public function country()
     {
         return $this->belongsTo(Country::class);
