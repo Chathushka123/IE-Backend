@@ -9,14 +9,14 @@ class AddUniqueCodeToDepartmentsTable extends Migration
     public function up()
     {
         Schema::table('departments', function (Blueprint $table) {
-            $table->unique('code', 'uniq_departments_code');
+            $table->unique('code', 'uniq_departments_code_x');
         });
     }
 
     public function down()
     {
         Schema::table('departments', function (Blueprint $table) {
-            $table->dropUnique('uniq_departments_code');
+            $table->dropUnique('uniq_departments_code_x');
         });
     }
 }
