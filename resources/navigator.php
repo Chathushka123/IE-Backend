@@ -87,6 +87,27 @@ $navigator_json = '
           "type":"node",
           "permitted" : 0,
           "path":"/ie/products"
+        },
+        {
+          "caption":"Time Study",
+          "icon":"fas fa-stopwatch",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ie/time-study"
+        },
+        {
+          "caption":"Time Study Downtime Reasons",
+          "icon":"fas fa-triangle-exclamation",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ie/time-study-downtime-reasons"
+        },
+        {
+          "caption":"Time Study Reports",
+          "icon":"fas fa-chart-column",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ie/time-study-report"
         }
        ]
     },
