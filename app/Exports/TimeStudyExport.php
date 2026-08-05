@@ -33,11 +33,13 @@ class TimeStudyExport implements FromCollection, WithHeadings, WithMapping, Shou
         ])
             ->when($this->filters['study_date_from'] ?? null, fn ($q, $v) => $q->whereDate('study_date', '>=', $v))
             ->when($this->filters['study_date_to'] ?? null, fn ($q, $v) => $q->whereDate('study_date', '<=', $v))
-            ->when($this->filters['time_study_type'] ?? null, fn ($q, $v) => $q->where('time_study_type', $v))
-            ->when($this->filters['operation_id'] ?? null, fn ($q, $v) => $q->where('operation_id', $v))
-            ->when($this->filters['product_category_id'] ?? null, fn ($q, $v) => $q->where('product_category_id', $v))
-            ->when($this->filters['machine_type_id'] ?? null, fn ($q, $v) => $q->where('machine_type_id', $v))
-            ->when($this->filters['employee_id'] ?? null, fn ($q, $v) => $q->where('employee_id', $v))
+            ->when($this->filters['time_study_types'] ?? null, fn ($q, $v) => $q->whereIn('time_study_type', (array) $v))
+            ->when($this->filters['operation_ids'] ?? null, fn ($q, $v) => $q->whereIn('operation_id', (array) $v))
+            ->when($this->filters['product_category_ids'] ?? null, fn ($q, $v) => $q->whereIn('product_category_id', (array) $v))
+            ->when($this->filters['machine_type_ids'] ?? null, fn ($q, $v) => $q->whereIn('machine_type_id', (array) $v))
+            ->when($this->filters['employee_ids'] ?? null, fn ($q, $v) => $q->whereIn('employee_id', (array) $v))
+            ->when($this->filters['product_ids'] ?? null, fn ($q, $v) => $q->whereIn('product_id', (array) $v))
+            ->when($this->filters['factory_ids'] ?? null, fn ($q, $v) => $q->whereIn('factory_id', (array) $v))
             ->orderByDesc('study_date')
             ->get();
     }

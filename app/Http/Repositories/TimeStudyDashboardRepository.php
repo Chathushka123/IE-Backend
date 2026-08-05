@@ -28,20 +28,26 @@ class TimeStudyDashboardRepository
         if (!empty($filters['study_date_to'])) {
             $query->whereDate('time_studies.study_date', '<=', $filters['study_date_to']);
         }
-        if (!empty($filters['time_study_type'])) {
-            $query->where('time_studies.time_study_type', $filters['time_study_type']);
+        if (!empty($filters['time_study_types'])) {
+            $query->whereIn('time_studies.time_study_type', (array) $filters['time_study_types']);
         }
-        if (!empty($filters['operation_id'])) {
-            $query->where('time_studies.operation_id', $filters['operation_id']);
+        if (!empty($filters['operation_ids'])) {
+            $query->whereIn('time_studies.operation_id', (array) $filters['operation_ids']);
         }
-        if (!empty($filters['product_category_id'])) {
-            $query->where('time_studies.product_category_id', $filters['product_category_id']);
+        if (!empty($filters['product_category_ids'])) {
+            $query->whereIn('time_studies.product_category_id', (array) $filters['product_category_ids']);
         }
-        if (!empty($filters['machine_type_id'])) {
-            $query->where('time_studies.machine_type_id', $filters['machine_type_id']);
+        if (!empty($filters['machine_type_ids'])) {
+            $query->whereIn('time_studies.machine_type_id', (array) $filters['machine_type_ids']);
         }
-        if (!empty($filters['employee_id'])) {
-            $query->where('time_studies.employee_id', $filters['employee_id']);
+        if (!empty($filters['employee_ids'])) {
+            $query->whereIn('time_studies.employee_id', (array) $filters['employee_ids']);
+        }
+        if (!empty($filters['product_ids'])) {
+            $query->whereIn('time_studies.product_id', (array) $filters['product_ids']);
+        }
+        if (!empty($filters['factory_ids'])) {
+            $query->whereIn('time_studies.factory_id', (array) $filters['factory_ids']);
         }
 
         return $query;
@@ -61,7 +67,12 @@ class TimeStudyDashboardRepository
             'by_type' => self::getByType($filters),
             'down_time_by_reason' => self::getDownTimeByReason($filters),
             'top_operators' => self::getTopOperators($filters),
+            'operator_efficiency' => self::getOperatorEfficiency($filters),
+            'operator_versatility' => self::getOperatorVersatility($filters),
             'avg_cycle_by_operation' => self::getAvgCycleByOperation($filters),
+            'efficiency_by_operation' => self::getEfficiencyByOperation($filters),
+            'efficiency_by_product_category' => self::getEfficiencyByProductCategory($filters),
+            'efficiency_by_machine_type' => self::getEfficiencyByMachineType($filters),
             'efficiency_trend' => self::getEfficiencyTrend($filters, $from, $to),
         ];
     }
@@ -147,6 +158,86 @@ class TimeStudyDashboardRepository
             ->limit(10)
             ->get()
             ->map(fn ($row) => ['label' => $row->label, 'value' => round(((float) $row->avg_ms) / 1000, 2)])
+            ->toArray();
+    }
+
+    /** Bottom 10 operators by average efficiency — flags who may need retraining. */
+    private static function getOperatorEfficiency(array $filters): array
+    {
+        return self::baseQuery($filters)
+            ->join('employees', 'time_studies.employee_id', '=', 'employees.id')
+            ->select(
+                DB::raw("COALESCE(NULLIF(employees.full_name, ''), CONCAT(employees.first_name, ' ', employees.last_name)) as label"),
+                DB::raw('AVG(time_studies.efficiency_pct) as avg_pct')
+            )
+            ->whereNotNull('time_studies.efficiency_pct')
+            ->groupBy('employees.id', 'employees.full_name', 'employees.first_name', 'employees.last_name')
+            ->orderBy('avg_pct')
+            ->limit(10)
+            ->get()
+            ->map(fn ($row) => ['label' => $row->label, 'value' => round((float) $row->avg_pct, 1)])
+            ->toArray();
+    }
+
+    /** Top 10 operators by number of distinct operations studied — flags cross-trained/versatile operators. */
+    private static function getOperatorVersatility(array $filters): array
+    {
+        return self::baseQuery($filters)
+            ->join('employees', 'time_studies.employee_id', '=', 'employees.id')
+            ->select(
+                DB::raw("COALESCE(NULLIF(employees.full_name, ''), CONCAT(employees.first_name, ' ', employees.last_name)) as label"),
+                DB::raw('COUNT(DISTINCT time_studies.operation_id) as count')
+            )
+            ->groupBy('employees.id', 'employees.full_name', 'employees.first_name', 'employees.last_name')
+            ->orderByDesc('count')
+            ->limit(10)
+            ->get()
+            ->map(fn ($row) => ['label' => $row->label, 'count' => (int) $row->count])
+            ->toArray();
+    }
+
+    /** Bottom 10 operations by average efficiency — flags where the process itself may need review. */
+    private static function getEfficiencyByOperation(array $filters): array
+    {
+        return self::baseQuery($filters)
+            ->join('operations', 'time_studies.operation_id', '=', 'operations.id')
+            ->select('operations.description as label', DB::raw('AVG(time_studies.efficiency_pct) as avg_pct'))
+            ->whereNotNull('time_studies.efficiency_pct')
+            ->groupBy('operations.id', 'operations.description')
+            ->orderBy('avg_pct')
+            ->limit(10)
+            ->get()
+            ->map(fn ($row) => ['label' => $row->label, 'value' => round((float) $row->avg_pct, 1)])
+            ->toArray();
+    }
+
+    /** Average efficiency by product category — flags which styles/categories run inefficiently. */
+    private static function getEfficiencyByProductCategory(array $filters): array
+    {
+        return self::baseQuery($filters)
+            ->join('product_categories', 'time_studies.product_category_id', '=', 'product_categories.id')
+            ->select('product_categories.name as label', DB::raw('AVG(time_studies.efficiency_pct) as avg_pct'))
+            ->whereNotNull('time_studies.efficiency_pct')
+            ->groupBy('product_categories.id', 'product_categories.name')
+            ->orderBy('avg_pct')
+            ->limit(15)
+            ->get()
+            ->map(fn ($row) => ['label' => $row->label, 'value' => round((float) $row->avg_pct, 1)])
+            ->toArray();
+    }
+
+    /** Average efficiency by machine type — flags machine-related bottlenecks. */
+    private static function getEfficiencyByMachineType(array $filters): array
+    {
+        return self::baseQuery($filters)
+            ->join('machine_types', 'time_studies.machine_type_id', '=', 'machine_types.id')
+            ->select('machine_types.name as label', DB::raw('AVG(time_studies.efficiency_pct) as avg_pct'))
+            ->whereNotNull('time_studies.efficiency_pct')
+            ->groupBy('machine_types.id', 'machine_types.name')
+            ->orderBy('avg_pct')
+            ->limit(15)
+            ->get()
+            ->map(fn ($row) => ['label' => $row->label, 'value' => round((float) $row->avg_pct, 1)])
             ->toArray();
     }
 
