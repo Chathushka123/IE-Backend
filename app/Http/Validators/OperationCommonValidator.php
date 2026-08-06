@@ -16,6 +16,9 @@ class OperationCommonValidator
       'sequence_no' => 'nullable|integer|min:1',
       'smv' => 'nullable|numeric|min:0',
       'is_active' => 'nullable|boolean',
+      'expected_top_level_efficiency' => 'nullable|numeric|min:0|max:999.99',
+      'expected_upper_mid_level_efficiency' => 'nullable|numeric|min:0|max:999.99',
+      'expected_lower_mid_level_efficiency' => 'nullable|numeric|min:0|max:999.99',
     ];
   }
 }

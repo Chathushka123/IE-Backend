@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Repositories\TimeStudyRepository;
 use App\Http\Repositories\TimeStudyDashboardRepository;
+use App\Http\Repositories\SkillMatrixRepository;
 use App\Exports\TimeStudyExport;
 use App\TimeStudy;
 use Illuminate\Http\Request;
@@ -96,6 +97,17 @@ class TimeStudyController extends Controller
     {
         try {
             $data = TimeStudyDashboardRepository::getDashboardData($request->query());
+
+            return response()->json(['status' => 'success', 'data' => $data], 200);
+        } catch (Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 400);
+        }
+    }
+
+    public function skillMatrix(Request $request)
+    {
+        try {
+            $data = SkillMatrixRepository::getMatrix($request->query());
 
             return response()->json(['status' => 'success', 'data' => $data], 200);
         } catch (Exception $e) {

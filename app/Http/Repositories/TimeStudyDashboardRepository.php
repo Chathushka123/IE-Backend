@@ -13,8 +13,11 @@ class TimeStudyDashboardRepository
      * the report's filter set. Raw query builder (not the TimeStudy Eloquent model), so it
      * doesn't pick up TimeStudy::boot()'s global factory scope automatically — every
      * aggregation here must go through this instead of DB::table('time_studies') directly.
+     *
+     * Public so SkillMatrixRepository (same report filter set, different aggregation
+     * shape) can reuse the exact same scoping logic instead of duplicating it.
      */
-    private static function baseQuery(array $filters)
+    public static function baseQuery(array $filters)
     {
         $query = DB::table('time_studies');
 
