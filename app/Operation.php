@@ -31,10 +31,16 @@ class Operation extends Model
         'sequence_no',
         'smv',
         'is_active',
+        'expected_top_level_efficiency',
+        'expected_upper_mid_level_efficiency',
+        'expected_lower_mid_level_efficiency',
     ];
 
     protected $casts = [
         'smv' => 'decimal:4',
+        'expected_top_level_efficiency' => 'decimal:2',
+        'expected_upper_mid_level_efficiency' => 'decimal:2',
+        'expected_lower_mid_level_efficiency' => 'decimal:2',
     ];
 
     public function baseOperation()

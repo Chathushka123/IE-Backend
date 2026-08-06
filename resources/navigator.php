@@ -87,29 +87,45 @@ $navigator_json = '
           "type":"node",
           "permitted" : 0,
           "path":"/ie/products"
-        },
+        }
+       ]
+    },
+    {
+      "caption": "Time Study",
+      "id": "time-study",
+      "icon": "fas fa-layer-group",
+      "type": "folder",
+      "permitted" : 0,
+      "nodes": [
         {
           "caption":"Time Study",
           "icon":"fas fa-stopwatch",
           "type":"node",
           "permitted" : 0,
-          "path":"/ie/time-study"
+          "path":"/ts/time-study"
         },
         {
-          "caption":"Time Study Downtime Reasons",
-          "icon":"fas fa-triangle-exclamation",
+          "caption":"Skill Matrix",
+          "icon":"fas fa-table-cells",
           "type":"node",
           "permitted" : 0,
-          "path":"/ie/time-study-downtime-reasons"
+          "path":"/ts/skill-matrix"
         },
         {
           "caption":"Time Study Reports",
           "icon":"fas fa-chart-column",
           "type":"node",
           "permitted" : 0,
-          "path":"/ie/time-study-report"
+          "path":"/ts/time-study-report"
+        },
+        {
+          "caption":"Time Study Downtime Reasons",
+          "icon":"fas fa-triangle-exclamation",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ts/time-study-downtime-reasons"
         }
-       ]
+      ]
     },
     {
       "caption": "Planning",
