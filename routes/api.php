@@ -91,6 +91,15 @@ Route::prefix('v1')->group(function () {
         Route::post('productOperations', 'Api\ProductOperationController@store')->name('productOperations.store');
         Route::put('productOperations/{id}', 'Api\ProductOperationController@update')->name('productOperations.update');
 
+        // Time Studies — specific paths must come before {id} wildcard
+        Route::get('timeStudies', 'Api\TimeStudyController@index')->name('timeStudies.index');
+        Route::get('timeStudies/byOperator/{employeeId}', 'Api\TimeStudyController@getByOperator')->name('timeStudies.byOperator');
+        Route::get('timeStudies/byOperation/{operationId}', 'Api\TimeStudyController@getByOperation')->name('timeStudies.byOperation');
+        Route::get('timeStudies/export', 'Api\TimeStudyController@export')->name('timeStudies.export');
+        Route::get('timeStudies/dashboard', 'Api\TimeStudyController@dashboard')->name('timeStudies.dashboard');
+        Route::get('timeStudies/{id}', 'Api\TimeStudyController@show')->name('timeStudies.show');
+        Route::post('timeStudies', 'Api\TimeStudyController@store')->name('timeStudies.store');
+
         // Line Plans — specific paths must come before {id} wildcard
         Route::get('linePlans', 'Api\LinePlanController@index')->name('linePlans.index');
         Route::get('linePlans/suggestSchedule', 'Api\LinePlanController@suggestSchedule')->name('linePlans.suggestSchedule');

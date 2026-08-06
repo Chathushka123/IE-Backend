@@ -46,6 +46,7 @@ class EmployeeController extends Controller
                 'category',
                 'department',
                 'designation',
+                'factory',
                 'reportingManager:id,employee_no,full_name,first_name,last_name',
                 'productionLine',
                 'baseLine',

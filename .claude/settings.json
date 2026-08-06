@@ -38,7 +38,10 @@
       "Bash(vendor/bin/phpunit tests/Unit/Repositories/CountryRepositoryTest.php tests/Unit/Repositories/FactoryRepositoryTest.php)",
       "Bash(php -r ' *)",
       "Bash(php -r 'var_dump\\(in_array\\(\"Asia/Vientiane\", DateTimeZone::listIdentifiers\\(\\)\\)\\);')",
-      "Bash(vendor/bin/phpunit --filter \"CountryRepositoryTest|FactoryRepositoryTest|RegionRepositoryTest\")"
+      "Bash(vendor/bin/phpunit --filter \"CountryRepositoryTest|FactoryRepositoryTest|RegionRepositoryTest\")",
+      "Bash(mysql -u app_user -p'Doomdoom1@' -h localhost ie_module -e \"SELECT id, email, is_active, role_id FROM users WHERE id=8;\")",
+      "Bash(mysql -u app_user -p'Doomdoom1@' -h localhost ie_module -e \"SELECT * FROM factory_user WHERE user_id=8;\")",
+      "Bash(mysql -u app_user -p'Doomdoom1@' -h localhost ie_module -e \"DESCRIBE factory_user;\")"
     ]
   }
 }
