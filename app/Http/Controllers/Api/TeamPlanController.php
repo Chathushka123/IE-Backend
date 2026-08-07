@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Repositories\LinePlanRepository;
-use App\LinePlan;
+use App\Http\Repositories\TeamPlanRepository;
+use App\TeamPlan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Exception;
 
-class LinePlanController extends Controller
+class TeamPlanController extends Controller
 {
     private function withRelations()
     {
@@ -27,7 +27,7 @@ class LinePlanController extends Controller
                 'end_date'            => 'nullable|date',
             ]);
 
-            $query = LinePlan::with($this->withRelations())
+            $query = TeamPlan::with($this->withRelations())
                 ->orderBy('team_id')
                 ->orderBy('sequence_no');
 
@@ -68,7 +68,7 @@ class LinePlanController extends Controller
     public function show($id)
     {
         try {
-            $record = LinePlan::with($this->withRelations())->findOrFail($id);
+            $record = TeamPlan::with($this->withRelations())->findOrFail($id);
 
             return response()->json(['status' => 'success', 'data' => $record], 200);
         } catch (Exception $e) {
@@ -79,7 +79,7 @@ class LinePlanController extends Controller
     public function getByTeam($teamId)
     {
         try {
-            $records = LinePlan::with(['product'])
+            $records = TeamPlan::with(['product'])
                 ->where('team_id', $teamId)
                 ->orderBy('sequence_no')
                 ->get();
@@ -93,7 +93,7 @@ class LinePlanController extends Controller
     public function getByProduct($productId)
     {
         try {
-            $records = LinePlan::with(['team'])
+            $records = TeamPlan::with(['team'])
                 ->where('product_id', $productId)
                 ->orderBy('team_id')
                 ->get();
@@ -114,7 +114,7 @@ class LinePlanController extends Controller
         ]);
 
         try {
-            $suggestion = LinePlanRepository::suggestSchedule(
+            $suggestion = TeamPlanRepository::suggestSchedule(
                 $request->team_id,
                 $request->product_id,
                 $request->planned_quantity,
@@ -132,12 +132,12 @@ class LinePlanController extends Controller
         $request->validate([
             'team_id'             => 'required|integer|exists:teams,id',
             'ids'                 => 'required|array|min:1',
-            'ids.*'               => 'integer|exists:line_plans,id',
+            'ids.*'               => 'integer|exists:team_plans,id',
         ]);
 
         try {
             DB::beginTransaction();
-            $records = LinePlanRepository::resequence(
+            $records = TeamPlanRepository::resequence(
                 $request->team_id,
                 $request->ids
             );
@@ -154,7 +154,7 @@ class LinePlanController extends Controller
     {
         try {
             DB::beginTransaction();
-            $record = LinePlanRepository::createRec($request->all());
+            $record = TeamPlanRepository::createRec($request->all());
             DB::commit();
 
             return response()->json([
@@ -171,7 +171,7 @@ class LinePlanController extends Controller
     {
         try {
             DB::beginTransaction();
-            $record = LinePlanRepository::updateRec($id, $request->all());
+            $record = TeamPlanRepository::updateRec($id, $request->all());
             DB::commit();
 
             return response()->json([

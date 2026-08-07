@@ -4,7 +4,7 @@ namespace App\Http\Validators;
 
 use Illuminate\Validation\Rule;
 
-class LinePlanCommonValidator
+class TeamPlanCommonValidator
 {
   public static function getCommonRules(array $rec = [])
   {

@@ -1,5 +1,5 @@
 -- =====================================================
--- Line Plans Seed Data
+-- Team Plans Seed Data
 -- Schedule from 2026-07-03 08:00 onwards (Mon-Fri)
 -- Today = Thursday 2026-07-03
 --
@@ -10,13 +10,13 @@
 --   D6  Fri 11-Jul               D7  Mon 14-Jul
 --   D8  Tue 15-Jul               D9  Wed 16-Jul
 -- =====================================================
--- Run: mysql -u app_user -p ie_module < database/seeds/line_plans_data.sql
+-- Run: mysql -u app_user -p ie_module < database/seeds/team_plans_data.sql
 
 SET FOREIGN_KEY_CHECKS = 0;
 
-TRUNCATE TABLE line_plans;
+TRUNCATE TABLE team_plans;
 
-INSERT INTO line_plans
+INSERT INTO team_plans
   (team_id, product_id, sequence_no,
    planned_quantity, planned_start_date, planned_end_date,
    actual_start_date, status, notes, is_changeover, is_active)

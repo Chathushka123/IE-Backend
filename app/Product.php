@@ -65,9 +65,9 @@ class Product extends Model
         return $this->hasMany(ProductOperation::class, 'product_id');
     }
 
-    public function linePlans()
+    public function teamPlans()
     {
-        return $this->hasMany(LinePlan::class, 'product_id');
+        return $this->hasMany(TeamPlan::class, 'product_id');
     }
 
     public function factories()

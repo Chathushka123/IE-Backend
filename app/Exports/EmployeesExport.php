@@ -39,8 +39,8 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             'department',
             'designation',
             'reportingManager',
-            'productionLine',
-            'baseLine',
+            'team',
+            'baseTeam',
         ])->get();
     }
 
@@ -48,7 +48,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
     {
         return [
             'Employee No',
-            'NIC No',
+            'NIC No / Passport No / Driving Licence No',
             'Full Name',
             'First Name',
             'Last Name',
@@ -66,8 +66,8 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             'Confirmation Date',
             'Employment Type',
             'Reporting Manager',
-            'Production Line',
-            'Base Line',
+            'Team',
+            'Base Team',
             'Employee Status',
             'Factory',
         ];
@@ -77,7 +77,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
     {
         return [
             $employee->employee_no,
-            $employee->nic_no,
+            $employee->identification_no,
             $employee->full_name,
             $employee->first_name,
             $employee->last_name,
@@ -98,8 +98,8 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             // instead of the name so the value always round-trips unambiguously, and so
             // it matches the dropdown list built in addDataValidation().
             optional($employee->reportingManager)->employee_no,
-            optional($employee->productionLine)->name,
-            optional($employee->baseLine)->name,
+            optional($employee->team)->name,
+            optional($employee->baseTeam)->name,
             $employee->employee_status,
             optional($employee->factory)->name,
         ];
@@ -158,8 +158,8 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
         $this->applyRangeList($sheet, 'M', $lastRow, $ranges['department'], 'Department', 'Pick from the list, or leave blank.');
         $this->applyRangeList($sheet, 'N', $lastRow, $ranges['designation'], 'Designation', 'Pick from the list, or leave blank.');
         $this->applyRangeList($sheet, 'S', $lastRow, $ranges['employee'], 'Reporting Manager', "Enter the manager's Employee No, or leave blank.");
-        $this->applyRangeList($sheet, 'T', $lastRow, $ranges['productionLine'], 'Production Line', 'Pick from the list, or leave blank.');
-        $this->applyRangeList($sheet, 'U', $lastRow, $ranges['productionLine'], 'Base Line', 'Pick from the list, or leave blank.');
+        $this->applyRangeList($sheet, 'T', $lastRow, $ranges['team'], 'Team', 'Pick from the list, or leave blank.');
+        $this->applyRangeList($sheet, 'U', $lastRow, $ranges['team'], 'Base Team', 'Pick from the list, or leave blank.');
         $this->applyRangeList($sheet, 'W', $lastRow, $ranges['factory'], 'Factory', 'Pick from the list — must match an existing factory exactly.');
 
         foreach (self::DATE_COLUMNS as $column) {
@@ -204,7 +204,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             'department' => "Lists!\$B\$2:\$B\${$lastRows['B']}",
             'designation' => "Lists!\$C\$2:\$C\${$lastRows['C']}",
             'employee' => "Lists!\$D\$2:\$D\${$lastRows['D']}",
-            'productionLine' => "Lists!\$E\$2:\$E\${$lastRows['E']}",
+            'team' => "Lists!\$E\$2:\$E\${$lastRows['E']}",
             'factory' => "Lists!\$F\$2:\$F\${$lastRows['F']}",
         ];
     }

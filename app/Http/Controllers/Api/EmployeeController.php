@@ -48,8 +48,8 @@ class EmployeeController extends Controller
                 'designation',
                 'factory',
                 'reportingManager:id,employee_no,full_name,first_name,last_name',
-                'productionLine',
-                'baseLine',
+                'team',
+                'baseTeam',
             ])->findOrFail($id);
 
             return response()->json(['status' => 'success', 'data' => $employee], 200);

@@ -5,7 +5,7 @@ namespace App\Http\Repositories;
 use App\Department;
 use App\Employee;
 use App\Section;
-use App\LinePlan;
+use App\TeamPlan;
 use App\Product;
 use App\Team;
 use Carbon\Carbon;
@@ -18,8 +18,8 @@ class DashboardRepository
         return [
             'kpis'                       => self::getKpis(),
             'teams_by_department'        => self::getTeamsByDepartment(),
-            'line_plan_status_breakdown' => self::getLinePlanStatusBreakdown(),
-            'upcoming_line_plans'        => self::getUpcomingLinePlans(),
+            'team_plan_status_breakdown' => self::getTeamPlanStatusBreakdown(),
+            'upcoming_team_plans'        => self::getUpcomingTeamPlans(),
         ];
     }
 
@@ -34,10 +34,10 @@ class DashboardRepository
             'teams_active'      => Team::where('is_active', true)->count(),
             'products_total'    => Product::count(),
             'products_active'   => Product::where('is_active', true)->count(),
-            'line_plans_active' => self::linePlansInFactoryScope()
+            'team_plans_active' => self::teamPlansInFactoryScope()
                 ->where('status', 'in_progress')
                 ->count(),
-            'line_plans_upcoming' => self::linePlansInFactoryScope()
+            'team_plans_upcoming' => self::teamPlansInFactoryScope()
                 ->where('status', 'planned')
                 ->whereBetween('planned_start_date', [Carbon::today(), Carbon::today()->addDays(7)])
                 ->count(),
@@ -45,13 +45,13 @@ class DashboardRepository
     }
 
     /**
-     * LinePlan has no factory_id of its own — it's scoped indirectly through
+     * TeamPlan has no factory_id of its own — it's scoped indirectly through
      * its team, so whereHas() (which runs Team's own ScopedToFactory global
      * scope as a subquery) is used instead of a raw join.
      */
-    private static function linePlansInFactoryScope()
+    private static function teamPlansInFactoryScope()
     {
-        return LinePlan::whereHas('team');
+        return TeamPlan::whereHas('team');
     }
 
     private static function getTeamsByDepartment(): array
@@ -64,9 +64,9 @@ class DashboardRepository
             ->toArray();
     }
 
-    private static function getLinePlanStatusBreakdown(): array
+    private static function getTeamPlanStatusBreakdown(): array
     {
-        return self::linePlansInFactoryScope()
+        return self::teamPlansInFactoryScope()
             ->select('status as label', DB::raw('COUNT(*) as count'))
             ->groupBy('status')
             ->orderByDesc('count')
@@ -74,9 +74,9 @@ class DashboardRepository
             ->toArray();
     }
 
-    private static function getUpcomingLinePlans(): array
+    private static function getUpcomingTeamPlans(): array
     {
-        return self::linePlansInFactoryScope()
+        return self::teamPlansInFactoryScope()
             ->with([
                 'team:id,name,code',
                 'product:id,name,style_code',
@@ -89,7 +89,7 @@ class DashboardRepository
             ->get(['id', 'team_id', 'product_id', 'planned_start_date', 'planned_end_date', 'status'])
             ->map(fn ($plan) => [
                 'id'                 => $plan->id,
-                'production_line'    => optional($plan->team)->name,
+                'team'               => optional($plan->team)->name,
                 'product'            => optional($plan->product)->style_code ?? optional($plan->product)->name,
                 'planned_start_date' => optional($plan->planned_start_date)->toDateString(),
                 'planned_end_date'   => optional($plan->planned_end_date)->toDateString(),

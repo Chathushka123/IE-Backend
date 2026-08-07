@@ -101,15 +101,15 @@ Route::prefix('v1')->group(function () {
         Route::get('timeStudies/{id}', 'Api\TimeStudyController@show')->name('timeStudies.show');
         Route::post('timeStudies', 'Api\TimeStudyController@store')->name('timeStudies.store');
 
-        // Line Plans — specific paths must come before {id} wildcard
-        Route::get('linePlans', 'Api\LinePlanController@index')->name('linePlans.index');
-        Route::get('linePlans/suggestSchedule', 'Api\LinePlanController@suggestSchedule')->name('linePlans.suggestSchedule');
-        Route::get('linePlans/byTeam/{teamId}', 'Api\LinePlanController@getByTeam')->name('linePlans.byTeam');
-        Route::get('linePlans/byProduct/{productId}', 'Api\LinePlanController@getByProduct')->name('linePlans.byProduct');
-        Route::put('linePlans/resequence', 'Api\LinePlanController@resequence')->name('linePlans.resequence');
-        Route::get('linePlans/{id}', 'Api\LinePlanController@show')->name('linePlans.show');
-        Route::post('linePlans', 'Api\LinePlanController@store')->name('linePlans.store');
-        Route::put('linePlans/{id}', 'Api\LinePlanController@update')->name('linePlans.update');
+        // Team Plans — specific paths must come before {id} wildcard
+        Route::get('teamPlans', 'Api\TeamPlanController@index')->name('teamPlans.index');
+        Route::get('teamPlans/suggestSchedule', 'Api\TeamPlanController@suggestSchedule')->name('teamPlans.suggestSchedule');
+        Route::get('teamPlans/byTeam/{teamId}', 'Api\TeamPlanController@getByTeam')->name('teamPlans.byTeam');
+        Route::get('teamPlans/byProduct/{productId}', 'Api\TeamPlanController@getByProduct')->name('teamPlans.byProduct');
+        Route::put('teamPlans/resequence', 'Api\TeamPlanController@resequence')->name('teamPlans.resequence');
+        Route::get('teamPlans/{id}', 'Api\TeamPlanController@show')->name('teamPlans.show');
+        Route::post('teamPlans', 'Api\TeamPlanController@store')->name('teamPlans.store');
+        Route::put('teamPlans/{id}', 'Api\TeamPlanController@update')->name('teamPlans.update');
 
         // HashStore
         Route::get('hashStores/getByUuid/{uuid}', 'Api\HashStoreController@getByUuid')->name('hashStores.getByUuid');

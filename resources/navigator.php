@@ -135,11 +135,11 @@ $navigator_json = '
       "permitted" : 0,
       "nodes": [
         {
-          "caption":"Team Schedule",
+          "caption":"Team Plan",
           "icon":"fas fa-chart-gantt",
           "type":"node",
           "permitted" : 0,
-          "path":"/ie/line-schedule"
+          "path":"/ie/team-plan"
         }
       ]
     },
