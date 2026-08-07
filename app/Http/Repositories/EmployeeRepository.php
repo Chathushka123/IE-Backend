@@ -22,7 +22,7 @@ class EmployeeRepository
   {
     $validator = Validator::make(
       $rec,
-      EmployeeCreateValidator::getCreateRules()
+      EmployeeCreateValidator::getCreateRules($rec)
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
@@ -47,7 +47,7 @@ class EmployeeRepository
     Utilities::hydrate($model, $rec);
     $validator = Validator::make(
       $rec,
-      EmployeeUpdateValidator::getUpdateRules($model_id)
+      EmployeeUpdateValidator::getUpdateRules($model_id, $rec)
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
@@ -97,10 +97,11 @@ class EmployeeRepository
   }
 
   /**
-   * Bulk create/update from an Excel import. Rows are matched to an existing
-   * employee by employee_no. Each row is processed in its own transaction so
-   * one bad row doesn't affect the rest — failures are collected and returned
-   * instead of aborting the whole file.
+   * Bulk create/update from an Excel import. Rows are matched to an existing employee by
+   * employee_no + factory (employee_no is only unique per factory, not globally — see
+   * migration 2026_08_07_000002). Each row is processed in its own transaction so one bad
+   * row doesn't affect the rest — failures are collected and returned instead of aborting
+   * the whole file.
    */
   public static function importRows($rows)
   {
@@ -116,13 +117,16 @@ class EmployeeRepository
         if ($employeeNo === '') {
           throw new Exception('Employee No is required');
         }
-        if (isset($seenEmployeeNos[$employeeNo])) {
-          throw new Exception("Duplicate Employee No '{$employeeNo}' in file (first seen at row {$seenEmployeeNos[$employeeNo]})");
-        }
-        $seenEmployeeNos[$employeeNo] = $rowNumber;
 
         $rec = self::mapImportRow($row, $employeeNo);
-        $existing = Employee::where('employee_no', $employeeNo)->first();
+
+        $seenKey = $employeeNo . '::' . $rec['factory_id'];
+        if (isset($seenEmployeeNos[$seenKey])) {
+          throw new Exception("Duplicate Employee No '{$employeeNo}' in file for this factory (first seen at row {$seenEmployeeNos[$seenKey]})");
+        }
+        $seenEmployeeNos[$seenKey] = $rowNumber;
+
+        $existing = Employee::where('employee_no', $employeeNo)->where('factory_id', $rec['factory_id'])->first();
 
         DB::beginTransaction();
         if ($existing) {
@@ -157,7 +161,7 @@ class EmployeeRepository
   {
     $rec = [
       'employee_no' => $employeeNo,
-      'nic_no' => trim((string) ($row['nic_no'] ?? '')),
+      'identification_no' => trim((string) ($row['identification_no'] ?? '')),
       'first_name' => trim((string) ($row['first_name'] ?? '')),
       'last_name' => trim((string) ($row['last_name'] ?? '')),
       'category_id' => self::resolveForeignKey(EmployeeCategory::class, $row['category'] ?? null, 'Category', true),
@@ -179,10 +183,11 @@ class EmployeeRepository
     self::setIfNotNull($rec, 'employment_type', self::blankToNull($row['employment_type'] ?? null));
     self::setIfNotNull($rec, 'reporting_manager_id', self::resolveReportingManager($row['reporting_manager'] ?? null));
     // NOTE: the Excel import-row keys 'production_line'/'base_line' are intentionally left as-is —
-    // the exported column headers still read "Production Line"/"Base Line" (see EmployeesExport.php),
-    // only the DB-facing $rec output keys change to match the renamed team_id/base_team_id columns.
-    self::setIfNotNull($rec, 'team_id', self::resolveForeignKey(Team::class, $row['production_line'] ?? null, 'Production Line', false));
-    self::setIfNotNull($rec, 'base_team_id', self::resolveForeignKey(Team::class, $row['base_line'] ?? null, 'Base Line', false));
+    // the frontend's IMPORT_HEADER_MAP still maps them from the "Team"/"Base Team" column headers
+    // (see EmployeesExport.php), only the DB-facing $rec output keys and user-facing labels changed
+    // to match the renamed team_id/base_team_id columns.
+    self::setIfNotNull($rec, 'team_id', self::resolveForeignKey(Team::class, $row['production_line'] ?? null, 'Team', false));
+    self::setIfNotNull($rec, 'base_team_id', self::resolveForeignKey(Team::class, $row['base_line'] ?? null, 'Base Team', false));
     self::setIfNotNull($rec, 'employee_status', self::blankToNull($row['employee_status'] ?? null));
 
     return $rec;

@@ -3,7 +3,7 @@
 namespace App\Http\Repositories;
 
 use App\Employee;
-use App\LinePlan;
+use App\TeamPlan;
 use App\Product;
 use App\Team;
 use App\ProductOperation;
@@ -11,10 +11,10 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Exception;
 
-use App\Http\Validators\LinePlanCreateValidator;
-use App\Http\Validators\LinePlanUpdateValidator;
+use App\Http\Validators\TeamPlanCreateValidator;
+use App\Http\Validators\TeamPlanUpdateValidator;
 
-class LinePlanRepository
+class TeamPlanRepository
 {
   private static function assertSingleInProgressPerLine(array $rec, $ignoreId = null)
   {
@@ -22,7 +22,7 @@ class LinePlanRepository
       return;
     }
 
-    $query = LinePlan::where('team_id', $rec['team_id'])
+    $query = TeamPlan::where('team_id', $rec['team_id'])
       ->where('status', 'in_progress');
     if ($ignoreId) {
       $query->where('id', '!=', $ignoreId);
@@ -30,7 +30,7 @@ class LinePlanRepository
 
     if ($query->exists()) {
       throw new \App\Exceptions\GeneralException(
-        'This line already has another style in progress. Complete or put it on hold before starting a new one.'
+        'This team already has another style in progress. Complete or put it on hold before starting a new one.'
       );
     }
   }
@@ -39,7 +39,7 @@ class LinePlanRepository
   {
     $validator = Validator::make(
       $rec,
-      LinePlanCreateValidator::getCreateRules($rec),
+      TeamPlanCreateValidator::getCreateRules($rec),
       [
         'sequence_no.unique' => 'This sequence number is already used by another style queued on this line.',
       ]
@@ -49,7 +49,7 @@ class LinePlanRepository
     }
     self::assertSingleInProgressPerLine($rec);
     try {
-      $model = LinePlan::create($rec);
+      $model = TeamPlan::create($rec);
     } catch (Exception $e) {
       throw new \App\Exceptions\GeneralException($e->getMessage());
     }
@@ -58,7 +58,7 @@ class LinePlanRepository
 
   public static function updateRec($model_id, array $rec)
   {
-    $model = LinePlan::findOrFail($model_id);
+    $model = TeamPlan::findOrFail($model_id);
 
     if (!$model->updated_at->eq(\Carbon\Carbon::parse($rec['updated_at']))) {
       $entity = (new \ReflectionClass($model))->getShortName();
@@ -67,7 +67,7 @@ class LinePlanRepository
     Utilities::hydrate($model, $rec);
     $validator = Validator::make(
       $rec,
-      LinePlanUpdateValidator::getUpdateRules($model_id, $rec),
+      TeamPlanUpdateValidator::getUpdateRules($model_id, $rec),
       [
         'sequence_no.unique' => 'This sequence number is already used by another style queued on this line.',
       ]
@@ -116,32 +116,32 @@ class LinePlanRepository
 
   public static function deleteRecs(array $recs)
   {
-    LinePlan::destroy($recs);
+    TeamPlan::destroy($recs);
   }
 
   public static function resequence(int $teamId, array $ids)
   {
-    $records = LinePlan::whereIn('id', $ids)
+    $records = TeamPlan::whereIn('id', $ids)
       ->where('team_id', $teamId)
       ->get()
       ->keyBy('id');
 
     if ($records->count() !== count($ids)) {
       throw new \App\Exceptions\GeneralException(
-        'One or more IDs do not belong to the given production line.'
+        'One or more IDs do not belong to the given team.'
       );
     }
 
     // Null out all sequence numbers first to avoid unique constraint conflicts
-    LinePlan::whereIn('id', $ids)->update(['sequence_no' => null]);
+    TeamPlan::whereIn('id', $ids)->update(['sequence_no' => null]);
 
     // Use query builder directly — Eloquent's dirty-check would skip save()
     // for any record whose new sequence_no equals its original value
     foreach ($ids as $index => $id) {
-      LinePlan::where('id', $id)->update(['sequence_no' => $index + 1]);
+      TeamPlan::where('id', $id)->update(['sequence_no' => $index + 1]);
     }
 
-    return LinePlan::whereIn('id', $ids)->orderBy('sequence_no')->get();
+    return TeamPlan::whereIn('id', $ids)->orderBy('sequence_no')->get();
   }
 
   /**
@@ -165,13 +165,13 @@ class LinePlanRepository
     $efficiencyPct = $line->target_efficiency_pct;
 
     if ($operatorCount <= 0) {
-      throw new \App\Exceptions\GeneralException('Cannot suggest a schedule: this line has no active operators assigned.');
+      throw new \App\Exceptions\GeneralException('Cannot suggest a schedule: this team has no active operators assigned.');
     }
     if ($totalSmv <= 0) {
       throw new \App\Exceptions\GeneralException('Cannot suggest a schedule: the selected product has no SMV defined in its operation gradings.');
     }
     if (empty($efficiencyPct)) {
-      throw new \App\Exceptions\GeneralException('Cannot suggest a schedule: set a target efficiency % on this production line first.');
+      throw new \App\Exceptions\GeneralException('Cannot suggest a schedule: set a target efficiency % on this team first.');
     }
 
     $hourlyCapacity = (int) floor(($operatorCount * 60 * ($efficiencyPct / 100)) / $totalSmv);
@@ -196,7 +196,7 @@ class LinePlanRepository
 
   private static function nextAvailableStartDateTime(int $teamId)
   {
-    $lastEnd = LinePlan::where('team_id', $teamId)
+    $lastEnd = TeamPlan::where('team_id', $teamId)
       ->whereIn('status', ['planned', 'in_progress'])
       ->max('planned_end_date');
 

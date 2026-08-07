@@ -27,7 +27,7 @@ class Employee extends Model
     protected $fillable = [
         'factory_id',
         'employee_no',
-        'nic_no',
+        'identification_no',
         'full_name',
         'first_name',
         'last_name',
@@ -88,12 +88,12 @@ class Employee extends Model
         return $this->hasMany(Employee::class, 'reporting_manager_id');
     }
 
-    public function productionLine()
+    public function team()
     {
         return $this->belongsTo(Team::class, 'team_id');
     }
 
-    public function baseLine()
+    public function baseTeam()
     {
         return $this->belongsTo(Team::class, 'base_team_id');
     }

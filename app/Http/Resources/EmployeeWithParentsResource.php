@@ -11,7 +11,7 @@ class EmployeeWithParentsResource extends JsonResource
         return [
             'id' => $this->id,
             'employee_no' => $this->employee_no,
-            'nic_no' => $this->nic_no,
+            'identification_no' => $this->identification_no,
             'full_name' => $this->full_name,
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
@@ -43,8 +43,8 @@ class EmployeeWithParentsResource extends JsonResource
             'department' => $this->whenLoaded('department'),
             'designation' => $this->whenLoaded('designation'),
             'reportingManager' => $this->whenLoaded('reportingManager'),
-            'productionLine' => $this->whenLoaded('productionLine'),
-            'baseLine' => $this->whenLoaded('baseLine'),
+            'team' => $this->whenLoaded('team'),
+            'baseTeam' => $this->whenLoaded('baseTeam'),
         ];
     }
 }

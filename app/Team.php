@@ -60,8 +60,8 @@ class Team extends Model
         return $this->hasMany(Employee::class, 'base_team_id');
     }
 
-    public function linePlans()
+    public function teamPlans()
     {
-        return $this->hasMany(LinePlan::class, 'team_id');
+        return $this->hasMany(TeamPlan::class, 'team_id');
     }
 }

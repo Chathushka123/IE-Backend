@@ -38,11 +38,24 @@ class EmployeeImportTest extends TestCase
         ]);
     }
 
+    private function makeFactory(string $name = 'Plant One'): int
+    {
+        $unique = strtoupper(substr(md5(uniqid()), 0, 6));
+
+        return DB::table('factories')->insertGetId([
+            'name' => $name,
+            'code' => 'PL'.$unique,
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
     private function baseRow(array $overrides = []): array
     {
         return array_merge([
             'employee_no' => 'EMP001',
-            'nic_no' => '199012345678',
+            'identification_no' => '199012345678',
             'full_name' => 'John Doe',
             'first_name' => 'John',
             'last_name' => 'Doe',
@@ -53,6 +66,7 @@ class EmployeeImportTest extends TestCase
             'address' => null,
             'marital_status' => null,
             'category' => 'Machine Operator',
+            'factory' => 'Plant One',
             'department' => null,
             'designation' => null,
             'joining_date' => null,
@@ -70,6 +84,7 @@ class EmployeeImportTest extends TestCase
     {
         $this->actingAsUser();
         $this->makeCategory();
+        $this->makeFactory();
 
         $summary = EmployeeRepository::importRows(collect([$this->baseRow()]));
 
@@ -84,6 +99,7 @@ class EmployeeImportTest extends TestCase
     {
         $this->actingAsUser();
         $this->makeCategory();
+        $this->makeFactory();
 
         EmployeeRepository::importRows(collect([$this->baseRow()]));
         $summary = EmployeeRepository::importRows(collect([$this->baseRow(['last_name' => 'Smith'])]));
@@ -99,6 +115,7 @@ class EmployeeImportTest extends TestCase
     {
         $this->actingAsUser();
         $this->makeCategory();
+        $this->makeFactory();
 
         EmployeeRepository::importRows(collect([$this->baseRow(['contact_no' => '0711234567'])]));
         EmployeeRepository::importRows(collect([$this->baseRow(['contact_no' => null])]));
@@ -110,10 +127,11 @@ class EmployeeImportTest extends TestCase
     {
         $this->actingAsUser();
         $this->makeCategory();
+        $this->makeFactory();
 
         $rows = collect([
             $this->baseRow(['category' => 'Does Not Exist']),
-            $this->baseRow(['employee_no' => 'EMP002', 'nic_no' => '199099998888']),
+            $this->baseRow(['employee_no' => 'EMP002', 'identification_no' => '199099998888']),
         ]);
 
         $summary = EmployeeRepository::importRows($rows);
@@ -130,10 +148,11 @@ class EmployeeImportTest extends TestCase
     {
         $this->actingAsUser();
         $this->makeCategory();
+        $this->makeFactory();
 
         $rows = collect([
             $this->baseRow(),
-            $this->baseRow(['nic_no' => '199099998888']),
+            $this->baseRow(['identification_no' => '199099998888']),
         ]);
 
         $summary = EmployeeRepository::importRows($rows);
@@ -148,6 +167,7 @@ class EmployeeImportTest extends TestCase
     {
         $this->actingAsUser();
         $this->makeCategory();
+        $this->makeFactory();
 
         $summary = EmployeeRepository::importRows(collect([$this->baseRow(['employee_no' => 'emp001'])]));
 
@@ -163,6 +183,7 @@ class EmployeeImportTest extends TestCase
         // backend's `contact_no => string` validation rule.
         $this->actingAsUser();
         $this->makeCategory();
+        $this->makeFactory();
 
         $summary = EmployeeRepository::importRows(collect([$this->baseRow(['contact_no' => 771234567])]));
 
@@ -175,6 +196,7 @@ class EmployeeImportTest extends TestCase
     {
         $this->actingAsUser();
         $this->makeCategory();
+        $this->makeFactory();
 
         $summary = EmployeeRepository::importRows(collect([$this->baseRow(['employee_no' => ''])]));
 

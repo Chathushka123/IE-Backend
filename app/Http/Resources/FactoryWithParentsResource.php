@@ -17,7 +17,7 @@ class FactoryWithParentsResource extends JsonResource
             'updated_by_id' => $this->updated_by_id,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'productionLines' => $this->whenLoaded('productionLines'),
+            'teams' => $this->whenLoaded('teams'),
             'employees' => $this->whenLoaded('employees'),
             'users' => $this->whenLoaded('users'),
             'products' => $this->whenLoaded('products'),

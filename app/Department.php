@@ -27,7 +27,7 @@ class Department extends Model
         'is_active',
     ];
 
-    public function productionLines()
+    public function teams()
     {
         return $this->hasMany(Team::class);
     }

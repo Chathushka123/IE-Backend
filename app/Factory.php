@@ -57,7 +57,7 @@ class Factory extends Model
         return $this->belongsTo(Region::class);
     }
 
-    public function productionLines()
+    public function teams()
     {
         return $this->hasMany(Team::class);
     }

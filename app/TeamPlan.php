@@ -5,7 +5,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
-class LinePlan extends Model
+class TeamPlan extends Model
 {
     public static function boot()
     {

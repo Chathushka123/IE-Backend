@@ -187,7 +187,7 @@ class TimeStudySeeder extends Seeder
             $rows[] = [
                 'factory_id' => 3,
                 'employee_no' => "EMP-F3-{$suffix}",
-                'nic_no' => strtoupper(uniqid('F3')),
+                'identification_no' => strtoupper(uniqid('F3')),
                 'full_name' => "{$first} {$last}",
                 'first_name' => $first,
                 'last_name' => $last,
