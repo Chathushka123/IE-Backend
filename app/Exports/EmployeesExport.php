@@ -2,10 +2,11 @@
 
 namespace App\Exports;
 
+use App\Country;
 use App\Department;
 use App\Designation;
 use App\Employee;
-use App\EmployeeCategory;
+use App\ManagementHierarchy;
 use App\Factory;
 use App\Team;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -29,15 +30,16 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
     const BUFFER_ROWS = 500;
 
     /** Columns holding native Excel dates: Birthday, Joining/Leaving/Confirmation Date. */
-    const DATE_COLUMNS = ['G', 'O', 'P', 'Q'];
+    const DATE_COLUMNS = ['G', 'W', 'X', 'Y'];
 
     public function collection()
     {
         return Employee::with([
-            'category',
+            'managementHierarchy',
             'factory',
             'department',
             'designation',
+            'country',
             'reportingManager',
             'team',
             'baseTeam',
@@ -55,16 +57,23 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             'Gender',
             'Birthday',
             'Email Address',
+            'Contact Country Code',
             'Contact No',
-            'Address',
             'Marital Status',
-            'Category',
+            'Street Name',
+            'House No',
+            'Address Line',
+            'City / State / Province',
+            'Postal Code',
+            'Country',
+            'Management Hierarchy',
             'Department',
             'Designation',
+            'Employee Category',
+            'Employment Type',
             'Joining Date',
             'Leaving Date',
             'Confirmation Date',
-            'Employment Type',
             'Reporting Manager',
             'Team',
             'Base Team',
@@ -75,6 +84,8 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
 
     public function map($employee): array
     {
+        [$contactCountryCode, $contactNumber] = $this->splitContactNo($employee->contact_no);
+
         return [
             $employee->employee_no,
             $employee->identification_no,
@@ -84,16 +95,23 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             $employee->gender,
             $this->toExcelDate($employee->birthday),
             $employee->email_address,
-            $employee->contact_no,
-            $employee->address,
+            $contactCountryCode,
+            $contactNumber,
             $employee->marital_status,
-            optional($employee->category)->name,
+            $employee->street_name,
+            $employee->house_no,
+            $employee->address_line,
+            $employee->city_or_province,
+            $employee->postal_code,
+            optional($employee->country)->name,
+            optional($employee->managementHierarchy)->name,
             optional($employee->department)->name,
             optional($employee->designation)->name,
+            $employee->employee_category,
+            $employee->employment_type,
             $this->toExcelDate($employee->joining_date),
             $this->toExcelDate($employee->leaving_date),
             $this->toExcelDate($employee->confirmation_date),
-            $employee->employment_type,
             // The importer matches Reporting Manager by Employee No first — export that
             // instead of the name so the value always round-trips unambiguously, and so
             // it matches the dropdown list built in addDataValidation().
@@ -103,6 +121,22 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             $employee->employee_status,
             optional($employee->factory)->name,
         ];
+    }
+
+    /**
+     * Splits a stored "<country code>-<number>" contact_no (e.g. "+94-771234567") into its
+     * two export columns, mirroring the frontend's splitContactNo() in EmployeeFormModal.tsx.
+     */
+    private function splitContactNo(?string $contactNo): array
+    {
+        if (!$contactNo) {
+            return [null, null];
+        }
+        $dashIndex = strpos($contactNo, '-');
+        if ($dashIndex === false) {
+            return [null, $contactNo];
+        }
+        return [substr($contactNo, 0, $dashIndex), substr($contactNo, $dashIndex + 1)];
     }
 
     public function styles(Worksheet $sheet)
@@ -151,16 +185,18 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
 
         $this->applyInlineList($sheet, 'F', $lastRow, 'Male,Female,Other');
         $this->applyInlineList($sheet, 'K', $lastRow, 'Single,Married,Divorced,Other');
-        $this->applyInlineList($sheet, 'R', $lastRow, 'Permanent,Contract,Casual');
-        $this->applyInlineList($sheet, 'V', $lastRow, 'Active,Resigned,Terminated');
+        $this->applyInlineList($sheet, 'U', $lastRow, 'Direct,Indirect');
+        $this->applyInlineList($sheet, 'V', $lastRow, 'Permanent,Contract,Casual');
+        $this->applyInlineList($sheet, 'AC', $lastRow, 'Active,Resigned,Terminated');
 
-        $this->applyRangeList($sheet, 'L', $lastRow, $ranges['category'], 'Category', 'Pick from the list — must match an existing employee category exactly.');
-        $this->applyRangeList($sheet, 'M', $lastRow, $ranges['department'], 'Department', 'Pick from the list, or leave blank.');
-        $this->applyRangeList($sheet, 'N', $lastRow, $ranges['designation'], 'Designation', 'Pick from the list, or leave blank.');
-        $this->applyRangeList($sheet, 'S', $lastRow, $ranges['employee'], 'Reporting Manager', "Enter the manager's Employee No, or leave blank.");
-        $this->applyRangeList($sheet, 'T', $lastRow, $ranges['team'], 'Team', 'Pick from the list, or leave blank.');
-        $this->applyRangeList($sheet, 'U', $lastRow, $ranges['team'], 'Base Team', 'Pick from the list, or leave blank.');
-        $this->applyRangeList($sheet, 'W', $lastRow, $ranges['factory'], 'Factory', 'Pick from the list — must match an existing factory exactly.');
+        $this->applyRangeList($sheet, 'Q', $lastRow, $ranges['country'], 'Country', 'Pick from the list, or leave blank.');
+        $this->applyRangeList($sheet, 'R', $lastRow, $ranges['management_hierarchy'], 'Management Hierarchy', 'Pick from the list — must match an existing management hierarchy exactly.');
+        $this->applyRangeList($sheet, 'S', $lastRow, $ranges['department'], 'Department', 'Pick from the list, or leave blank.');
+        $this->applyRangeList($sheet, 'T', $lastRow, $ranges['designation'], 'Designation', 'Pick from the list, or leave blank.');
+        $this->applyRangeList($sheet, 'Z', $lastRow, $ranges['employee'], 'Reporting Manager', "Enter the manager's Employee No, or leave blank.");
+        $this->applyRangeList($sheet, 'AA', $lastRow, $ranges['team'], 'Team', 'Pick from the list, or leave blank.');
+        $this->applyRangeList($sheet, 'AB', $lastRow, $ranges['team'], 'Base Team', 'Pick from the list, or leave blank.');
+        $this->applyRangeList($sheet, 'AD', $lastRow, $ranges['factory'], 'Factory', 'Pick from the list — must match an existing factory exactly.');
 
         foreach (self::DATE_COLUMNS as $column) {
             $this->applyDateValidation($sheet, $column, $lastRow);
@@ -179,12 +215,13 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
         $listSheet->setTitle('Lists');
 
         $columns = [
-            'A' => EmployeeCategory::where('is_active', true)->orderBy('name')->pluck('name'),
+            'A' => ManagementHierarchy::where('is_active', true)->orderBy('seq_no')->orderBy('name')->pluck('name'),
             'B' => Department::where('is_active', true)->orderBy('name')->pluck('name'),
             'C' => Designation::where('is_active', true)->orderBy('name')->pluck('name'),
             'D' => Employee::where('employee_status', 'Active')->orderBy('employee_no')->pluck('employee_no'),
             'E' => Team::where('is_active', true)->orderBy('name')->pluck('name'),
             'F' => Factory::where('is_active', true)->orderBy('name')->pluck('name'),
+            'G' => Country::where('is_active', true)->orderBy('name')->pluck('name'),
         ];
 
         $lastRows = [];
@@ -200,12 +237,13 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
         $listSheet->setSheetState(Worksheet::SHEETSTATE_HIDDEN);
 
         return [
-            'category' => "Lists!\$A\$2:\$A\${$lastRows['A']}",
+            'management_hierarchy' => "Lists!\$A\$2:\$A\${$lastRows['A']}",
             'department' => "Lists!\$B\$2:\$B\${$lastRows['B']}",
             'designation' => "Lists!\$C\$2:\$C\${$lastRows['C']}",
             'employee' => "Lists!\$D\$2:\$D\${$lastRows['D']}",
             'team' => "Lists!\$E\$2:\$E\${$lastRows['E']}",
             'factory' => "Lists!\$F\$2:\$F\${$lastRows['F']}",
+            'country' => "Lists!\$G\$2:\$G\${$lastRows['G']}",
         ];
     }
 

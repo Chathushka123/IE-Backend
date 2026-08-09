@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Repositories\TimeStudyRepository;
 use App\Http\Repositories\TimeStudyDashboardRepository;
 use App\Http\Repositories\SkillMatrixRepository;
-use App\Exports\TimeStudyExport;
+use App\Exports\TimeStudyMultiSheetExport;
 use App\TimeStudy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,11 +19,12 @@ class TimeStudyController extends Controller
     private function withRelations()
     {
         return [
+            'factory',
             'operation.baseOperation',
             'operation.productCategory',
             'operation.machineType',
             'product',
-            'employee',
+            'employee.department',
             'productCategory',
             'machineType',
             'softSkills',
@@ -87,9 +88,9 @@ class TimeStudyController extends Controller
     public function export(Request $request)
     {
         return Excel::download(
-            new TimeStudyExport($request->query()),
-            'TimeStudies_' . date('Y_m_d_His') . '.csv',
-            ExcelFormat::CSV
+            new TimeStudyMultiSheetExport($request->query()),
+            'TimeStudies_' . date('Y_m_d_His') . '.xlsx',
+            ExcelFormat::XLSX
         );
     }
 
@@ -108,6 +109,17 @@ class TimeStudyController extends Controller
     {
         try {
             $data = SkillMatrixRepository::getMatrix($request->query());
+
+            return response()->json(['status' => 'success', 'data' => $data], 200);
+        } catch (Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 400);
+        }
+    }
+
+    public function skillMatrixCell(Request $request)
+    {
+        try {
+            $data = SkillMatrixRepository::getCellDetail($request->query());
 
             return response()->json(['status' => 'success', 'data' => $data], 200);
         } catch (Exception $e) {

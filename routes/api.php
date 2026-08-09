@@ -98,6 +98,7 @@ Route::prefix('v1')->group(function () {
         Route::get('timeStudies/export', 'Api\TimeStudyController@export')->name('timeStudies.export');
         Route::get('timeStudies/dashboard', 'Api\TimeStudyController@dashboard')->name('timeStudies.dashboard');
         Route::get('timeStudies/skillMatrix', 'Api\TimeStudyController@skillMatrix')->name('timeStudies.skillMatrix');
+        Route::get('timeStudies/skillMatrix/cell', 'Api\TimeStudyController@skillMatrixCell')->name('timeStudies.skillMatrixCell');
         Route::get('timeStudies/{id}', 'Api\TimeStudyController@show')->name('timeStudies.show');
         Route::post('timeStudies', 'Api\TimeStudyController@store')->name('timeStudies.store');
 

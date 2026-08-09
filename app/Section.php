@@ -24,11 +24,17 @@ class Section extends Model
     protected $fillable = [
         'name',
         'code',
+        'department_id',
         'is_active',
     ];
 
     public function teams()
     {
         return $this->hasMany(Team::class, 'section_id');
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
     }
 }

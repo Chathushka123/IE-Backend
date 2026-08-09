@@ -32,7 +32,7 @@ class EmployeeDashboardRepository
             'kpis'                  => self::getKpis(),
             'by_status'             => self::getByStatus(),
             'by_department'         => self::getByDimension('departments', 'department_id'),
-            'by_category'           => self::getByDimension('employee_categories', 'category_id'),
+            'by_management_hierarchy' => self::getByDimension('management_hierarchies', 'management_hierarchy_id'),
             'by_designation'        => self::getByDesignation(),
             'by_employment_type'    => self::getByEnumField('employment_type'),
             'by_gender'             => self::getByEnumField('gender'),

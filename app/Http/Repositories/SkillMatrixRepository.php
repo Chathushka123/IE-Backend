@@ -2,6 +2,9 @@
 
 namespace App\Http\Repositories;
 
+use App\Employee;
+use App\Operation;
+use App\TimeStudy;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -81,6 +84,64 @@ class SkillMatrixRepository
             'operators' => $operators,
             'operations' => $operations,
             'cells' => $cells,
+        ];
+    }
+
+    /**
+     * Every study behind one operator×operation cell — same scoping (whereNotNull
+     * efficiency_pct, factory context, report filters) as getMatrix() so the
+     * avg_efficiency/study_count shown here always reconciles with the cell's value.
+     */
+    public static function getCellDetail(array $filters): array
+    {
+        $employeeId = (int) ($filters['employee_id'] ?? 0);
+        $operationId = (int) ($filters['operation_id'] ?? 0);
+
+        $studyIds = TimeStudyDashboardRepository::baseQuery($filters)
+            ->where('time_studies.employee_id', $employeeId)
+            ->where('time_studies.operation_id', $operationId)
+            ->whereNotNull('time_studies.efficiency_pct')
+            ->pluck('time_studies.id');
+
+        $studies = TimeStudy::with(['factory', 'product'])
+            ->whereIn('id', $studyIds)
+            ->orderByDesc('study_date')
+            ->get();
+
+        $employee = Employee::find($employeeId);
+        $operation = Operation::find($operationId);
+
+        return [
+            'employee' => $employee ? [
+                'id' => $employee->id,
+                'employee_no' => $employee->employee_no,
+                'name' => $employee->full_name ?: trim($employee->first_name . ' ' . $employee->last_name),
+            ] : null,
+            'operation' => $operation ? [
+                'id' => $operation->id,
+                'code' => $operation->code,
+                'description' => $operation->description,
+                'expected_top_level_efficiency' => (float) $operation->expected_top_level_efficiency,
+                'expected_upper_mid_level_efficiency' => (float) $operation->expected_upper_mid_level_efficiency,
+                'expected_lower_mid_level_efficiency' => (float) $operation->expected_lower_mid_level_efficiency,
+            ] : null,
+            'avg_efficiency' => $studies->count() > 0 ? round((float) $studies->avg('efficiency_pct'), 1) : null,
+            'study_count' => $studies->count(),
+            'studies' => $studies->map(function ($study) {
+                return [
+                    'id' => $study->id,
+                    'study_date' => optional($study->study_date)->format('Y-m-d'),
+                    'time_study_type' => $study->time_study_type,
+                    'smv' => $study->smv,
+                    'avg_cycle_ms' => $study->avg_cycle_ms,
+                    'total_productive_ms' => $study->total_productive_ms,
+                    'total_down_time_ms' => $study->total_down_time_ms,
+                    'efficiency_pct' => $study->efficiency_pct,
+                    'factory' => optional($study->factory)->name,
+                    'product' => optional($study->product)->name,
+                    'style_code' => optional($study->product)->style_code,
+                ];
+            })->values(),
         ];
     }
 }
