@@ -43,10 +43,11 @@ class EmployeeController extends Controller
     {
         try {
             $employee = \App\Employee::with([
-                'category',
+                'managementHierarchy',
                 'department',
                 'designation',
                 'factory',
+                'country',
                 'reportingManager:id,employee_no,full_name,first_name,last_name',
                 'team',
                 'baseTeam',

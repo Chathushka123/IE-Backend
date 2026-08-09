@@ -2,8 +2,9 @@
 
 namespace App\Http\Repositories;
 
+use App\Country;
 use App\Employee;
-use App\EmployeeCategory;
+use App\ManagementHierarchy;
 use App\Factory;
 use App\Department;
 use App\Designation;
@@ -164,7 +165,7 @@ class EmployeeRepository
       'identification_no' => trim((string) ($row['identification_no'] ?? '')),
       'first_name' => trim((string) ($row['first_name'] ?? '')),
       'last_name' => trim((string) ($row['last_name'] ?? '')),
-      'category_id' => self::resolveForeignKey(EmployeeCategory::class, $row['category'] ?? null, 'Category', true),
+      'management_hierarchy_id' => self::resolveForeignKey(ManagementHierarchy::class, $row['management_hierarchy'] ?? null, 'Management Hierarchy', true),
       'factory_id' => self::resolveForeignKey(Factory::class, $row['factory'] ?? null, 'Factory', true),
     ];
 
@@ -172,11 +173,17 @@ class EmployeeRepository
     self::setIfNotNull($rec, 'gender', self::blankToNull($row['gender'] ?? null));
     self::setIfNotNull($rec, 'birthday', self::parseImportDate($row['birthday'] ?? null));
     self::setIfNotNull($rec, 'email_address', self::blankToNull($row['email_address'] ?? null));
-    self::setIfNotNull($rec, 'contact_no', self::blankToNull($row['contact_no'] ?? null));
-    self::setIfNotNull($rec, 'address', self::blankToNull($row['address'] ?? null));
+    self::setIfNotNull($rec, 'contact_no', self::joinContactNo($row['contact_country_code'] ?? null, $row['contact_no'] ?? null));
     self::setIfNotNull($rec, 'marital_status', self::blankToNull($row['marital_status'] ?? null));
+    self::setIfNotNull($rec, 'street_name', self::blankToNull($row['street_name'] ?? null));
+    self::setIfNotNull($rec, 'house_no', self::blankToNull($row['house_no'] ?? null));
+    self::setIfNotNull($rec, 'address_line', self::blankToNull($row['address_line'] ?? null));
+    self::setIfNotNull($rec, 'city_or_province', self::blankToNull($row['city_or_province'] ?? null));
+    self::setIfNotNull($rec, 'postal_code', self::blankToNull($row['postal_code'] ?? null));
+    self::setIfNotNull($rec, 'country_id', self::resolveForeignKey(Country::class, $row['country'] ?? null, 'Country', false));
     self::setIfNotNull($rec, 'department_id', self::resolveForeignKey(Department::class, $row['department'] ?? null, 'Department', false));
     self::setIfNotNull($rec, 'designation_id', self::resolveForeignKey(Designation::class, $row['designation'] ?? null, 'Designation', false));
+    self::setIfNotNull($rec, 'employee_category', self::blankToNull($row['employee_category'] ?? null));
     self::setIfNotNull($rec, 'joining_date', self::parseImportDate($row['joining_date'] ?? null));
     self::setIfNotNull($rec, 'leaving_date', self::parseImportDate($row['leaving_date'] ?? null));
     self::setIfNotNull($rec, 'confirmation_date', self::parseImportDate($row['confirmation_date'] ?? null));
@@ -213,6 +220,22 @@ class EmployeeRepository
     }
     $value = trim(is_string($value) ? $value : (string) $value);
     return $value === '' ? null : $value;
+  }
+
+  /**
+   * Joins the "Contact Country Code" and "Contact No" import columns into the single
+   * stored "<country code>-<number>" contact_no value, mirroring the frontend's
+   * splitContactNo()/join in EmployeeFormModal.tsx. Defaults the country code to +94
+   * (same default as the manual form) when a number is given without one.
+   */
+  private static function joinContactNo($countryCode, $number)
+  {
+    $number = self::blankToNull($number);
+    if ($number === null) {
+      return null;
+    }
+    $countryCode = self::blankToNull($countryCode) ?? '+94';
+    return "{$countryCode}-{$number}";
   }
 
   private static function parseImportDate($value)

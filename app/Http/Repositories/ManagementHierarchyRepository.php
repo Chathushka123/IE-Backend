@@ -2,26 +2,26 @@
 
 namespace App\Http\Repositories;
 
-use App\EmployeeCategory;
+use App\ManagementHierarchy;
 use Illuminate\Support\Facades\Validator;
 use Exception;
 
-use App\Http\Validators\EmployeeCategoryCreateValidator;
-use App\Http\Validators\EmployeeCategoryUpdateValidator;
+use App\Http\Validators\ManagementHierarchyCreateValidator;
+use App\Http\Validators\ManagementHierarchyUpdateValidator;
 
-class EmployeeCategoryRepository
+class ManagementHierarchyRepository
 {
   public static function createRec(array $rec)
   {
     $validator = Validator::make(
       $rec,
-      EmployeeCategoryCreateValidator::getCreateRules()
+      ManagementHierarchyCreateValidator::getCreateRules()
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
     }
     try {
-      $model = EmployeeCategory::create($rec);
+      $model = ManagementHierarchy::create($rec);
     } catch (Exception $e) {
       throw new \App\Exceptions\GeneralException($e->getMessage());
     }
@@ -30,7 +30,7 @@ class EmployeeCategoryRepository
 
   public static function updateRec($model_id, array $rec)
   {
-    $model = EmployeeCategory::findOrFail($model_id);
+    $model = ManagementHierarchy::findOrFail($model_id);
 
     if (!$model->updated_at->eq(\Carbon\Carbon::parse($rec['updated_at']))) {
       $entity = (new \ReflectionClass($model))->getShortName();
@@ -39,7 +39,7 @@ class EmployeeCategoryRepository
     Utilities::hydrate($model, $rec);
     $validator = Validator::make(
       $rec,
-      EmployeeCategoryUpdateValidator::getUpdateRules($model_id)
+      ManagementHierarchyUpdateValidator::getUpdateRules($model_id)
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
@@ -84,6 +84,6 @@ class EmployeeCategoryRepository
 
   public static function deleteRecs(array $recs)
   {
-    EmployeeCategory::destroy($recs);
+    ManagementHierarchy::destroy($recs);
   }
 }

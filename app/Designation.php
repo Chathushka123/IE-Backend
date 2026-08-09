@@ -24,11 +24,17 @@ class Designation extends Model
     protected $fillable = [
         'name',
         'code',
+        'department_id',
         'is_active',
     ];
 
     public function employees()
     {
         return $this->hasMany(Employee::class);
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
     }
 }

@@ -38,13 +38,20 @@ class Employee extends Model
         'address',
         'marital_status',
         'photo_url',
-        'category_id',
+        'street_name',
+        'house_no',
+        'address_line',
+        'city_or_province',
+        'postal_code',
+        'country_id',
+        'management_hierarchy_id',
         'department_id',
         'designation_id',
         'joining_date',
         'leaving_date',
         'confirmation_date',
         'employment_type',
+        'employee_category',
         'reporting_manager_id',
         'team_id',
         'base_team_id',
@@ -58,9 +65,9 @@ class Employee extends Model
         'confirmation_date' => 'date',
     ];
 
-    public function category()
+    public function managementHierarchy()
     {
-        return $this->belongsTo(EmployeeCategory::class, 'category_id');
+        return $this->belongsTo(ManagementHierarchy::class, 'management_hierarchy_id');
     }
 
     public function factory()
@@ -71,6 +78,11 @@ class Employee extends Model
     public function department()
     {
         return $this->belongsTo(Department::class);
+    }
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
     }
 
     public function designation()

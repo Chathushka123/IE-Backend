@@ -5,7 +5,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
-class EmployeeCategory extends Model
+class ManagementHierarchy extends Model
 {
     public static function boot()
     {
@@ -24,16 +24,12 @@ class EmployeeCategory extends Model
     protected $fillable = [
         'name',
         'code',
+        'seq_no',
         'is_active',
     ];
 
-    public function teams()
-    {
-        return $this->hasMany(Team::class, 'category_id');
-    }
-
     public function employees()
     {
-        return $this->hasMany(Employee::class, 'category_id');
+        return $this->hasMany(Employee::class, 'management_hierarchy_id');
     }
 }

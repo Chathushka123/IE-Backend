@@ -169,8 +169,9 @@ class TeamPlanTest extends TestCase
 
     private function makeActiveEmployee(int $productionLineId): int
     {
-        $categoryId = DB::table('employee_categories')->insertGetId([
+        $managementHierarchyId = DB::table('management_hierarchies')->insertGetId([
             'name' => 'Operator'.uniqid(),
+            'seq_no' => 1,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -181,7 +182,7 @@ class TeamPlanTest extends TestCase
             'identification_no' => 'NIC-'.uniqid(),
             'first_name' => 'Jane',
             'last_name' => 'Doe',
-            'category_id' => $categoryId,
+            'management_hierarchy_id' => $managementHierarchyId,
             'team_id' => $productionLineId,
             'factory_id' => $factoryId,
             'employee_status' => 'Active',
