@@ -34,6 +34,8 @@ class Operation extends Model
         'expected_top_level_efficiency',
         'expected_upper_mid_level_efficiency',
         'expected_lower_mid_level_efficiency',
+        'calculation_method',
+        'mode_bin_size_pct',
     ];
 
     protected $casts = [
@@ -41,6 +43,7 @@ class Operation extends Model
         'expected_top_level_efficiency' => 'decimal:2',
         'expected_upper_mid_level_efficiency' => 'decimal:2',
         'expected_lower_mid_level_efficiency' => 'decimal:2',
+        'mode_bin_size_pct' => 'integer',
     ];
 
     public function baseOperation()
