@@ -19,6 +19,8 @@ class OperationCommonValidator
       'expected_top_level_efficiency' => 'nullable|numeric|min:0|max:999.99',
       'expected_upper_mid_level_efficiency' => 'nullable|numeric|min:0|max:999.99',
       'expected_lower_mid_level_efficiency' => 'nullable|numeric|min:0|max:999.99',
+      'calculation_method' => 'nullable|in:mean,median,mode',
+      'mode_bin_size_pct' => 'nullable|integer|min:1|max:10',
     ];
   }
 }

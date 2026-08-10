@@ -112,6 +112,13 @@ $navigator_json = '
           "path":"/ts/skill-matrix"
         },
         {
+          "caption":"Skill Matrix Insights",
+          "icon":"fas fa-chart-simple",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ts/skill-matrix-insights"
+        },
+        {
           "caption":"Time Study Reports",
           "icon":"fas fa-chart-column",
           "type":"node",
