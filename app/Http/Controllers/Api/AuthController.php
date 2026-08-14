@@ -93,9 +93,12 @@ class AuthController extends Controller
         // sysadmin isn't assigned to factories via factory_user (it bypasses factory
         // scoping entirely, same as it bypasses screen permissions) — give it the
         // full factory list so the frontend's factory picker isn't empty for it.
+        // Eager-load region/country so each factory's effective_timezone (used by
+        // the frontend to pick the active display/report timezone) resolves for
+        // free here instead of falling back to a per-row query.
         $factories = $user->email === 'sysadmin@gmail.com'
-            ? \App\Factory::orderBy('name')->get()
-            : $user->factories()->orderBy('name')->get();
+            ? \App\Factory::with(['region', 'country'])->orderBy('name')->get()
+            : $user->factories()->with(['region', 'country'])->orderBy('name')->get();
 
         $response = response()->json([
             'user' => $user,

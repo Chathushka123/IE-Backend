@@ -8,8 +8,8 @@ use App\Section;
 use App\TeamPlan;
 use App\Product;
 use App\Team;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Support\RequestTimezone;
 
 class DashboardRepository
 {
@@ -39,7 +39,7 @@ class DashboardRepository
                 ->count(),
             'team_plans_upcoming' => self::teamPlansInFactoryScope()
                 ->where('status', 'planned')
-                ->whereBetween('planned_start_date', [Carbon::today(), Carbon::today()->addDays(7)])
+                ->whereBetween('planned_start_date', self::next7DaysWindow())
                 ->count(),
         ];
     }
@@ -52,6 +52,13 @@ class DashboardRepository
     private static function teamPlansInFactoryScope()
     {
         return TeamPlan::whereHas('team');
+    }
+
+    /** [start of today, +7 days) as UTC instants in the request's active timezone — planned_start_date is a real timestamp column. */
+    private static function next7DaysWindow(): array
+    {
+        $start = RequestTimezone::today()['start'];
+        return [$start, $start->copy()->addDays(7)];
     }
 
     private static function getTeamsByDepartment(): array
@@ -83,7 +90,7 @@ class DashboardRepository
             ])
             ->whereIn('status', ['planned', 'in_progress'])
             ->whereNotNull('planned_start_date')
-            ->whereBetween('planned_start_date', [Carbon::today(), Carbon::today()->addDays(7)])
+            ->whereBetween('planned_start_date', self::next7DaysWindow())
             ->orderBy('planned_start_date')
             ->limit(8)
             ->get(['id', 'team_id', 'product_id', 'planned_start_date', 'planned_end_date', 'status'])

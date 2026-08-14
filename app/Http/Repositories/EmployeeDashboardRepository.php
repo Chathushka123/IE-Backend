@@ -5,6 +5,7 @@ namespace App\Http\Repositories;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Support\FactoryContext;
+use App\Support\RequestTimezone;
 
 class EmployeeDashboardRepository
 {
@@ -25,8 +26,8 @@ class EmployeeDashboardRepository
 
     public static function getDashboardData(?string $fromDate, ?string $toDate): array
     {
-        $from = $fromDate ? Carbon::parse($fromDate)->startOfDay() : Carbon::now()->subMonths(11)->startOfMonth();
-        $to   = $toDate   ? Carbon::parse($toDate)->endOfDay()     : Carbon::now()->endOfMonth();
+        $from = $fromDate ? Carbon::parse($fromDate)->startOfDay() : RequestTimezone::todayDate()->subMonths(11)->startOfMonth();
+        $to   = $toDate   ? Carbon::parse($toDate)->endOfDay()     : RequestTimezone::todayDate()->endOfMonth();
 
         return [
             'kpis'                  => self::getKpis(),
@@ -51,8 +52,9 @@ class EmployeeDashboardRepository
         $resigned    = self::employeesQuery()->where('employee_status', 'Resigned')->count();
         $terminated  = self::employeesQuery()->where('employee_status', 'Terminated')->count();
 
-        $currentMonth = Carbon::now()->month;
-        $currentYear  = Carbon::now()->year;
+        $now          = RequestTimezone::todayDate();
+        $currentMonth = $now->month;
+        $currentYear  = $now->year;
 
         $newThisMonth = self::employeesQuery()
             ->whereMonth('joining_date', $currentMonth)
@@ -178,8 +180,8 @@ class EmployeeDashboardRepository
 
     private static function getUpcomingAnniversaries(): array
     {
-        $today          = Carbon::today();
-        $thirtyDaysLater = Carbon::today()->addDays(30);
+        $today          = RequestTimezone::todayDate();
+        $thirtyDaysLater = $today->copy()->addDays(30);
 
         $employees = self::employeesQuery()
             ->select('id', 'employee_no', 'full_name', 'first_name', 'last_name', 'joining_date')

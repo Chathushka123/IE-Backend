@@ -67,7 +67,11 @@ return [
     |
     */
 
-    'timezone' => 'Asia/Kolkata',
+    // Every datetime the app writes or reads (Carbon::now(), model timestamps,
+    // DB round-trips) must be UTC — country/region/factory-local time only
+    // ever exists at the edges (frontend display, report/export formatting),
+    // resolved per-request via App\Support\RequestTimezone. Do not change this.
+    'timezone' => 'UTC',
 
     /*
     |--------------------------------------------------------------------------
