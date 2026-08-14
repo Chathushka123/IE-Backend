@@ -5,6 +5,7 @@ namespace App\Http\Repositories;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Support\FactoryContext;
+use App\Support\RequestTimezone;
 
 class TimeStudyDashboardRepository
 {
@@ -63,10 +64,10 @@ class TimeStudyDashboardRepository
     {
         $from = !empty($filters['study_date_from'])
             ? Carbon::parse($filters['study_date_from'])->startOfDay()
-            : Carbon::now()->subMonths(11)->startOfMonth();
+            : RequestTimezone::todayDate()->subMonths(11)->startOfMonth();
         $to = !empty($filters['study_date_to'])
             ? Carbon::parse($filters['study_date_to'])->endOfDay()
-            : Carbon::now()->endOfMonth();
+            : RequestTimezone::todayDate()->endOfMonth();
 
         return [
             'kpis' => self::getKpis($filters),

@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\TimeStudy;
+use App\Support\RequestTimezone;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -132,7 +133,7 @@ class TimeStudyExport implements FromCollection, WithHeadings, WithMapping, With
             $study->efficiency_pct,
             $study->laps->count(),
             $study->downtimes->map(fn ($d) => optional($d->reason)->name)->filter()->implode(', '),
-            optional($study->created_at)->format('Y-m-d H:i'),
+            $study->created_at?->copy()->setTimezone(RequestTimezone::get())->format('Y-m-d H:i'),
         ];
     }
 

@@ -54,6 +54,10 @@ return [
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
+            // Forces the MySQL session timezone to UTC regardless of the DB
+            // server's own default, so CURRENT_TIMESTAMP/NOW() defaults and any
+            // driver-side date handling match app.timezone above.
+            'timezone' => '+00:00',
             'prefix' => '',
             'prefix_indexes' => true,
             'strict' => true,

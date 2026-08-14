@@ -33,9 +33,13 @@ class Factory extends Model
         'effective_timezone',
     ];
 
-    // Region's timezone overrides the country's default; only resolvable when
-    // those relations are eager-loaded (callers must request them explicitly
-    // to avoid an N+1 lazy-load per factory row).
+    // Region's timezone overrides the country's default. List/report paths
+    // should eager-load ['region', 'country'] to get this for free per row;
+    // callers that didn't (a stray single-record lookup, a console command)
+    // fall through to one direct lookup instead of silently getting back
+    // null — this value feeds day-boundary queries and report formatting, so
+    // it must never be unresolved. UTC is the last-resort default, matching
+    // config('app.timezone').
     public function getEffectiveTimezoneAttribute()
     {
         if ($this->relationLoaded('region') && $this->region && $this->region->timezone) {
@@ -44,7 +48,19 @@ class Factory extends Model
         if ($this->relationLoaded('country') && $this->country) {
             return $this->country->timezone;
         }
-        return null;
+
+        if (!$this->relationLoaded('region') || !$this->relationLoaded('country')) {
+            $tz = \DB::table('regions')
+                ->join('countries', 'countries.id', '=', 'regions.country_id')
+                ->where('regions.id', $this->region_id)
+                ->value(\DB::raw('COALESCE(regions.timezone, countries.timezone)'));
+
+            if ($tz) {
+                return $tz;
+            }
+        }
+
+        return config('app.timezone', 'UTC');
     }
 
     public function country()
