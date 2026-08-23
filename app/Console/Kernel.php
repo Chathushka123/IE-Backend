@@ -28,6 +28,12 @@ class Kernel extends ConsoleKernel
                  ->dailyAt('23:00')
                  ->withoutOverlapping()
                  ->appendOutputTo(storage_path('logs/inventory-snapshot.log'));
+
+        $schedule->command('http-logs:upload-missed')
+                 ->dailyAt('23:45')
+                 ->timezone('UTC')
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/http-logs-sweep.log'));
     }
 
     /**
