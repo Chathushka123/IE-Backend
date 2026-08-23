@@ -115,6 +115,13 @@ Route::prefix('v1')->group(function () {
         Route::post('teamPlans', 'Api\TeamPlanController@store')->name('teamPlans.store');
         Route::put('teamPlans/{id}', 'Api\TeamPlanController@update')->name('teamPlans.update');
 
+        // Gap Analysis — live-computed Team Plan x Operation headcount/quality gap matrix
+        Route::get('gapAnalysis', 'Api\GapAnalysisController@matrix')->name('gapAnalysis.matrix');
+        Route::get('gapAnalysis/cell', 'Api\GapAnalysisController@cell')->name('gapAnalysis.cell');
+
+        // Skill Depth / Bus-Factor — factory-wide rollup of the latest Skill Matrix Insights run
+        Route::get('skillDepth', 'Api\SkillDepthController@report')->name('skillDepth.report');
+
         // HashStore
         Route::get('hashStores/getByUuid/{uuid}', 'Api\HashStoreController@getByUuid')->name('hashStores.getByUuid');
         Route::post('hashStores', 'Api\HashStoreController@store')->name('hashStores.store');

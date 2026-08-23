@@ -119,6 +119,13 @@ $navigator_json = '
           "path":"/ts/skill-matrix-insights"
         },
         {
+          "caption":"Skill Depth",
+          "icon":"fas fa-people-group",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ts/skill-depth"
+        },
+        {
           "caption":"Time Study Reports",
           "icon":"fas fa-chart-column",
           "type":"node",
@@ -147,6 +154,13 @@ $navigator_json = '
           "type":"node",
           "permitted" : 0,
           "path":"/ie/team-plan"
+        },
+        {
+          "caption":"Gap Analysis",
+          "icon":"fas fa-triangle-exclamation",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ie/gap-analysis"
         }
       ]
     },
