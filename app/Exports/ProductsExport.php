@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use App\Customer;
 use App\Factory;
+use App\Http\Repositories\ProductRepository;
 use App\Product;
 use App\ProductCategory;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -29,18 +30,6 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
     /** Column holding the only native Excel date: Customer Requested Delivery Date. */
     const DATE_COLUMNS = ['I'];
 
-    /** Filter keys that map straight onto an equal-named `whereIn` column — see applyFilters(). */
-    const WHERE_IN_FILTERS = [
-        'customer_id',
-        'season_id',
-    ];
-
-    /** Filter key prefix => column, for the two from/to date-range filters. */
-    const DATE_RANGE_FILTERS = [
-        'created_at' => 'created_at',
-        'customer_requested_delivery_date' => 'customer_requested_delivery_date',
-    ];
-
     private array $filters;
 
     /** @param array $filters Optional export filters from the Export Filters dialog — see applyFilters(). Empty means "every product" (current behavior). */
@@ -53,39 +42,9 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
     {
         $query = Product::with(['productCategory', 'customer', 'season', 'factories']);
 
-        $this->applyFilters($query);
+        ProductRepository::applyExportFilters($query, $this->filters);
 
         return $query->get();
-    }
-
-    /** Applies every non-empty filter as an AND condition — an unset/empty filter is simply skipped, not "match nothing". */
-    private function applyFilters($query): void
-    {
-        foreach (self::WHERE_IN_FILTERS as $field) {
-            $values = $this->filters[$field] ?? null;
-            if (!empty($values)) {
-                $query->whereIn($field, (array) $values);
-            }
-        }
-
-        // factory_id is a many-to-many (factory_product pivot), not a column on products.
-        $factoryIds = $this->filters['factory_id'] ?? null;
-        if (!empty($factoryIds)) {
-            $query->whereHas('factories', function ($q) use ($factoryIds) {
-                $q->whereIn('factories.id', (array) $factoryIds);
-            });
-        }
-
-        foreach (self::DATE_RANGE_FILTERS as $filterPrefix => $column) {
-            $from = $this->filters["{$filterPrefix}_from"] ?? null;
-            $to = $this->filters["{$filterPrefix}_to"] ?? null;
-            if (!empty($from)) {
-                $query->whereDate($column, '>=', $from);
-            }
-            if (!empty($to)) {
-                $query->whereDate($column, '<=', $to);
-            }
-        }
     }
 
     public function headings(): array

@@ -21,6 +21,57 @@ use App\Http\Validators\EmployeeUpdateValidator;
 
 class EmployeeRepository
 {
+  /** Filter keys that map straight onto an equal-named `whereIn` column — see applyExportFilters(). */
+  private const EXPORT_WHERE_IN_FILTERS = [
+    'gender',
+    'marital_status',
+    'nationality',
+    'religion',
+    'country_id',
+    'factory_id',
+    'management_hierarchy_id',
+    'department_id',
+    'team_id',
+    'employment_type',
+    'employee_status',
+    'reporting_manager_id',
+    'employee_category',
+  ];
+
+  /** Filter key prefix => column, for the three from/to date-range filters. */
+  private const EXPORT_DATE_RANGE_FILTERS = [
+    'birthday' => 'birthday',
+    'joining_date' => 'joining_date',
+    'created_at' => 'created_at',
+  ];
+
+  /**
+   * Applies every non-empty filter (from the Export/Filter dialog) as an AND
+   * condition — an unset/empty filter is simply skipped, not "match nothing".
+   * Shared by EmployeesExport (Excel download) and EmployeeController::filter()
+   * (the Employees table's "Filter" button) so both stay identical by construction.
+   */
+  public static function applyExportFilters($query, array $filters): void
+  {
+    foreach (self::EXPORT_WHERE_IN_FILTERS as $field) {
+      $values = $filters[$field] ?? null;
+      if (!empty($values)) {
+        $query->whereIn($field, (array) $values);
+      }
+    }
+
+    foreach (self::EXPORT_DATE_RANGE_FILTERS as $filterPrefix => $column) {
+      $from = $filters["{$filterPrefix}_from"] ?? null;
+      $to = $filters["{$filterPrefix}_to"] ?? null;
+      if (!empty($from)) {
+        $query->whereDate($column, '>=', $from);
+      }
+      if (!empty($to)) {
+        $query->whereDate($column, '<=', $to);
+      }
+    }
+  }
+
   /**
    * Employee fields whose changes over time form the "employee journey" —
    * assignments/statuses that can legitimately change after the employee is

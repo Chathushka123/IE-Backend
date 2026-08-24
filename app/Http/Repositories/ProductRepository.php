@@ -17,6 +17,53 @@ use App\Http\Validators\ProductUpdateValidator;
 
 class ProductRepository
 {
+  /** Filter keys that map straight onto an equal-named `whereIn` column — see applyExportFilters(). */
+  private const EXPORT_WHERE_IN_FILTERS = [
+    'customer_id',
+    'season_id',
+  ];
+
+  /** Filter key prefix => column, for the two from/to date-range filters. */
+  private const EXPORT_DATE_RANGE_FILTERS = [
+    'created_at' => 'created_at',
+    'customer_requested_delivery_date' => 'customer_requested_delivery_date',
+  ];
+
+  /**
+   * Applies every non-empty filter (from the Export/Filter dialog) as an AND
+   * condition — an unset/empty filter is simply skipped, not "match nothing".
+   * Shared by ProductsExport (Excel download) and ProductController::filter()
+   * (the Products table's "Filter" button) so both stay identical by construction.
+   */
+  public static function applyExportFilters($query, array $filters): void
+  {
+    foreach (self::EXPORT_WHERE_IN_FILTERS as $field) {
+      $values = $filters[$field] ?? null;
+      if (!empty($values)) {
+        $query->whereIn($field, (array) $values);
+      }
+    }
+
+    // factory_id is a many-to-many (factory_product pivot), not a column on products.
+    $factoryIds = $filters['factory_id'] ?? null;
+    if (!empty($factoryIds)) {
+      $query->whereHas('factories', function ($q) use ($factoryIds) {
+        $q->whereIn('factories.id', (array) $factoryIds);
+      });
+    }
+
+    foreach (self::EXPORT_DATE_RANGE_FILTERS as $filterPrefix => $column) {
+      $from = $filters["{$filterPrefix}_from"] ?? null;
+      $to = $filters["{$filterPrefix}_to"] ?? null;
+      if (!empty($from)) {
+        $query->whereDate($column, '>=', $from);
+      }
+      if (!empty($to)) {
+        $query->whereDate($column, '<=', $to);
+      }
+    }
+  }
+
   public static function createRec(array $rec)
   {
     $validator = Validator::make(
