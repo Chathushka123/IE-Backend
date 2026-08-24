@@ -338,7 +338,7 @@ class SkillMatrixCalculationRepository
         return $a === $b;
     }
 
-    private static function findRunForScope(?array $requestFactoryIds = null): ?SkillMatrixCalculationRun
+    public static function findRunForScope(?array $requestFactoryIds = null): ?SkillMatrixCalculationRun
     {
         $factoryIds = $requestFactoryIds ?? (FactoryContext::isBypassed() ? null : FactoryContext::ids());
 

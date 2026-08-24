@@ -14,7 +14,14 @@ class JwtAuthenticate
     public function handle(Request $request, Closure $next)
     {
         try {
-            JWTAuth::parseToken()->authenticate();
+            $user = JWTAuth::parseToken()->authenticate();
+            if ($user) {
+                // Makes the resolved user available via the standard 'api' guard
+                // (auth('api')->user()) for anything later in the pipeline —
+                // re-parsing the token a second time is unreliable this deep in
+                // a request's lifecycle.
+                auth('api')->setUser($user);
+            }
         } catch (TokenExpiredException $e) {
             return response()->json([
                 'status' => 'error',

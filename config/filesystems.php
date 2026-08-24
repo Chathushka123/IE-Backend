@@ -65,11 +65,17 @@ return [
         ],
 
         'google' => [
-            'driver'               => 'google',
-            'service_account_file' => storage_path('app/credentials/google-service-account.json'),
-            // The ID of the folder in YOUR Google Drive that you shared with the service account.
+            'driver' => 'google',
+            // Service accounts have no storage quota and cannot write files into a
+            // personal (non-Workspace) Drive, so this disk authenticates via OAuth
+            // as a real Google account instead. Run `php artisan google-drive:authorize`
+            // once to obtain GOOGLE_DRIVE_REFRESH_TOKEN.
+            'oauth_client_id'     => env('GOOGLE_OAUTH_CLIENT_ID'),
+            'oauth_client_secret' => env('GOOGLE_OAUTH_CLIENT_SECRET'),
+            'oauth_refresh_token' => env('GOOGLE_DRIVE_REFRESH_TOKEN'),
+            // The ID of the folder in the authorized account's Drive to upload into.
             // Get it from: https://drive.google.com/drive/folders/<FOLDER_ID>
-            'shared_folder_id'     => env('GOOGLE_DRIVE_FOLDER_ID', null),
+            'shared_folder_id' => env('GOOGLE_DRIVE_FOLDER_ID', null),
         ],
 
     ],

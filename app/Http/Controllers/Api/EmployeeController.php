@@ -13,9 +13,60 @@ use Exception;
 
 class EmployeeController extends Controller
 {
-    public function export()
+    public function export(Request $request)
     {
-        return Excel::download(new EmployeesExport(), 'Employees_' . date('Y_m_d_H_i_s') . '.xlsx');
+        $filters = $request->only([
+            'gender',
+            'marital_status',
+            'nationality',
+            'religion',
+            'country_id',
+            'factory_id',
+            'management_hierarchy_id',
+            'department_id',
+            'team_id',
+            'employment_type',
+            'employee_status',
+            'reporting_manager_id',
+            'employee_category',
+            'birthday_from',
+            'birthday_to',
+            'joining_date_from',
+            'joining_date_to',
+            'created_at_from',
+            'created_at_to',
+        ]);
+
+        return Excel::download(new EmployeesExport($filters), 'Employees_' . date('Y_m_d_H_i_s') . '.xlsx');
+    }
+
+    /**
+     * Distinct values already in use for the free-text nationality/religion fields —
+     * there's no fixed master list for either, so the export filter dialog's button
+     * groups for them are built from whatever values employees actually have.
+     */
+    public function distinctValues()
+    {
+        try {
+            $nationalities = \App\Employee::whereNotNull('nationality')
+                ->where('nationality', '!=', '')
+                ->distinct()
+                ->orderBy('nationality')
+                ->pluck('nationality');
+
+            $religions = \App\Employee::whereNotNull('religion')
+                ->where('religion', '!=', '')
+                ->distinct()
+                ->orderBy('religion')
+                ->pluck('religion');
+
+            return response()->json([
+                'status' => 'success',
+                'data' => ['nationalities' => $nationalities, 'religions' => $religions],
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 400);
+        }
     }
 
     /**
@@ -54,6 +105,17 @@ class EmployeeController extends Controller
             ])->findOrFail($id);
 
             return response()->json(['status' => 'success', 'data' => $employee], 200);
+        } catch (Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 400);
+        }
+    }
+
+    public function journey($id)
+    {
+        try {
+            \App\Employee::findOrFail($id);
+            $journey = EmployeeRepository::getJourney($id);
+            return response()->json(['status' => 'success', 'data' => $journey], 200);
         } catch (Exception $e) {
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 400);
         }

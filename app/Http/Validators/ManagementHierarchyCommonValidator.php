@@ -11,6 +11,7 @@ class ManagementHierarchyCommonValidator
       'code' => 'nullable|string|max:50',
       'seq_no' => 'required|integer|min:0',
       'is_active' => 'nullable|boolean',
+      'retirement_age' => 'nullable|integer|min:16|max:70',
     ];
   }
 }

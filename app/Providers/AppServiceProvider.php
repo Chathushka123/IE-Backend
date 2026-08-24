@@ -34,8 +34,10 @@ class AppServiceProvider extends ServiceProvider
 
         Storage::extend('google', function ($app, $config) {
             $client = new GoogleClient();
-            $client->setAuthConfig($config['service_account_file']);
+            $client->setClientId($config['oauth_client_id']);
+            $client->setClientSecret($config['oauth_client_secret']);
             $client->setScopes([GoogleDrive::DRIVE]);
+            $client->fetchAccessTokenWithRefreshToken($config['oauth_refresh_token']);
 
             $service = new GoogleDrive($client);
 
