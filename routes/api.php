@@ -38,9 +38,13 @@ Route::prefix('v1')->group(function () {
         Route::get('dashboard/overview', 'Api\DashboardController@overview')->name('dashboard.overview');
 
         // Employees
-        Route::get('employees/export', 'Api\EmployeeController@export')->name('employees.export');
+        // POST, not GET: the export filter dialog can send several multi-value
+        // (array) filters at once, which doesn't fit cleanly in a query string.
+        Route::post('employees/export', 'Api\EmployeeController@export')->name('employees.export');
         Route::post('employees/import', 'Api\EmployeeController@import')->name('employees.import');
         Route::get('employees/dashboard', 'Api\EmployeeController@dashboard')->name('employees.dashboard');
+        Route::get('employees/distinct-values', 'Api\EmployeeController@distinctValues')->name('employees.distinctValues');
+        Route::get('employees/{id}/journey', 'Api\EmployeeController@journey')->name('employees.journey');
         Route::get('employees/{id}', 'Api\EmployeeController@show')->name('employees.show');
         Route::post('employees', 'Api\EmployeeController@store')->name('employees.store');
         Route::put('employees/{id}', 'Api\EmployeeController@update')->name('employees.update');

@@ -22,6 +22,8 @@ class EmployeeCommonValidator
       'postal_code' => 'nullable|string|max:20',
       'country_id' => 'nullable|integer|exists:countries,id',
       'marital_status' => 'nullable|in:Single,Married,Divorced,Other',
+      'nationality' => 'nullable|string|max:255',
+      'religion' => 'nullable|string|max:255',
       'photo_url' => 'nullable|string|max:500',
       'management_hierarchy_id' => 'required|integer|exists:management_hierarchies,id',
       'factory_id' => 'required|integer|exists:factories,id',

@@ -4,11 +4,13 @@ namespace App\Http\Repositories;
 
 use App\Country;
 use App\Employee;
+use App\EmployeeFieldChange;
 use App\ManagementHierarchy;
 use App\Factory;
 use App\Department;
 use App\Designation;
 use App\Team;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -19,6 +21,33 @@ use App\Http\Validators\EmployeeUpdateValidator;
 
 class EmployeeRepository
 {
+  /**
+   * Employee fields whose changes over time form the "employee journey" —
+   * assignments/statuses that can legitimately change after the employee is
+   * created, as opposed to fixed identity data (name, NIC, birthday, ...).
+   */
+  private const TRACKED_FIELDS = [
+    'marital_status',
+    'factory_id',
+    'management_hierarchy_id',
+    'department_id',
+    'team_id',
+    'designation_id',
+    'employment_type',
+    'employee_category',
+    'employee_status',
+    'reporting_manager_id',
+  ];
+
+  /** Foreign-key tracked fields, mapped to the model whose `name` resolves a human-readable label. */
+  private const FIELD_LOOKUP_MODELS = [
+    'factory_id' => Factory::class,
+    'management_hierarchy_id' => ManagementHierarchy::class,
+    'department_id' => Department::class,
+    'team_id' => Team::class,
+    'designation_id' => Designation::class,
+  ];
+
   public static function createRec(array $rec)
   {
     $validator = Validator::make(
@@ -31,6 +60,7 @@ class EmployeeRepository
     Utilities::assertFactoryIdAllowed($rec['factory_id']);
     try {
       $model = Employee::create($rec);
+      self::recordFieldChanges($model->id, array_fill_keys(self::TRACKED_FIELDS, null), $model->only(self::TRACKED_FIELDS));
     } catch (Exception $e) {
       throw new \App\Exceptions\GeneralException($e->getMessage());
     }
@@ -45,6 +75,7 @@ class EmployeeRepository
       $entity = (new \ReflectionClass($model))->getShortName();
       throw new \App\Exceptions\ConcurrencyCheckFailedException($entity);
     }
+    $oldValues = $model->only(self::TRACKED_FIELDS);
     Utilities::hydrate($model, $rec);
     $validator = Validator::make(
       $rec,
@@ -56,10 +87,85 @@ class EmployeeRepository
     Utilities::assertFactoryIdAllowed($rec['factory_id']);
     try {
       $model->update($rec);
+      self::recordFieldChanges($model->id, $oldValues, $model->only(self::TRACKED_FIELDS));
     } catch (Exception $e) {
       throw new \App\Exceptions\GeneralException($e->getMessage());
     }
     return $model;
+  }
+
+  /**
+   * Returns the employee's journey — one row per tracked-field value change
+   * (including the baseline set at creation), newest first.
+   */
+  public static function getJourney($employeeId)
+  {
+    return EmployeeFieldChange::where('employee_id', $employeeId)
+      ->orderByDesc('created_at')
+      ->orderByDesc('id')
+      ->get();
+  }
+
+  /**
+   * Diffs tracked-field old/new values and inserts one EmployeeFieldChange row
+   * per field that actually changed, with a human-readable label snapshot for
+   * FK fields so history stays readable even if the referenced record is
+   * later renamed or deleted.
+   */
+  private static function recordFieldChanges($employeeId, array $oldValues, array $newValues)
+  {
+    $user = Auth::user();
+    $now = now();
+    $rows = [];
+
+    foreach (self::TRACKED_FIELDS as $field) {
+      $old = $oldValues[$field] ?? null;
+      $new = $newValues[$field] ?? null;
+      if ((string) $old === (string) $new) {
+        continue;
+      }
+      $rows[] = [
+        'employee_id' => $employeeId,
+        'field' => $field,
+        'old_value' => $old !== null ? (string) $old : null,
+        'new_value' => $new !== null ? (string) $new : null,
+        'old_label' => self::resolveFieldLabel($field, $old),
+        'new_label' => self::resolveFieldLabel($field, $new),
+        'changed_by_user_id' => $user->id ?? null,
+        'changed_by_name' => $user->name ?? null,
+        'created_at' => $now,
+      ];
+    }
+
+    if (!empty($rows)) {
+      EmployeeFieldChange::insert($rows);
+    }
+  }
+
+  private static function resolveFieldLabel($field, $value)
+  {
+    if ($value === null) {
+      return null;
+    }
+
+    if ($field === 'reporting_manager_id') {
+      $manager = Employee::find($value);
+      if (!$manager) {
+        return null;
+      }
+      $name = $manager->full_name ?: trim($manager->first_name . ' ' . $manager->last_name);
+      return "{$manager->employee_no} – {$name}";
+    }
+
+    $modelClass = self::FIELD_LOOKUP_MODELS[$field] ?? null;
+    if ($modelClass === null) {
+      // Plain enum/string field (marital_status, employment_type, employee_category,
+      // employee_status) — the raw value is already human-readable.
+      return $value;
+    }
+
+    $record = $modelClass::find($value);
+    return $record ? $record->name : null;
   }
 
   public static function createMultipleRecs($master_id, array $recs)
@@ -175,6 +281,8 @@ class EmployeeRepository
     self::setIfNotNull($rec, 'email_address', self::blankToNull($row['email_address'] ?? null));
     self::setIfNotNull($rec, 'contact_no', self::joinContactNo($row['contact_country_code'] ?? null, $row['contact_no'] ?? null));
     self::setIfNotNull($rec, 'marital_status', self::blankToNull($row['marital_status'] ?? null));
+    self::setIfNotNull($rec, 'nationality', self::blankToNull($row['nationality'] ?? null));
+    self::setIfNotNull($rec, 'religion', self::blankToNull($row['religion'] ?? null));
     self::setIfNotNull($rec, 'street_name', self::blankToNull($row['street_name'] ?? null));
     self::setIfNotNull($rec, 'house_no', self::blankToNull($row['house_no'] ?? null));
     self::setIfNotNull($rec, 'address_line', self::blankToNull($row['address_line'] ?? null));

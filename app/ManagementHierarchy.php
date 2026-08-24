@@ -26,6 +26,7 @@ class ManagementHierarchy extends Model
         'code',
         'seq_no',
         'is_active',
+        'retirement_age',
     ];
 
     public function employees()

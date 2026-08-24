@@ -37,6 +37,8 @@ class Employee extends Model
         'contact_no',
         'address',
         'marital_status',
+        'nationality',
+        'religion',
         'photo_url',
         'street_name',
         'house_no',
@@ -64,6 +66,24 @@ class Employee extends Model
         'leaving_date' => 'date',
         'confirmation_date' => 'date',
     ];
+
+    // Derived, not stored: birthday + the employee's management hierarchy's
+    // retirement_age. Recomputes on every read so it never goes stale if
+    // either value changes later — avoids the invalidation problem a
+    // persisted column would need (e.g. a hierarchy's retirement_age
+    // changing would otherwise require recomputing every employee under it).
+    protected $appends = ['retirement_date'];
+
+    public function getRetirementDateAttribute(): ?string
+    {
+        if (!$this->birthday || !$this->managementHierarchy) {
+            return null;
+        }
+
+        return $this->birthday->copy()
+            ->addYears($this->managementHierarchy->retirement_age)
+            ->toDateString();
+    }
 
     public function managementHierarchy()
     {
