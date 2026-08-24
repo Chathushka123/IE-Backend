@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Customer;
+use App\Factory;
 use App\Product;
 use App\ProductCategory;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -28,9 +29,63 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
     /** Column holding the only native Excel date: Customer Requested Delivery Date. */
     const DATE_COLUMNS = ['I'];
 
+    /** Filter keys that map straight onto an equal-named `whereIn` column — see applyFilters(). */
+    const WHERE_IN_FILTERS = [
+        'customer_id',
+        'season_id',
+    ];
+
+    /** Filter key prefix => column, for the two from/to date-range filters. */
+    const DATE_RANGE_FILTERS = [
+        'created_at' => 'created_at',
+        'customer_requested_delivery_date' => 'customer_requested_delivery_date',
+    ];
+
+    private array $filters;
+
+    /** @param array $filters Optional export filters from the Export Filters dialog — see applyFilters(). Empty means "every product" (current behavior). */
+    public function __construct(array $filters = [])
+    {
+        $this->filters = $filters;
+    }
+
     public function collection()
     {
-        return Product::with(['productCategory', 'customer', 'season'])->get();
+        $query = Product::with(['productCategory', 'customer', 'season', 'factories']);
+
+        $this->applyFilters($query);
+
+        return $query->get();
+    }
+
+    /** Applies every non-empty filter as an AND condition — an unset/empty filter is simply skipped, not "match nothing". */
+    private function applyFilters($query): void
+    {
+        foreach (self::WHERE_IN_FILTERS as $field) {
+            $values = $this->filters[$field] ?? null;
+            if (!empty($values)) {
+                $query->whereIn($field, (array) $values);
+            }
+        }
+
+        // factory_id is a many-to-many (factory_product pivot), not a column on products.
+        $factoryIds = $this->filters['factory_id'] ?? null;
+        if (!empty($factoryIds)) {
+            $query->whereHas('factories', function ($q) use ($factoryIds) {
+                $q->whereIn('factories.id', (array) $factoryIds);
+            });
+        }
+
+        foreach (self::DATE_RANGE_FILTERS as $filterPrefix => $column) {
+            $from = $this->filters["{$filterPrefix}_from"] ?? null;
+            $to = $this->filters["{$filterPrefix}_to"] ?? null;
+            if (!empty($from)) {
+                $query->whereDate($column, '>=', $from);
+            }
+            if (!empty($to)) {
+                $query->whereDate($column, '<=', $to);
+            }
+        }
     }
 
     public function headings(): array
@@ -47,6 +102,7 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
             'Customer Requested Delivery Date',
             'Planned Efficiency %',
             'Active',
+            'Factories',
         ];
     }
 
@@ -64,6 +120,7 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
             $this->toExcelDate($product->customer_requested_delivery_date),
             $product->planned_efficiency_pct,
             $product->is_active ? 'Yes' : 'No',
+            $product->factories->isNotEmpty() ? $product->factories->pluck('name')->implode(', ') : null,
         ];
     }
 
@@ -114,6 +171,17 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
         $this->applyRangeList($sheet, 'D', $lastRow, $ranges['category'], 'Product Category', 'Pick from the list — must match an existing product category exactly.');
         $this->applyRangeList($sheet, 'E', $lastRow, $ranges['customer'], 'Customer', 'Pick from the list — must match an existing customer exactly.');
 
+        // Factories is comma-separated (a product can belong to several), so it can't use
+        // Excel's single-value list validation like the columns above — this only attaches
+        // an input prompt pointing at the same hidden Lists sheet for reference.
+        $this->applyPrompt(
+            $sheet,
+            'L',
+            $lastRow,
+            'Factories',
+            'Comma-separated, must match factory names exactly (see the hidden Lists sheet, column C). Leave blank to leave a product\'s existing factories unchanged on update.'
+        );
+
         foreach (self::DATE_COLUMNS as $column) {
             $this->applyDateValidation($sheet, $column, $lastRow);
         }
@@ -132,6 +200,7 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
         $columns = [
             'A' => ProductCategory::where('is_active', true)->orderBy('name')->pluck('name'),
             'B' => Customer::where('is_active', true)->orderBy('description')->pluck('description'),
+            'C' => Factory::where('is_active', true)->orderBy('name')->pluck('name'),
         ];
 
         $lastRows = [];
@@ -149,6 +218,7 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
         return [
             'category' => "Lists!\$A\$2:\$A\${$lastRows['A']}",
             'customer' => "Lists!\$B\$2:\$B\${$lastRows['B']}",
+            'factory' => "Lists!\$C\$2:\$C\${$lastRows['C']}",
         ];
     }
 
@@ -162,6 +232,26 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
         // Range references must NOT have a leading '=' (unlike a normal cell formula) —
         // PhpSpreadsheet writes this straight into the OOXML <formula1> element as-is.
         $this->applyValidation($sheet, $column, $lastRow, $rangeFormula, $promptTitle, $prompt);
+    }
+
+    /**
+     * Attaches an input-message-only hint to a column — no restriction on what can be
+     * typed, just a tooltip shown when the cell is selected. Used for Factories, which
+     * can't take Excel's single-value list validation since one cell holds several
+     * comma-separated names.
+     */
+    private function applyPrompt(Worksheet $sheet, string $column, int $lastRow, string $promptTitle, string $prompt): void
+    {
+        $validation = new DataValidation();
+        $validation->setType(DataValidation::TYPE_NONE);
+        $validation->setAllowBlank(true);
+        $validation->setShowInputMessage(true);
+        $validation->setPromptTitle($promptTitle);
+        $validation->setPrompt($prompt);
+
+        for ($row = 2; $row <= $lastRow; $row++) {
+            $sheet->getCell("{$column}{$row}")->setDataValidation(clone $validation);
+        }
     }
 
     private function applyValidation(Worksheet $sheet, string $column, int $lastRow, string $formula1, ?string $promptTitle, ?string $prompt): void

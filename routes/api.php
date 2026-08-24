@@ -50,8 +50,11 @@ Route::prefix('v1')->group(function () {
         Route::put('employees/{id}', 'Api\EmployeeController@update')->name('employees.update');
 
         // Products — export/import only; CRUD goes through the generic masterDetails endpoint
-        Route::get('products/export', 'Api\ProductController@export')->name('products.export');
+        // POST, not GET: the export filter dialog can send several multi-value
+        // (array) filters at once, which doesn't fit cleanly in a query string.
+        Route::post('products/export', 'Api\ProductController@export')->name('products.export');
         Route::post('products/import', 'Api\ProductController@import')->name('products.import');
+        Route::get('products/byFactories', 'Api\ProductController@getByFactories')->name('products.byFactories');
 
         // Auth
         Route::get('user', 'Api\AuthController@user')->name('user.get');
