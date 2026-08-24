@@ -5,6 +5,7 @@ namespace App\Http\Repositories;
 use App\Product;
 use App\ProductCategory;
 use App\Customer;
+use App\Factory;
 use App\Season;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -180,6 +181,7 @@ class ProductRepository
     self::setIfNotNull($rec, 'customer_requested_delivery_date', self::parseImportDate($row['customer_requested_delivery_date'] ?? null));
     self::setIfNotNull($rec, 'planned_efficiency_pct', self::parsePercent($row['planned_efficiency_pct'] ?? null));
     self::setIfNotNull($rec, 'is_active', self::parseBoolean($row['active'] ?? null));
+    self::setIfNotNull($rec, 'factory_ids', self::resolveFactoryIds($row['factories'] ?? null));
 
     return $rec;
   }
@@ -287,6 +289,44 @@ class ProductRepository
       throw new Exception("{$label} '{$value}' not found");
     }
     return $match->id;
+  }
+
+  /**
+   * Resolves a comma-separated "Factories" cell ("QCL Horana, QCL Ratmalana") to an array
+   * of factory IDs. Matching is exact (case-insensitive, trimmed) — no fuzzy correction,
+   * since silently mapping a typo to the wrong factory would be worse than failing the
+   * row. Any name that doesn't match an existing factory fails the whole row so a typo
+   * (e.g. "QCL Horna") is never silently dropped or misassigned.
+   */
+  private static function resolveFactoryIds($value)
+  {
+    $names = self::parseListField($value);
+    if ($names === null) {
+      return null;
+    }
+
+    $idsByLowerName = [];
+    foreach (Factory::pluck('id', 'name') as $name => $id) {
+      $idsByLowerName[Str::lower(trim($name))] = $id;
+    }
+
+    $ids = [];
+    $notFound = [];
+    foreach ($names as $name) {
+      $key = Str::lower(trim($name));
+      if (array_key_exists($key, $idsByLowerName)) {
+        $ids[] = $idsByLowerName[$key];
+      } else {
+        $notFound[] = $name;
+      }
+    }
+
+    if (!empty($notFound)) {
+      $list = implode("', '", $notFound);
+      throw new Exception("Factories: '{$list}' not found — check spelling against the factory master list.");
+    }
+
+    return array_values(array_unique($ids));
   }
 
   /** Seasons are scoped to a customer, so resolution needs the row's already-resolved customer_id, not just a global name lookup. */
