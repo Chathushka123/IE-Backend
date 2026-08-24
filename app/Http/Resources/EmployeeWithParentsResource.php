@@ -12,6 +12,7 @@ class EmployeeWithParentsResource extends JsonResource
             'id' => $this->id,
             'employee_no' => $this->employee_no,
             'identification_no' => $this->identification_no,
+            'epf_no' => $this->epf_no,
             'full_name' => $this->full_name,
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,

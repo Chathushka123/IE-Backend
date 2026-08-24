@@ -256,35 +256,35 @@ class EmployeeRepository
 
   /**
    * Bulk create/update from an Excel import. Rows are matched to an existing employee by
-   * employee_no + factory (employee_no is only unique per factory, not globally — see
-   * migration 2026_08_07_000002). Each row is processed in its own transaction so one bad
-   * row doesn't affect the rest — failures are collected and returned instead of aborting
-   * the whole file.
+   * identification_no (trimmed + uppercased, same normalization used for comparison
+   * elsewhere) — it's required and globally unique, unlike employee_no which is now
+   * server-generated (see Employee::boot()) and never present in the uploaded file. Each
+   * row is processed in its own transaction so one bad row doesn't affect the rest —
+   * failures are collected and returned instead of aborting the whole file.
    */
   public static function importRows($rows)
   {
     $summary = ['total' => 0, 'created' => 0, 'updated' => 0, 'failed' => []];
-    $seenEmployeeNos = [];
+    $seenIdentificationNos = [];
 
     foreach ($rows as $index => $row) {
       $rowNumber = $index + 2; // +1 for 0-index, +1 for the heading row
       $summary['total']++;
-      $employeeNo = Str::upper(trim((string) ($row['employee_no'] ?? '')));
+      $identificationNo = Str::upper(trim((string) ($row['identification_no'] ?? '')));
 
       try {
-        if ($employeeNo === '') {
-          throw new Exception('Employee No is required');
+        if ($identificationNo === '') {
+          throw new Exception('NIC No / Passport No / Driving Licence No is required');
         }
 
-        $rec = self::mapImportRow($row, $employeeNo);
+        $rec = self::mapImportRow($row, $identificationNo);
 
-        $seenKey = $employeeNo . '::' . $rec['factory_id'];
-        if (isset($seenEmployeeNos[$seenKey])) {
-          throw new Exception("Duplicate Employee No '{$employeeNo}' in file for this factory (first seen at row {$seenEmployeeNos[$seenKey]})");
+        if (isset($seenIdentificationNos[$identificationNo])) {
+          throw new Exception("Duplicate NIC No / Passport No / Driving Licence No '{$identificationNo}' in file (first seen at row {$seenIdentificationNos[$identificationNo]})");
         }
-        $seenEmployeeNos[$seenKey] = $rowNumber;
+        $seenIdentificationNos[$identificationNo] = $rowNumber;
 
-        $existing = Employee::where('employee_no', $employeeNo)->where('factory_id', $rec['factory_id'])->first();
+        $existing = Employee::where('identification_no', $identificationNo)->first();
 
         DB::beginTransaction();
         if ($existing) {
@@ -300,7 +300,7 @@ class EmployeeRepository
         DB::rollBack();
         $summary['failed'][] = [
           'row' => $rowNumber,
-          'employee_no' => $employeeNo ?: null,
+          'identification_no' => $identificationNo ?: null,
           'error' => self::unwrapExceptionMessage($e),
         ];
       }
@@ -315,11 +315,10 @@ class EmployeeRepository
    * existing employee's value untouched on update (Utilities::hydrate fills
    * missing keys) and lets the DB column default apply on create.
    */
-  private static function mapImportRow($row, $employeeNo)
+  private static function mapImportRow($row, $identificationNo)
   {
     $rec = [
-      'employee_no' => $employeeNo,
-      'identification_no' => trim((string) ($row['identification_no'] ?? '')),
+      'identification_no' => $identificationNo,
       'first_name' => trim((string) ($row['first_name'] ?? '')),
       'last_name' => trim((string) ($row['last_name'] ?? '')),
       'management_hierarchy_id' => self::resolveForeignKey(ManagementHierarchy::class, $row['management_hierarchy'] ?? null, 'Management Hierarchy', true),
@@ -334,6 +333,7 @@ class EmployeeRepository
     self::setIfNotNull($rec, 'marital_status', self::blankToNull($row['marital_status'] ?? null));
     self::setIfNotNull($rec, 'nationality', self::blankToNull($row['nationality'] ?? null));
     self::setIfNotNull($rec, 'religion', self::blankToNull($row['religion'] ?? null));
+    self::setIfNotNull($rec, 'epf_no', self::blankToNull($row['epf_no'] ?? null));
     self::setIfNotNull($rec, 'street_name', self::blankToNull($row['street_name'] ?? null));
     self::setIfNotNull($rec, 'house_no', self::blankToNull($row['house_no'] ?? null));
     self::setIfNotNull($rec, 'address_line', self::blankToNull($row['address_line'] ?? null));

@@ -94,6 +94,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             'Factory',
             'Nationality',
             'Religion',
+            'EPF No',
             // Read-only/computed — not part of IMPORT_HEADER_MAP on the frontend, so
             // re-uploading an exported file leaves this column ignored rather than
             // trying to set it directly.
@@ -141,6 +142,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             optional($employee->factory)->name,
             $employee->nationality,
             $employee->religion,
+            $employee->epf_no,
             $this->toExcelDate($employee->retirement_date ? \Carbon\Carbon::parse($employee->retirement_date) : null),
         ];
     }
@@ -182,7 +184,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             // Retirement Date is read-only/computed (see headings()) — formatted for display
             // only, deliberately not in DATE_COLUMNS since that also drives input validation
             // for the editable date columns below.
-            ['AG' => NumberFormat::FORMAT_DATE_YYYYMMDD]
+            ['AH' => NumberFormat::FORMAT_DATE_YYYYMMDD]
         );
     }
 
