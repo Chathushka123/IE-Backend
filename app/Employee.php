@@ -18,9 +18,19 @@ class Employee extends Model
             $model->created_by_id = $user->id;
             $model->updated_by_id = $user->id;
         });
+        // employee_no is server-generated from the row's id (see `created` below), so the
+        // column is nullable at the DB level to allow the initial INSERT before the id is
+        // known — an update slipping a value in here would leave it silently overridable.
+        static::created(function ($model) {
+            $model->employee_no = 'EMP-' . str_pad($model->id, 5, '0', STR_PAD_LEFT);
+            $model->saveQuietly();
+        });
         static::updating(function ($model) {
             $user = Auth::user();
             $model->updated_by_id = $user->id;
+            if ($model->isDirty('employee_no')) {
+                $model->employee_no = $model->getOriginal('employee_no');
+            }
         });
     }
 
@@ -28,6 +38,7 @@ class Employee extends Model
         'factory_id',
         'employee_no',
         'identification_no',
+        'epf_no',
         'full_name',
         'first_name',
         'last_name',

@@ -6,6 +6,7 @@ use App\Country;
 use App\Department;
 use App\Designation;
 use App\Employee;
+use App\Http\Repositories\EmployeeRepository;
 use App\ManagementHierarchy;
 use App\Factory;
 use App\Team;
@@ -32,30 +33,6 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
     /** Columns holding native Excel dates: Birthday, Joining/Leaving/Confirmation Date. */
     const DATE_COLUMNS = ['G', 'W', 'X', 'Y'];
 
-    /** Filter keys that map straight onto an equal-named `whereIn` column — see applyFilters(). */
-    const WHERE_IN_FILTERS = [
-        'gender',
-        'marital_status',
-        'nationality',
-        'religion',
-        'country_id',
-        'factory_id',
-        'management_hierarchy_id',
-        'department_id',
-        'team_id',
-        'employment_type',
-        'employee_status',
-        'reporting_manager_id',
-        'employee_category',
-    ];
-
-    /** Filter key prefix => column, for the three from/to date-range filters. */
-    const DATE_RANGE_FILTERS = [
-        'birthday' => 'birthday',
-        'joining_date' => 'joining_date',
-        'created_at' => 'created_at',
-    ];
-
     private array $filters;
 
     /** @param array $filters Optional export filters from the Export Filters dialog — see applyFilters(). Empty means "everyone" (current behavior). */
@@ -77,31 +54,9 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             'baseTeam',
         ]);
 
-        $this->applyFilters($query);
+        EmployeeRepository::applyExportFilters($query, $this->filters);
 
         return $query->get();
-    }
-
-    /** Applies every non-empty filter as an AND condition — an unset/empty filter is simply skipped, not "match nothing". */
-    private function applyFilters($query): void
-    {
-        foreach (self::WHERE_IN_FILTERS as $field) {
-            $values = $this->filters[$field] ?? null;
-            if (!empty($values)) {
-                $query->whereIn($field, (array) $values);
-            }
-        }
-
-        foreach (self::DATE_RANGE_FILTERS as $filterPrefix => $column) {
-            $from = $this->filters["{$filterPrefix}_from"] ?? null;
-            $to = $this->filters["{$filterPrefix}_to"] ?? null;
-            if (!empty($from)) {
-                $query->whereDate($column, '>=', $from);
-            }
-            if (!empty($to)) {
-                $query->whereDate($column, '<=', $to);
-            }
-        }
     }
 
     public function headings(): array
@@ -139,6 +94,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             'Factory',
             'Nationality',
             'Religion',
+            'EPF No',
             // Read-only/computed — not part of IMPORT_HEADER_MAP on the frontend, so
             // re-uploading an exported file leaves this column ignored rather than
             // trying to set it directly.
@@ -186,6 +142,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             optional($employee->factory)->name,
             $employee->nationality,
             $employee->religion,
+            $employee->epf_no,
             $this->toExcelDate($employee->retirement_date ? \Carbon\Carbon::parse($employee->retirement_date) : null),
         ];
     }
@@ -227,7 +184,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             // Retirement Date is read-only/computed (see headings()) — formatted for display
             // only, deliberately not in DATE_COLUMNS since that also drives input validation
             // for the editable date columns below.
-            ['AG' => NumberFormat::FORMAT_DATE_YYYYMMDD]
+            ['AH' => NumberFormat::FORMAT_DATE_YYYYMMDD]
         );
     }
 

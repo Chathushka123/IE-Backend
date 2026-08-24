@@ -41,6 +41,7 @@ Route::prefix('v1')->group(function () {
         // POST, not GET: the export filter dialog can send several multi-value
         // (array) filters at once, which doesn't fit cleanly in a query string.
         Route::post('employees/export', 'Api\EmployeeController@export')->name('employees.export');
+        Route::post('employees/filter', 'Api\EmployeeController@filter')->name('employees.filter');
         Route::post('employees/import', 'Api\EmployeeController@import')->name('employees.import');
         Route::get('employees/dashboard', 'Api\EmployeeController@dashboard')->name('employees.dashboard');
         Route::get('employees/distinct-values', 'Api\EmployeeController@distinctValues')->name('employees.distinctValues');
@@ -53,6 +54,7 @@ Route::prefix('v1')->group(function () {
         // POST, not GET: the export filter dialog can send several multi-value
         // (array) filters at once, which doesn't fit cleanly in a query string.
         Route::post('products/export', 'Api\ProductController@export')->name('products.export');
+        Route::post('products/filter', 'Api\ProductController@filter')->name('products.filter');
         Route::post('products/import', 'Api\ProductController@import')->name('products.import');
         Route::get('products/byFactories', 'Api\ProductController@getByFactories')->name('products.byFactories');
 

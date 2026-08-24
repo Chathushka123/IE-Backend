@@ -68,7 +68,6 @@ class EmployeeImportTest extends TestCase
     private function baseRow(array $overrides = []): array
     {
         return array_merge([
-            'employee_no' => 'EMP001',
             'identification_no' => '199012345678',
             'full_name' => 'John Doe',
             'first_name' => 'John',
@@ -113,10 +112,14 @@ class EmployeeImportTest extends TestCase
         $this->assertSame(1, $summary['created']);
         $this->assertSame(0, $summary['updated']);
         $this->assertEmpty($summary['failed']);
-        $this->assertDatabaseHas('employees', ['employee_no' => 'EMP001', 'last_name' => 'Doe']);
+        $this->assertDatabaseHas('employees', ['identification_no' => '199012345678', 'last_name' => 'Doe']);
+
+        // employee_no is server-generated, not taken from the file.
+        $employee = Employee::where('identification_no', '199012345678')->first();
+        $this->assertMatchesRegularExpression('/^EMP-\d{5,}$/', $employee->employee_no);
     }
 
-    public function test_updates_existing_employee_matched_by_employee_no()
+    public function test_updates_existing_employee_matched_by_identification_no()
     {
         $this->actingAsUser();
         $this->makeManagementHierarchy();
@@ -128,8 +131,8 @@ class EmployeeImportTest extends TestCase
         $this->assertSame(0, $summary['created']);
         $this->assertSame(1, $summary['updated']);
         $this->assertEmpty($summary['failed']);
-        $this->assertSame(1, Employee::where('employee_no', 'EMP001')->count());
-        $this->assertDatabaseHas('employees', ['employee_no' => 'EMP001', 'last_name' => 'Smith']);
+        $this->assertSame(1, Employee::where('identification_no', '199012345678')->count());
+        $this->assertDatabaseHas('employees', ['identification_no' => '199012345678', 'last_name' => 'Smith']);
     }
 
     public function test_blank_optional_cell_does_not_clear_existing_value_on_update()
@@ -141,7 +144,7 @@ class EmployeeImportTest extends TestCase
         EmployeeRepository::importRows(collect([$this->baseRow(['contact_no' => '0711234567'])]));
         EmployeeRepository::importRows(collect([$this->baseRow(['contact_no' => null])]));
 
-        $this->assertDatabaseHas('employees', ['employee_no' => 'EMP001', 'contact_no' => '+94-0711234567']);
+        $this->assertDatabaseHas('employees', ['identification_no' => '199012345678', 'contact_no' => '+94-0711234567']);
     }
 
     public function test_row_with_unknown_category_fails_without_aborting_other_rows()
@@ -152,7 +155,7 @@ class EmployeeImportTest extends TestCase
 
         $rows = collect([
             $this->baseRow(['management_hierarchy' => 'Does Not Exist']),
-            $this->baseRow(['employee_no' => 'EMP002', 'identification_no' => '199099998888']),
+            $this->baseRow(['identification_no' => '199099998888']),
         ]);
 
         $summary = EmployeeRepository::importRows($rows);
@@ -161,11 +164,11 @@ class EmployeeImportTest extends TestCase
         $this->assertCount(1, $summary['failed']);
         $this->assertSame(2, $summary['failed'][0]['row']);
         $this->assertStringContainsString('Management Hierarchy', $summary['failed'][0]['error']);
-        $this->assertDatabaseMissing('employees', ['employee_no' => 'EMP001']);
-        $this->assertDatabaseHas('employees', ['employee_no' => 'EMP002']);
+        $this->assertDatabaseMissing('employees', ['identification_no' => '199012345678']);
+        $this->assertDatabaseHas('employees', ['identification_no' => '199099998888']);
     }
 
-    public function test_duplicate_employee_no_within_file_is_rejected_after_the_first_row()
+    public function test_duplicate_identification_no_within_file_is_rejected_after_the_first_row()
     {
         $this->actingAsUser();
         $this->makeManagementHierarchy();
@@ -173,7 +176,7 @@ class EmployeeImportTest extends TestCase
 
         $rows = collect([
             $this->baseRow(),
-            $this->baseRow(['identification_no' => '199099998888']),
+            $this->baseRow(),
         ]);
 
         $summary = EmployeeRepository::importRows($rows);
@@ -181,20 +184,23 @@ class EmployeeImportTest extends TestCase
         $this->assertSame(1, $summary['created']);
         $this->assertCount(1, $summary['failed']);
         $this->assertStringContainsString('Duplicate', $summary['failed'][0]['error']);
-        $this->assertSame(1, Employee::where('employee_no', 'EMP001')->count());
+        $this->assertSame(1, Employee::where('identification_no', '199012345678')->count());
     }
 
-    public function test_employee_no_is_normalized_to_uppercase()
+    public function test_identification_no_is_normalized_to_uppercase()
     {
         $this->actingAsUser();
         $this->makeManagementHierarchy();
         $this->makeFactory();
 
-        $summary = EmployeeRepository::importRows(collect([$this->baseRow(['employee_no' => 'emp001'])]));
+        $summary = EmployeeRepository::importRows(collect([$this->baseRow(['identification_no' => '199012345678v'])]));
 
         $this->assertSame(1, $summary['created']);
-        $this->assertDatabaseHas('employees', ['employee_no' => 'EMP001']);
-        $this->assertDatabaseMissing('employees', ['employee_no' => 'emp001']);
+        // identification_no uses MySQL's default case-insensitive collation, so a DB query
+        // can't distinguish "V" from "v" — compare the stored PHP value directly instead.
+        $employee = Employee::where('identification_no', '199012345678V')->first();
+        $this->assertNotNull($employee);
+        $this->assertSame('199012345678V', $employee->identification_no);
     }
 
     public function test_numeric_contact_no_cell_is_coerced_to_string()
@@ -210,7 +216,7 @@ class EmployeeImportTest extends TestCase
 
         $this->assertSame(1, $summary['created']);
         $this->assertEmpty($summary['failed']);
-        $this->assertDatabaseHas('employees', ['employee_no' => 'EMP001', 'contact_no' => '+94-771234567']);
+        $this->assertDatabaseHas('employees', ['identification_no' => '199012345678', 'contact_no' => '+94-771234567']);
     }
 
     public function test_contact_country_code_cell_is_used_when_given()
@@ -224,7 +230,7 @@ class EmployeeImportTest extends TestCase
         ]));
 
         $this->assertSame(1, $summary['created']);
-        $this->assertDatabaseHas('employees', ['employee_no' => 'EMP001', 'contact_no' => '+44-7911123456']);
+        $this->assertDatabaseHas('employees', ['identification_no' => '199012345678', 'contact_no' => '+44-7911123456']);
     }
 
     public function test_new_structured_fields_are_imported()
@@ -249,7 +255,7 @@ class EmployeeImportTest extends TestCase
         $this->assertSame(1, $summary['created']);
         $this->assertEmpty($summary['failed']);
         $this->assertDatabaseHas('employees', [
-            'employee_no' => 'EMP001',
+            'identification_no' => '199012345678',
             'street_name' => 'Galle Road',
             'house_no' => '123/4',
             'address_line' => 'Colombo 03',
@@ -273,15 +279,15 @@ class EmployeeImportTest extends TestCase
         $this->assertStringContainsString('Country', $summary['failed'][0]['error']);
     }
 
-    public function test_row_missing_employee_no_fails_with_readable_message()
+    public function test_row_missing_identification_no_fails_with_readable_message()
     {
         $this->actingAsUser();
         $this->makeManagementHierarchy();
         $this->makeFactory();
 
-        $summary = EmployeeRepository::importRows(collect([$this->baseRow(['employee_no' => ''])]));
+        $summary = EmployeeRepository::importRows(collect([$this->baseRow(['identification_no' => ''])]));
 
         $this->assertCount(1, $summary['failed']);
-        $this->assertSame('Employee No is required', $summary['failed'][0]['error']);
+        $this->assertSame('NIC No / Passport No / Driving Licence No is required', $summary['failed'][0]['error']);
     }
 }

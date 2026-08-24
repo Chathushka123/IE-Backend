@@ -12,19 +12,53 @@ use Exception;
 
 class ProductController extends Controller
 {
+    /** Filter keys accepted by both export() and filter() — the Export/Filter dialog's payload shape. */
+    private const FILTER_KEYS = [
+        'customer_id',
+        'season_id',
+        'factory_id',
+        'created_at_from',
+        'created_at_to',
+        'customer_requested_delivery_date_from',
+        'customer_requested_delivery_date_to',
+    ];
+
     public function export(Request $request)
     {
-        $filters = $request->only([
-            'customer_id',
-            'season_id',
-            'factory_id',
-            'created_at_from',
-            'created_at_to',
-            'customer_requested_delivery_date_from',
-            'customer_requested_delivery_date_to',
-        ]);
+        $filters = $request->only(self::FILTER_KEYS);
 
         return Excel::download(new ProductsExport($filters), 'Products_' . date('Y_m_d_H_i_s') . '.xlsx');
+    }
+
+    /**
+     * Backend-paginated, filtered product list for the Products table's "Filter"
+     * button — same filter semantics as export() (see ProductRepository::applyExportFilters()),
+     * just returned as JSON instead of an Excel file.
+     */
+    public function filter(Request $request)
+    {
+        $filters = $request->only(self::FILTER_KEYS);
+        $page = max((int) $request->input('page', 1), 1);
+        $perPage = max((int) $request->input('per_page', 20), 1);
+
+        $query = Product::with(['productCategory', 'customer', 'season', 'factories']);
+
+        ProductRepository::applyExportFilters($query, $filters);
+
+        $paginated = $query->orderBy('created_at', 'desc')->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $paginated->items(),
+            'meta' => [
+                'total' => $paginated->total(),
+                'per_page' => $paginated->perPage(),
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'from' => $paginated->firstItem(),
+                'to' => $paginated->lastItem(),
+            ],
+        ]);
     }
 
     /**
