@@ -16,6 +16,7 @@ class ProductController extends Controller
     private const FILTER_KEYS = [
         'customer_id',
         'season_id',
+        'product_category_id',
         'factory_id',
         'created_at_from',
         'created_at_to',

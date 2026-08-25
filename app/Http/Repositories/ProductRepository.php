@@ -21,6 +21,7 @@ class ProductRepository
   private const EXPORT_WHERE_IN_FILTERS = [
     'customer_id',
     'season_id',
+    'product_category_id',
   ];
 
   /** Filter key prefix => column, for the two from/to date-range filters. */

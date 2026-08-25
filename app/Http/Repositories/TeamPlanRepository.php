@@ -35,6 +35,42 @@ class TeamPlanRepository
     }
   }
 
+  /**
+   * A team can only run one product/changeover at a time, so a new or edited
+   * plan's [planned_start_date, planned_end_date] (inclusive on both ends —
+   * an end date of 09-05 and the next plan's start date of 09-06 are back to
+   * back, not overlapping) must not intersect any other non-cancelled plan
+   * already on that team.
+   */
+  private static function assertNoOverlap(array $rec, $ignoreId = null)
+  {
+    $start = $rec['planned_start_date'] ?? null;
+    $end = $rec['planned_end_date'] ?? null;
+    if (!$start || !$end) {
+      return;
+    }
+
+    $query = TeamPlan::where('team_id', $rec['team_id'])
+      ->where('status', '!=', 'cancelled')
+      ->where('planned_start_date', '<=', $end)
+      ->where('planned_end_date', '>=', $start);
+    if ($ignoreId) {
+      $query->where('id', '!=', $ignoreId);
+    }
+
+    $conflict = $query->first();
+    if ($conflict) {
+      $label = $conflict->is_changeover
+        ? 'a style changeover'
+        : 'product #' . $conflict->product_id;
+      $conflictStart = $conflict->planned_start_date->format('Y-m-d');
+      $conflictEnd = $conflict->planned_end_date->format('Y-m-d');
+      throw new \App\Exceptions\GeneralException(
+        "This team is already scheduled for {$label} from {$conflictStart} to {$conflictEnd}."
+      );
+    }
+  }
+
   public static function createRec(array $rec)
   {
     $validator = Validator::make(
@@ -48,6 +84,7 @@ class TeamPlanRepository
       Utilities::extractError($validator);
     }
     self::assertSingleInProgressPerLine($rec);
+    self::assertNoOverlap($rec);
     try {
       $model = TeamPlan::create($rec);
     } catch (Exception $e) {
@@ -76,6 +113,7 @@ class TeamPlanRepository
       Utilities::extractError($validator);
     }
     self::assertSingleInProgressPerLine($rec, $model_id);
+    self::assertNoOverlap($rec, $model_id);
     try {
       $model->update($rec);
     } catch (Exception $e) {
@@ -179,9 +217,16 @@ class TeamPlanRepository
       throw new \App\Exceptions\GeneralException('Computed hourly capacity is zero — check the operator count, efficiency and SMV inputs.');
     }
 
-    $start = $startDate ? Carbon::parse($startDate) : self::nextAvailableStartDateTime($teamId);
+    $start = $startDate ? Carbon::parse($startDate)->startOfDay() : self::nextAvailableStartDate($teamId);
     $hoursNeeded = (int) ceil($plannedQuantity / $hourlyCapacity);
-    $end = $start->copy()->addHours($hoursNeeded);
+
+    $workingMinutesPerDay = $line->working_minutes_per_day;
+    if (empty($workingMinutesPerDay)) {
+      throw new \App\Exceptions\GeneralException('Cannot suggest a schedule: set working minutes per day on this team first.');
+    }
+    $daysNeeded = (int) ceil(($hoursNeeded * 60) / $workingMinutesPerDay);
+    // Inclusive-range convention: a 1-day job starts and ends on the same calendar date.
+    $end = $start->copy()->addDays($daysNeeded - 1);
 
     return [
       'operator_count' => $operatorCount,
@@ -189,17 +234,22 @@ class TeamPlanRepository
       'target_efficiency_pct' => (float) $efficiencyPct,
       'hourly_capacity' => $hourlyCapacity,
       'hours_needed' => $hoursNeeded,
-      'suggested_start_date' => $start->toDateTimeString(),
-      'suggested_end_date' => $end->toDateTimeString(),
+      'days_needed' => $daysNeeded,
+      'suggested_start_date' => $start->toDateString(),
+      'suggested_end_date' => $end->toDateString(),
     ];
   }
 
-  private static function nextAvailableStartDateTime(int $teamId)
+  /**
+   * The day after the last currently-scheduled plan's end date on this team —
+   * under the inclusive-range convention, that end date itself is occupied.
+   */
+  private static function nextAvailableStartDate(int $teamId)
   {
     $lastEnd = TeamPlan::where('team_id', $teamId)
       ->whereIn('status', ['planned', 'in_progress'])
       ->max('planned_end_date');
 
-    return $lastEnd ? Carbon::parse($lastEnd) : Carbon::now();
+    return $lastEnd ? Carbon::parse($lastEnd)->startOfDay()->addDay() : Carbon::now()->startOfDay();
   }
 }

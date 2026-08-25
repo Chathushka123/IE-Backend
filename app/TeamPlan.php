@@ -41,10 +41,10 @@ class TeamPlan extends Model
 
     protected $casts = [
         'planned_quantity' => 'integer',
-        'planned_start_date' => 'datetime:Y-m-d H:i:s',
-        'planned_end_date' => 'datetime:Y-m-d H:i:s',
-        'actual_start_date' => 'datetime:Y-m-d H:i:s',
-        'actual_end_date' => 'datetime:Y-m-d H:i:s',
+        'planned_start_date' => 'date:Y-m-d',
+        'planned_end_date' => 'date:Y-m-d',
+        'actual_start_date' => 'date:Y-m-d',
+        'actual_end_date' => 'date:Y-m-d',
         'is_changeover' => 'boolean',
     ];
 
