@@ -124,6 +124,14 @@ Route::prefix('v1')->group(function () {
         Route::post('teamPlans', 'Api\TeamPlanController@store')->name('teamPlans.store');
         Route::put('teamPlans/{id}', 'Api\TeamPlanController@update')->name('teamPlans.update');
 
+        // Product Milestones — apparel-industry order lifecycle dates, 1:1 with a product
+        Route::get('productMilestones/byProduct/{productId}', 'Api\ProductMilestoneController@getByProduct')->name('productMilestones.byProduct');
+        Route::post('productMilestones/export', 'Api\ProductMilestoneController@export')->name('productMilestones.export');
+        Route::post('productMilestones/filter', 'Api\ProductMilestoneController@filter')->name('productMilestones.filter');
+        Route::post('productMilestones/import', 'Api\ProductMilestoneController@import')->name('productMilestones.import');
+        Route::post('productMilestones', 'Api\ProductMilestoneController@store')->name('productMilestones.store');
+        Route::put('productMilestones/{id}', 'Api\ProductMilestoneController@update')->name('productMilestones.update');
+
         // Gap Analysis — live-computed Team Plan x Operation headcount/quality gap matrix
         Route::get('gapAnalysis', 'Api\GapAnalysisController@matrix')->name('gapAnalysis.matrix');
         Route::get('gapAnalysis/cell', 'Api\GapAnalysisController@cell')->name('gapAnalysis.cell');

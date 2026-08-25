@@ -70,6 +70,11 @@ class Product extends Model
         return $this->hasMany(TeamPlan::class, 'product_id');
     }
 
+    public function milestones()
+    {
+        return $this->hasOne(ProductMilestone::class, 'product_id');
+    }
+
     public function factories()
     {
         return $this->belongsToMany(Factory::class, 'factory_product');

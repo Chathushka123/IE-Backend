@@ -346,12 +346,14 @@ class TeamPlanTest extends TestCase
             "/api/v1/teamPlans/suggestSchedule?team_id={$lineId}&product_id={$productId}&planned_quantity=1000"
         );
 
+        // 480 working minutes/day (see makeTeam) -> daysNeeded = ceil(16h*60 / 480) = 2
         $response->assertStatus(200)->assertJson([
             'status' => 'success',
             'data' => [
                 'operator_count' => 1,
                 'hourly_capacity' => 66,
                 'hours_needed' => 16,
+                'days_needed' => 2,
             ],
         ]);
     }
@@ -409,7 +411,7 @@ class TeamPlanTest extends TestCase
         $this->assertStringContainsString('product_id', $response->getContent());
     }
 
-    public function testPersistsHourPrecisionOnPlannedDates()
+    public function testTruncatesAnySubmittedTimeOfDayToAPlainDate()
     {
         $lineId = $this->makeTeam();
         $productId = $this->makeProduct();
@@ -424,11 +426,96 @@ class TeamPlanTest extends TestCase
             'planned_end_date' => '2026-07-01 16:00:00',
         ]);
 
-        $response->assertStatus(200);
+        $response->assertStatus(200)
+            ->assertJson(['data' => ['planned_start_date' => '2026-07-01', 'planned_end_date' => '2026-07-01']]);
         $this->assertDatabaseHas('team_plans', [
             'team_id' => $lineId,
-            'planned_start_date' => '2026-07-01 08:30:00',
-            'planned_end_date' => '2026-07-01 16:00:00',
+            'planned_start_date' => '2026-07-01',
+            'planned_end_date' => '2026-07-01',
         ]);
+    }
+
+    public function testRejectsAnOverlappingPlanOnTheSameTeam()
+    {
+        $lineId = $this->makeTeam();
+        $productId = $this->makeProduct();
+        $headers = $this->authHeaders();
+
+        $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
+            'team_id' => $lineId,
+            'product_id' => $productId,
+            'sequence_no' => 1,
+            'planned_quantity' => 500,
+            'planned_start_date' => '2026-09-01',
+            'planned_end_date' => '2026-09-05',
+        ])->assertStatus(200);
+
+        $response = $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
+            'team_id' => $lineId,
+            'product_id' => $productId,
+            'sequence_no' => 2,
+            'planned_quantity' => 200,
+            'planned_start_date' => '2026-09-05',
+            'planned_end_date' => '2026-09-08',
+        ]);
+
+        $response->assertStatus(400);
+        $this->assertStringContainsString('already scheduled', $response->getContent());
+    }
+
+    public function testAllowsBackToBackPlansOnConsecutiveDays()
+    {
+        $lineId = $this->makeTeam();
+        $productId = $this->makeProduct();
+        $headers = $this->authHeaders();
+
+        $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
+            'team_id' => $lineId,
+            'product_id' => $productId,
+            'sequence_no' => 1,
+            'planned_quantity' => 500,
+            'planned_start_date' => '2026-09-01',
+            'planned_end_date' => '2026-09-05',
+        ])->assertStatus(200);
+
+        $response = $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
+            'team_id' => $lineId,
+            'product_id' => $productId,
+            'sequence_no' => 2,
+            'planned_quantity' => 200,
+            'planned_start_date' => '2026-09-06',
+            'planned_end_date' => '2026-09-09',
+        ]);
+
+        $response->assertStatus(200)->assertJson(['status' => 'success']);
+    }
+
+    public function testAllowsAnOverlappingPlanOnceTheEarlierOneIsCancelled()
+    {
+        $lineId = $this->makeTeam();
+        $productId = $this->makeProduct();
+        $headers = $this->authHeaders();
+
+        $first = $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
+            'team_id' => $lineId,
+            'product_id' => $productId,
+            'sequence_no' => 1,
+            'planned_quantity' => 500,
+            'planned_start_date' => '2026-09-01',
+            'planned_end_date' => '2026-09-05',
+            'status' => 'cancelled',
+        ]);
+        $first->assertStatus(200);
+
+        $response = $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
+            'team_id' => $lineId,
+            'product_id' => $productId,
+            'sequence_no' => 2,
+            'planned_quantity' => 200,
+            'planned_start_date' => '2026-09-03',
+            'planned_end_date' => '2026-09-07',
+        ]);
+
+        $response->assertStatus(200)->assertJson(['status' => 'success']);
     }
 }
