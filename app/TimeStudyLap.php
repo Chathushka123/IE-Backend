@@ -12,6 +12,11 @@ class TimeStudyLap extends Model
         'duration_ms',
         'down_time_ms',
         'net_ms',
+        'is_excluded',
+    ];
+
+    protected $casts = [
+        'is_excluded' => 'boolean',
     ];
 
     public function timeStudy()

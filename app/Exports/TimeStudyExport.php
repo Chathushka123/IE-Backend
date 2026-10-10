@@ -53,6 +53,7 @@ class TimeStudyExport implements FromCollection, WithHeadings, WithMapping, With
                 'operation.baseOperation',
                 'style',
                 'employee.department',
+                'conductedBy:id,name,email',
                 'productCategory',
                 'machineType',
                 'baseSkills',
@@ -99,6 +100,7 @@ class TimeStudyExport implements FromCollection, WithHeadings, WithMapping, With
             'Lap Count',
             'Down Time Entries',
             'Recorded At',
+            'Conducted By',
         ];
     }
 
@@ -134,6 +136,7 @@ class TimeStudyExport implements FromCollection, WithHeadings, WithMapping, With
             $study->laps->count(),
             $study->downtimes->map(fn ($d) => optional($d->reason)->name)->filter()->implode(', '),
             $study->created_at?->copy()->setTimezone(RequestTimezone::get())->format('Y-m-d H:i'),
+            optional($study->conductedBy)->name,
         ];
     }
 
@@ -186,6 +189,7 @@ class TimeStudyExport implements FromCollection, WithHeadings, WithMapping, With
             'Z' => 10,  // Lap Count
             'AA' => 25, // Down Time Entries
             'AB' => 16, // Recorded At
+            'AC' => 22, // Conducted By
         ];
     }
 }

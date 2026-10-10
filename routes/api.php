@@ -100,6 +100,9 @@ Route::prefix('v1')->group(function () {
         Route::post('styleOperations', 'Api\StyleOperationController@store')->name('styleOperations.store');
         Route::put('styleOperations/{id}', 'Api\StyleOperationController@update')->name('styleOperations.update');
 
+        // Users — typeahead lookup (id/name/email only)
+        Route::get('users/search', 'Api\UserController@search')->name('users.search');
+
         // Time Studies — specific paths must come before {id} wildcard
         Route::get('timeStudies', 'Api\TimeStudyController@index')->name('timeStudies.index');
         Route::get('timeStudies/byOperator/{employeeId}', 'Api\TimeStudyController@getByOperator')->name('timeStudies.byOperator');

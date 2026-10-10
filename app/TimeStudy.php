@@ -31,6 +31,7 @@ class TimeStudy extends Model
         'operation_id',
         'style_id',
         'employee_id',
+        'conducted_by_id',
         'product_category_id',
         'machine_type_id',
         'smv',
@@ -68,6 +69,11 @@ class TimeStudy extends Model
     public function employee()
     {
         return $this->belongsTo(Employee::class, 'employee_id');
+    }
+
+    public function conductedBy()
+    {
+        return $this->belongsTo(User::class, 'conducted_by_id');
     }
 
     public function productCategory()
