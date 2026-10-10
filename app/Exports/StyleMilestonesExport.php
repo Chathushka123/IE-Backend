@@ -2,8 +2,8 @@
 
 namespace App\Exports;
 
-use App\Http\Repositories\ProductMilestoneRepository;
-use App\ProductMilestone;
+use App\Http\Repositories\StyleMilestoneRepository;
+use App\StyleMilestone;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
@@ -15,9 +15,9 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ProductMilestonesExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles, WithColumnFormatting
+class StyleMilestonesExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles, WithColumnFormatting
 {
-    /** Columns C onward are the 18 date fields (A=Product, B=Planned Quantity). */
+    /** Columns C onward are the 18 date fields (A=Style, B=Planned Quantity). */
     const FIRST_DATE_COLUMN_INDEX = 3;
 
     private array $filters;
@@ -30,26 +30,26 @@ class ProductMilestonesExport implements FromCollection, WithHeadings, WithMappi
 
     public function collection()
     {
-        $query = ProductMilestone::with(['product']);
+        $query = StyleMilestone::with(['style']);
 
-        ProductMilestoneRepository::applyExportFilters($query, $this->filters);
+        StyleMilestoneRepository::applyExportFilters($query, $this->filters);
 
         return $query->get();
     }
 
     public function headings(): array
     {
-        return array_merge(['Product', 'Planned Quantity'], array_keys(ProductMilestoneRepository::DATE_FIELDS));
+        return array_merge(['Style', 'Planned Quantity'], array_keys(StyleMilestoneRepository::DATE_FIELDS));
     }
 
     public function map($milestone): array
     {
         $row = [
-            optional($milestone->product)->name,
+            optional($milestone->style)->name,
             $milestone->planned_quantity,
         ];
 
-        foreach (ProductMilestoneRepository::DATE_FIELDS as $column) {
+        foreach (StyleMilestoneRepository::DATE_FIELDS as $column) {
             $row[] = $this->toExcelDate($milestone->$column);
         }
 
@@ -73,7 +73,7 @@ class ProductMilestonesExport implements FromCollection, WithHeadings, WithMappi
     public function columnFormats(): array
     {
         $formats = [];
-        $count = count(ProductMilestoneRepository::DATE_FIELDS);
+        $count = count(StyleMilestoneRepository::DATE_FIELDS);
         for ($i = 0; $i < $count; $i++) {
             $columnLetter = $this->columnLetter(self::FIRST_DATE_COLUMN_INDEX + $i);
             $formats[$columnLetter] = NumberFormat::FORMAT_DATE_YYYYMMDD;

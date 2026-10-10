@@ -4,7 +4,7 @@ namespace App\Http\Validators;
 
 use Illuminate\Validation\Rule;
 
-class ProductCommonValidator
+class StyleCommonValidator
 {
   public static function getCommonRules(array $rec = [])
   {

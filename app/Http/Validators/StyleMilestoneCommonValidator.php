@@ -2,12 +2,12 @@
 
 namespace App\Http\Validators;
 
-class ProductMilestoneCommonValidator
+class StyleMilestoneCommonValidator
 {
   public static function getCommonRules(array $rec = [])
   {
     return [
-      'product_id' => 'required|integer|exists:products,id',
+      'style_id' => 'required|integer|exists:styles,id',
       'planned_quantity' => 'nullable|integer|min:1',
       'planned_cut_date' => 'nullable|date',
       'actual_cut_date' => 'nullable|date',

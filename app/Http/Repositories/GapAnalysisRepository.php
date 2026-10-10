@@ -5,7 +5,7 @@ namespace App\Http\Repositories;
 use App\Employee;
 use App\Exceptions\GeneralException;
 use App\Operation;
-use App\ProductOperation;
+use App\StyleOperation;
 use App\SkillMatrixCalculationCell;
 use App\SkillMatrixCalculationRun;
 use App\TeamPlan;
@@ -15,7 +15,7 @@ use App\TeamPlan;
  * operator headcount a plan's routing requires against who's actually
  * qualified, per the latest Skill Matrix Insights run for the current
  * factory scope. Cheap enough to recompute on every request — team_plans,
- * product_operations and skill_matrix_calculation_cells are all small,
+ * style_operations and skill_matrix_calculation_cells are all small,
  * already-aggregated tables, unlike the raw time_studies scans
  * SkillMatrixCalculationRepository::recalculate() has to do.
  *
@@ -30,8 +30,8 @@ class GapAnalysisRepository
     {
         $query = TeamPlan::query()
             ->whereHas('team') // Team's own ScopedToFactory global scope does the factory filtering
-            ->whereNotNull('product_id')
-            ->with(['team:id,name,code,target_efficiency_pct', 'product:id,name,style_code']);
+            ->whereNotNull('style_id')
+            ->with(['team:id,name,code,target_efficiency_pct', 'style:id,name,style_code']);
 
         $statuses = $filters['statuses'] ?? ['planned', 'in_progress'];
         $query->whereIn('status', $statuses);
@@ -39,8 +39,8 @@ class GapAnalysisRepository
         if (!empty($filters['team_ids'])) {
             $query->whereIn('team_id', $filters['team_ids']);
         }
-        if (!empty($filters['product_ids'])) {
-            $query->whereIn('product_id', $filters['product_ids']);
+        if (!empty($filters['style_ids'])) {
+            $query->whereIn('style_id', $filters['style_ids']);
         }
         // Overlap filter — same semantics as TeamPlanController::index.
         if (!empty($filters['date_from'])) {
@@ -56,15 +56,15 @@ class GapAnalysisRepository
             return ['kpis' => self::emptyKpis(), 'rows' => [], 'columns' => [], 'cells' => [], 'run' => null];
         }
 
-        $productIds = $teamPlans->pluck('product_id')->unique()->values();
-        $productOperations = ProductOperation::with('operation')
-            ->whereIn('product_id', $productIds)
+        $styleIds = $teamPlans->pluck('style_id')->unique()->values();
+        $styleOperations = StyleOperation::with('operation')
+            ->whereIn('style_id', $styleIds)
             ->where('is_active', true)
             ->orderBy('sequence_no')
             ->get()
-            ->groupBy('product_id');
+            ->groupBy('style_id');
 
-        $operations = $productOperations->flatten(1)->pluck('operation')->filter()->unique('id')->values();
+        $operations = $styleOperations->flatten(1)->pluck('operation')->filter()->unique('id')->values();
         $allOperationIds = $operations->pluck('id');
 
         $teamIds = $teamPlans->pluck('team_id')->unique()->values();
@@ -89,15 +89,15 @@ class GapAnalysisRepository
         foreach ($teamPlans as $plan) {
             $rows[] = self::mapRow($plan);
             $teamEmployeeIds = $employeesByTeam->get($plan->team_id, collect())->pluck('id');
-            $routing = $productOperations->get($plan->product_id, collect());
+            $routing = $styleOperations->get($plan->style_id, collect());
 
-            foreach ($routing as $productOperation) {
-                $operation = $productOperation->operation;
+            foreach ($routing as $styleOperation) {
+                $operation = $styleOperation->operation;
                 if (!$operation) {
                     continue;
                 }
 
-                $smv = (float) ($productOperation->smv ?? $operation->smv ?? 0);
+                $smv = (float) ($styleOperation->smv ?? $operation->smv ?? 0);
                 [$required, ] = self::computeRequiredOperators($plan, $operation, $smv);
 
                 $opCells = $cellsByOperation->get($operation->id, collect());
@@ -149,7 +149,7 @@ class GapAnalysisRepository
 
     public static function getCellDetail(int $teamPlanId, int $operationId): array
     {
-        $plan = TeamPlan::with(['team', 'product'])->findOrFail($teamPlanId);
+        $plan = TeamPlan::with(['team', 'style'])->findOrFail($teamPlanId);
         if (!$plan->team) {
             // TeamPlan itself carries no factory_id and isn't auto-scoped —
             // this replaces the scoping ScopedToFactory would otherwise give
@@ -159,10 +159,10 @@ class GapAnalysisRepository
         }
 
         $operation = Operation::findOrFail($operationId);
-        $productOperation = ProductOperation::where('product_id', $plan->product_id)
+        $styleOperation = StyleOperation::where('style_id', $plan->style_id)
             ->where('operation_id', $operationId)
             ->first();
-        $smv = (float) (optional($productOperation)->smv ?? $operation->smv ?? 0);
+        $smv = (float) (optional($styleOperation)->smv ?? $operation->smv ?? 0);
         [$required, ] = self::computeRequiredOperators($plan, $operation, $smv);
 
         $run = SkillMatrixCalculationRepository::findRunForScope();
@@ -252,7 +252,7 @@ class GapAnalysisRepository
 
         // Same shape as TeamPlanRepository::suggestSchedule()'s hourlyCapacity,
         // but per-operator (no operatorCount multiplication) and per-operation
-        // SMV (not the product's total routing SMV) — this is per-cell demand.
+        // SMV (not the style's total routing SMV) — this is per-cell demand.
         $hourlyCapacityPerOperator = (60 * ($targetEfficiencyPct / 100)) / $smv;
         if ($hourlyCapacityPerOperator <= 0) {
             return [null, 'zero_capacity'];
@@ -310,9 +310,9 @@ class GapAnalysisRepository
             'team_id' => $plan->team_id,
             'team_name' => optional($plan->team)->name,
             'team_code' => optional($plan->team)->code,
-            'product_id' => $plan->product_id,
-            'product_name' => optional($plan->product)->name,
-            'style_code' => optional($plan->product)->style_code,
+            'style_id' => $plan->style_id,
+            'style_name' => optional($plan->style)->name,
+            'style_code' => optional($plan->style)->style_code,
             'planned_quantity' => $plan->planned_quantity,
             'planned_start_date' => optional($plan->planned_start_date)->format('Y-m-d H:i:s'),
             'planned_end_date' => optional($plan->planned_end_date)->format('Y-m-d H:i:s'),

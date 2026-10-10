@@ -5,7 +5,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
-class ProductOperation extends Model
+class StyleOperation extends Model
 {
     public static function boot()
     {
@@ -22,7 +22,7 @@ class ProductOperation extends Model
     }
 
     protected $fillable = [
-        'product_id',
+        'style_id',
         'operation_id',
         'sequence_no',
         'smv',
@@ -33,9 +33,9 @@ class ProductOperation extends Model
         'smv' => 'decimal:4',
     ];
 
-    public function product()
+    public function style()
     {
-        return $this->belongsTo(Product::class, 'product_id');
+        return $this->belongsTo(Style::class, 'style_id');
     }
 
     public function operation()

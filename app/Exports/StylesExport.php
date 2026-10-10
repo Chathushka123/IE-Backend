@@ -4,8 +4,8 @@ namespace App\Exports;
 
 use App\Customer;
 use App\Factory;
-use App\Http\Repositories\ProductRepository;
-use App\Product;
+use App\Http\Repositories\StyleRepository;
+use App\Style;
 use App\ProductCategory;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
@@ -22,9 +22,9 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ProductsExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles, WithEvents, WithColumnFormatting
+class StylesExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles, WithEvents, WithColumnFormatting
 {
-    /** Extra blank rows below the data that still get dropdown validation, for adding new products. */
+    /** Extra blank rows below the data that still get dropdown validation, for adding new styles. */
     const BUFFER_ROWS = 500;
 
     /** Column holding the only native Excel date: Customer Requested Delivery Date. */
@@ -32,7 +32,7 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
 
     private array $filters;
 
-    /** @param array $filters Optional export filters from the Export Filters dialog — see applyFilters(). Empty means "every product" (current behavior). */
+    /** @param array $filters Optional export filters from the Export Filters dialog — see applyFilters(). Empty means "every style" (current behavior). */
     public function __construct(array $filters = [])
     {
         $this->filters = $filters;
@@ -40,9 +40,9 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
 
     public function collection()
     {
-        $query = Product::with(['productCategory', 'customer', 'season', 'factories']);
+        $query = Style::with(['productCategory', 'customer', 'season', 'factories']);
 
-        ProductRepository::applyExportFilters($query, $this->filters);
+        StyleRepository::applyExportFilters($query, $this->filters);
 
         return $query->get();
     }
@@ -65,21 +65,21 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
         ];
     }
 
-    public function map($product): array
+    public function map($style): array
     {
         return [
-            $product->name,
-            $product->style_code,
-            $product->style_description,
-            optional($product->productCategory)->name,
-            optional($product->customer)->description,
-            optional($product->season)->name,
-            $product->colors ? implode(', ', $product->colors) : null,
-            $product->sizes ? implode(', ', $product->sizes) : null,
-            $this->toExcelDate($product->customer_requested_delivery_date),
-            $product->planned_efficiency_pct,
-            $product->is_active ? 'Yes' : 'No',
-            $product->factories->isNotEmpty() ? $product->factories->pluck('name')->implode(', ') : null,
+            $style->name,
+            $style->style_code,
+            $style->style_description,
+            optional($style->productCategory)->name,
+            optional($style->customer)->description,
+            optional($style->season)->name,
+            $style->colors ? implode(', ', $style->colors) : null,
+            $style->sizes ? implode(', ', $style->sizes) : null,
+            $this->toExcelDate($style->customer_requested_delivery_date),
+            $style->planned_efficiency_pct,
+            $style->is_active ? 'Yes' : 'No',
+            $style->factories->isNotEmpty() ? $style->factories->pluck('name')->implode(', ') : null,
         ];
     }
 
@@ -130,7 +130,7 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
         $this->applyRangeList($sheet, 'D', $lastRow, $ranges['category'], 'Product Category', 'Pick from the list — must match an existing product category exactly.');
         $this->applyRangeList($sheet, 'E', $lastRow, $ranges['customer'], 'Customer', 'Pick from the list — must match an existing customer exactly.');
 
-        // Factories is comma-separated (a product can belong to several), so it can't use
+        // Factories is comma-separated (a style can belong to several), so it can't use
         // Excel's single-value list validation like the columns above — this only attaches
         // an input prompt pointing at the same hidden Lists sheet for reference.
         $this->applyPrompt(
@@ -138,7 +138,7 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, Shoul
             'L',
             $lastRow,
             'Factories',
-            'Comma-separated, must match factory names exactly (see the hidden Lists sheet, column C). Leave blank to leave a product\'s existing factories unchanged on update.'
+            'Comma-separated, must match factory names exactly (see the hidden Lists sheet, column C). Leave blank to leave a style\'s existing factories unchanged on update.'
         );
 
         foreach (self::DATE_COLUMNS as $column) {

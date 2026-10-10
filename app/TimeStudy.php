@@ -29,7 +29,7 @@ class TimeStudy extends Model
         'study_date',
         'time_study_type',
         'operation_id',
-        'product_id',
+        'style_id',
         'employee_id',
         'product_category_id',
         'machine_type_id',
@@ -60,9 +60,9 @@ class TimeStudy extends Model
         return $this->belongsTo(Operation::class, 'operation_id');
     }
 
-    public function product()
+    public function style()
     {
-        return $this->belongsTo(Product::class, 'product_id');
+        return $this->belongsTo(Style::class, 'style_id');
     }
 
     public function employee()

@@ -72,7 +72,7 @@ class TeamPlanTest extends TestCase
         ], $overrides));
     }
 
-    private function makeProduct(float $smv = 0.5): int
+    private function makeStyle(float $smv = 0.5): int
     {
         $unique = strtoupper(substr(md5(uniqid()), 0, 6));
 
@@ -102,7 +102,7 @@ class TeamPlanTest extends TestCase
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-        $productId = DB::table('products')->insertGetId([
+        $styleId = DB::table('styles')->insertGetId([
             'name' => 'Style 123'.$unique,
             'style_code' => 'ST'.$unique,
             'product_category_id' => $categoryId,
@@ -153,8 +153,8 @@ class TeamPlanTest extends TestCase
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            DB::table('product_operations')->insert([
-                'product_id' => $productId,
+            DB::table('style_operations')->insert([
+                'style_id' => $styleId,
                 'operation_id' => $operationId,
                 'sequence_no' => 1,
                 'smv' => $smv,
@@ -164,7 +164,7 @@ class TeamPlanTest extends TestCase
             ]);
         }
 
-        return $productId;
+        return $styleId;
     }
 
     private function makeActiveEmployee(int $productionLineId): int
@@ -194,11 +194,11 @@ class TeamPlanTest extends TestCase
     public function testCreatesATeamPlanForAuthenticatedUser()
     {
         $lineId = $this->makeTeam();
-        $productId = $this->makeProduct();
+        $styleId = $this->makeStyle();
 
         $response = $this->withHeaders($this->authHeaders())->postJson('/api/v1/teamPlans', [
             'team_id' => $lineId,
-            'product_id' => $productId,
+            'style_id' => $styleId,
             'sequence_no' => 1,
             'planned_quantity' => 500,
             'status' => 'planned',
@@ -207,7 +207,7 @@ class TeamPlanTest extends TestCase
         $response->assertStatus(200)->assertJson(['status' => 'success']);
         $this->assertDatabaseHas('team_plans', [
             'team_id' => $lineId,
-            'product_id' => $productId,
+            'style_id' => $styleId,
             'planned_quantity' => 500,
         ]);
     }
@@ -215,11 +215,11 @@ class TeamPlanTest extends TestCase
     public function testRejectsUnauthenticatedRequests()
     {
         $lineId = $this->makeTeam();
-        $productId = $this->makeProduct();
+        $styleId = $this->makeStyle();
 
         $response = $this->postJson('/api/v1/teamPlans', [
             'team_id' => $lineId,
-            'product_id' => $productId,
+            'style_id' => $styleId,
             'sequence_no' => 1,
             'planned_quantity' => 500,
         ]);
@@ -230,12 +230,12 @@ class TeamPlanTest extends TestCase
     public function testBlocksASecondInProgressAllocationOnTheSameLine()
     {
         $lineId = $this->makeTeam();
-        $productId = $this->makeProduct();
+        $styleId = $this->makeStyle();
         $headers = $this->authHeaders();
 
         $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
             'team_id' => $lineId,
-            'product_id' => $productId,
+            'style_id' => $styleId,
             'sequence_no' => 1,
             'planned_quantity' => 500,
             'status' => 'in_progress',
@@ -243,7 +243,7 @@ class TeamPlanTest extends TestCase
 
         $response = $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
             'team_id' => $lineId,
-            'product_id' => $productId,
+            'style_id' => $styleId,
             'sequence_no' => 2,
             'planned_quantity' => 200,
             'status' => 'in_progress',
@@ -257,12 +257,12 @@ class TeamPlanTest extends TestCase
     {
         $lineOne = $this->makeTeam(['name' => 'Line A']);
         $lineTwo = $this->makeTeam(['name' => 'Line B']);
-        $productId = $this->makeProduct();
+        $styleId = $this->makeStyle();
         $headers = $this->authHeaders();
 
         $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
             'team_id' => $lineOne,
-            'product_id' => $productId,
+            'style_id' => $styleId,
             'sequence_no' => 1,
             'planned_quantity' => 300,
             'status' => 'in_progress',
@@ -270,32 +270,32 @@ class TeamPlanTest extends TestCase
 
         $response = $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
             'team_id' => $lineTwo,
-            'product_id' => $productId,
+            'style_id' => $styleId,
             'sequence_no' => 1,
             'planned_quantity' => 400,
             'status' => 'in_progress',
         ]);
 
         $response->assertStatus(200)->assertJson(['status' => 'success']);
-        $this->assertEquals(2, DB::table('team_plans')->where('product_id', $productId)->count());
+        $this->assertEquals(2, DB::table('team_plans')->where('style_id', $styleId)->count());
     }
 
     public function testRejectsADuplicateSequenceNumberOnTheSameLine()
     {
         $lineId = $this->makeTeam();
-        $productId = $this->makeProduct();
+        $styleId = $this->makeStyle();
         $headers = $this->authHeaders();
 
         $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
             'team_id' => $lineId,
-            'product_id' => $productId,
+            'style_id' => $styleId,
             'sequence_no' => 1,
             'planned_quantity' => 300,
         ])->assertStatus(200);
 
         $response = $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
             'team_id' => $lineId,
-            'product_id' => $productId,
+            'style_id' => $styleId,
             'sequence_no' => 1,
             'planned_quantity' => 100,
         ]);
@@ -307,19 +307,19 @@ class TeamPlanTest extends TestCase
     public function testResequencesQueueOrderForALine()
     {
         $lineId = $this->makeTeam();
-        $productId = $this->makeProduct();
+        $styleId = $this->makeStyle();
         $headers = $this->authHeaders();
 
         $first = $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
             'team_id' => $lineId,
-            'product_id' => $productId,
+            'style_id' => $styleId,
             'sequence_no' => 1,
             'planned_quantity' => 100,
         ])->json('data.id');
 
         $second = $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
             'team_id' => $lineId,
-            'product_id' => $productId,
+            'style_id' => $styleId,
             'sequence_no' => 2,
             'planned_quantity' => 200,
         ])->json('data.id');
@@ -334,16 +334,16 @@ class TeamPlanTest extends TestCase
         $this->assertDatabaseHas('team_plans', ['id' => $first, 'sequence_no' => 2]);
     }
 
-    public function testSuggestsAScheduleFromLineCapacityAndProductSmv()
+    public function testSuggestsAScheduleFromLineCapacityAndStyleSmv()
     {
         $lineId = $this->makeTeam();
         $this->makeActiveEmployee($lineId);
-        $productId = $this->makeProduct(0.5);
+        $styleId = $this->makeStyle(0.5);
         $headers = $this->authHeaders();
 
         // capacity = (1 operator x 60 min x 55%) / 0.5 smv = 66 pcs/hour; hoursNeeded = ceil(1000/66) = 16
         $response = $this->withHeaders($headers)->getJson(
-            "/api/v1/teamPlans/suggestSchedule?team_id={$lineId}&product_id={$productId}&planned_quantity=1000"
+            "/api/v1/teamPlans/suggestSchedule?team_id={$lineId}&style_id={$styleId}&planned_quantity=1000"
         );
 
         // 480 working minutes/day (see makeTeam) -> daysNeeded = ceil(16h*60 / 480) = 2
@@ -361,18 +361,18 @@ class TeamPlanTest extends TestCase
     public function testSuggestionFailsCleanlyWhenLineHasNoActiveOperators()
     {
         $lineId = $this->makeTeam();
-        $productId = $this->makeProduct(0.5);
+        $styleId = $this->makeStyle(0.5);
         $headers = $this->authHeaders();
 
         $response = $this->withHeaders($headers)->getJson(
-            "/api/v1/teamPlans/suggestSchedule?team_id={$lineId}&product_id={$productId}&planned_quantity=1000"
+            "/api/v1/teamPlans/suggestSchedule?team_id={$lineId}&style_id={$styleId}&planned_quantity=1000"
         );
 
         $response->assertStatus(400);
         $this->assertStringContainsString('no active operators assigned', $response->getContent());
     }
 
-    public function testCreatesAChangeoverTaskWithoutProductOrQuantity()
+    public function testCreatesAChangeoverTaskWithoutStyleOrQuantity()
     {
         $lineId = $this->makeTeam();
         $headers = $this->authHeaders();
@@ -390,13 +390,13 @@ class TeamPlanTest extends TestCase
         $this->assertDatabaseHas('team_plans', [
             'team_id' => $lineId,
             'is_changeover' => 1,
-            'product_id' => null,
+            'style_id' => null,
             'planned_quantity' => null,
             'notes' => 'Style changeover: knit to woven',
         ]);
     }
 
-    public function testRejectsAMissingProductWhenNotAChangeover()
+    public function testRejectsAMissingStyleWhenNotAChangeover()
     {
         $lineId = $this->makeTeam();
         $headers = $this->authHeaders();
@@ -408,18 +408,18 @@ class TeamPlanTest extends TestCase
         ]);
 
         $response->assertStatus(400);
-        $this->assertStringContainsString('product_id', $response->getContent());
+        $this->assertStringContainsString('style_id', $response->getContent());
     }
 
     public function testTruncatesAnySubmittedTimeOfDayToAPlainDate()
     {
         $lineId = $this->makeTeam();
-        $productId = $this->makeProduct();
+        $styleId = $this->makeStyle();
         $headers = $this->authHeaders();
 
         $response = $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
             'team_id' => $lineId,
-            'product_id' => $productId,
+            'style_id' => $styleId,
             'sequence_no' => 1,
             'planned_quantity' => 500,
             'planned_start_date' => '2026-07-01 08:30:00',
@@ -438,12 +438,12 @@ class TeamPlanTest extends TestCase
     public function testRejectsAnOverlappingPlanOnTheSameTeam()
     {
         $lineId = $this->makeTeam();
-        $productId = $this->makeProduct();
+        $styleId = $this->makeStyle();
         $headers = $this->authHeaders();
 
         $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
             'team_id' => $lineId,
-            'product_id' => $productId,
+            'style_id' => $styleId,
             'sequence_no' => 1,
             'planned_quantity' => 500,
             'planned_start_date' => '2026-09-01',
@@ -452,7 +452,7 @@ class TeamPlanTest extends TestCase
 
         $response = $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
             'team_id' => $lineId,
-            'product_id' => $productId,
+            'style_id' => $styleId,
             'sequence_no' => 2,
             'planned_quantity' => 200,
             'planned_start_date' => '2026-09-05',
@@ -466,12 +466,12 @@ class TeamPlanTest extends TestCase
     public function testAllowsBackToBackPlansOnConsecutiveDays()
     {
         $lineId = $this->makeTeam();
-        $productId = $this->makeProduct();
+        $styleId = $this->makeStyle();
         $headers = $this->authHeaders();
 
         $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
             'team_id' => $lineId,
-            'product_id' => $productId,
+            'style_id' => $styleId,
             'sequence_no' => 1,
             'planned_quantity' => 500,
             'planned_start_date' => '2026-09-01',
@@ -480,7 +480,7 @@ class TeamPlanTest extends TestCase
 
         $response = $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
             'team_id' => $lineId,
-            'product_id' => $productId,
+            'style_id' => $styleId,
             'sequence_no' => 2,
             'planned_quantity' => 200,
             'planned_start_date' => '2026-09-06',
@@ -493,12 +493,12 @@ class TeamPlanTest extends TestCase
     public function testAllowsAnOverlappingPlanOnceTheEarlierOneIsCancelled()
     {
         $lineId = $this->makeTeam();
-        $productId = $this->makeProduct();
+        $styleId = $this->makeStyle();
         $headers = $this->authHeaders();
 
         $first = $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
             'team_id' => $lineId,
-            'product_id' => $productId,
+            'style_id' => $styleId,
             'sequence_no' => 1,
             'planned_quantity' => 500,
             'planned_start_date' => '2026-09-01',
@@ -509,7 +509,7 @@ class TeamPlanTest extends TestCase
 
         $response = $this->withHeaders($headers)->postJson('/api/v1/teamPlans', [
             'team_id' => $lineId,
-            'product_id' => $productId,
+            'style_id' => $styleId,
             'sequence_no' => 2,
             'planned_quantity' => 200,
             'planned_start_date' => '2026-09-03',

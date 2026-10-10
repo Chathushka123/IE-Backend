@@ -82,11 +82,11 @@ $navigator_json = '
           "path":"/ie/operation-grading"
         },
         {
-          "caption":"Products",
+          "caption":"Styles",
           "icon":"fas fa-shirt",
           "type":"node",
           "permitted" : 0,
-          "path":"/ie/products"
+          "path":"/ie/styles"
         }
        ]
     },

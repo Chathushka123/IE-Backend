@@ -23,7 +23,7 @@ class TimeStudyController extends Controller
             'operation.baseOperation',
             'operation.productCategory',
             'operation.machineType',
-            'product',
+            'style',
             'employee.department',
             'productCategory',
             'machineType',

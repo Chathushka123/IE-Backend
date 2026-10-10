@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Exports\ProductsExport;
+use App\Exports\StylesExport;
 use App\Http\Controllers\Controller;
-use App\Http\Repositories\ProductRepository;
-use App\Product;
+use App\Http\Repositories\StyleRepository;
+use App\Style;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Exception;
 
-class ProductController extends Controller
+class StyleController extends Controller
 {
     /** Filter keys accepted by both export() and filter() — the Export/Filter dialog's payload shape. */
     private const FILTER_KEYS = [
@@ -28,12 +28,12 @@ class ProductController extends Controller
     {
         $filters = $request->only(self::FILTER_KEYS);
 
-        return Excel::download(new ProductsExport($filters), 'Products_' . date('Y_m_d_H_i_s') . '.xlsx');
+        return Excel::download(new StylesExport($filters), 'Styles_' . date('Y_m_d_H_i_s') . '.xlsx');
     }
 
     /**
-     * Backend-paginated, filtered product list for the Products table's "Filter"
-     * button — same filter semantics as export() (see ProductRepository::applyExportFilters()),
+     * Backend-paginated, filtered style list for the Styles table's "Filter"
+     * button — same filter semantics as export() (see StyleRepository::applyExportFilters()),
      * just returned as JSON instead of an Excel file.
      */
     public function filter(Request $request)
@@ -42,9 +42,9 @@ class ProductController extends Controller
         $page = max((int) $request->input('page', 1), 1);
         $perPage = max((int) $request->input('per_page', 20), 1);
 
-        $query = Product::with(['productCategory', 'customer', 'season', 'factories']);
+        $query = Style::with(['productCategory', 'customer', 'season', 'factories']);
 
-        ProductRepository::applyExportFilters($query, $filters);
+        StyleRepository::applyExportFilters($query, $filters);
 
         $paginated = $query->orderBy('created_at', 'desc')->paginate($perPage, ['*'], 'page', $page);
 
@@ -64,7 +64,7 @@ class ProductController extends Controller
 
     /**
      * The Excel file itself is parsed client-side (via SheetJS) into plain row objects
-     * keyed the same way ProductsExport's headings map to snake_case — this endpoint
+     * keyed the same way StylesExport's headings map to snake_case — this endpoint
      * just receives that JSON and hands it to the same create/update logic the
      * masterDetails/CRUD flow uses, row by row.
      */
@@ -75,7 +75,7 @@ class ProductController extends Controller
                 'rows' => 'required|array|min:1',
             ]);
 
-            $summary = ProductRepository::importRows($request->input('rows'));
+            $summary = StyleRepository::importRows($request->input('rows'));
 
             return response()->json(['status' => 'success', 'data' => $summary], 200);
         } catch (Exception $e) {
@@ -84,7 +84,7 @@ class ProductController extends Controller
     }
 
     /**
-     * Products <-> Factories is many-to-many (factory_product pivot), so it can't be
+     * Styles <-> Factories is many-to-many (factory_style pivot), so it can't be
      * resolved by novelSearch's generic relation-to-FK-column guess the way Customer/
      * Season/Product Category can — this dedicated endpoint is the Factory equivalent
      * of BaseOperationController::getByCategories().
@@ -96,7 +96,7 @@ class ProductController extends Controller
             'factory_ids.*' => 'integer|min:1',
         ]);
 
-        $products = Product::with(['productCategory', 'customer', 'season', 'factories'])
+        $styles = Style::with(['productCategory', 'customer', 'season', 'factories'])
             ->whereHas('factories', function ($q) use ($request) {
                 $q->whereIn('factories.id', $request->factory_ids);
             })
@@ -105,7 +105,7 @@ class ProductController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data'   => $products,
+            'data'   => $styles,
         ]);
     }
 }

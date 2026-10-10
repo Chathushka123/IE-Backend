@@ -4,12 +4,12 @@ namespace Tests\Unit\Repositories;
 
 use App\Customer;
 use App\Exceptions\GeneralException;
-use App\Http\Repositories\ProductRepository;
+use App\Http\Repositories\StyleRepository;
 use App\ProductCategory;
 use App\ProductGroup;
 use App\Season;
 
-class ProductRepositoryTest extends RepositoryTestCase
+class StyleRepositoryTest extends RepositoryTestCase
 {
     /** @return array{0:int,1:int,2:int} [product_category_id, customer_id, season_id] */
     private function makeScope(string $suffix = ''): array
@@ -28,7 +28,7 @@ class ProductRepositoryTest extends RepositoryTestCase
         $this->actingAsTestUser();
         [$categoryId, $customerId, $seasonId] = $this->makeScope();
 
-        $model = ProductRepository::createRec([
+        $model = StyleRepository::createRec([
             'name' => 'Style 123',
             'style_code' => 'ST123',
             'product_category_id' => $categoryId,
@@ -36,7 +36,7 @@ class ProductRepositoryTest extends RepositoryTestCase
             'season_id' => $seasonId,
         ]);
 
-        $this->assertDatabaseHas('products', ['id' => $model->id, 'style_code' => 'ST123']);
+        $this->assertDatabaseHas('styles', ['id' => $model->id, 'style_code' => 'ST123']);
     }
 
     public function testRejectsAMissingStyleCode()
@@ -47,7 +47,7 @@ class ProductRepositoryTest extends RepositoryTestCase
         $this->expectException(GeneralException::class);
         $this->expectExceptionMessageMatches('/style.code/i');
 
-        ProductRepository::createRec([
+        StyleRepository::createRec([
             'name' => 'Style 123',
             'product_category_id' => $categoryId,
             'customer_id' => $customerId,
@@ -63,7 +63,7 @@ class ProductRepositoryTest extends RepositoryTestCase
         $this->expectException(GeneralException::class);
         $this->expectExceptionMessageMatches('/season/i');
 
-        ProductRepository::createRec([
+        StyleRepository::createRec([
             'name' => 'Style 123',
             'style_code' => 'ST123',
             'product_category_id' => $categoryId,
@@ -76,7 +76,7 @@ class ProductRepositoryTest extends RepositoryTestCase
         $this->actingAsTestUser();
         [$categoryId, $customerId, $seasonId] = $this->makeScope();
 
-        ProductRepository::createRec([
+        StyleRepository::createRec([
             'name' => 'Style 123',
             'style_code' => 'ST123',
             'product_category_id' => $categoryId,
@@ -87,7 +87,7 @@ class ProductRepositoryTest extends RepositoryTestCase
         $this->expectException(GeneralException::class);
         $this->expectExceptionMessageMatches('/style.code/i');
 
-        ProductRepository::createRec([
+        StyleRepository::createRec([
             'name' => 'Style 123 Restock',
             'style_code' => 'ST123',
             'product_category_id' => $categoryId,
@@ -103,7 +103,7 @@ class ProductRepositoryTest extends RepositoryTestCase
         [$categoryId, $customerId, $seasonId] = $this->makeScope('One');
         [$categoryTwoId, $customerTwoId, $seasonTwoId] = $this->makeScope('Two');
 
-        ProductRepository::createRec([
+        StyleRepository::createRec([
             'name' => 'Style 123 A',
             'style_code' => 'ST123',
             'product_category_id' => $categoryId,
@@ -111,7 +111,7 @@ class ProductRepositoryTest extends RepositoryTestCase
             'season_id' => $seasonId,
         ]);
 
-        $second = ProductRepository::createRec([
+        $second = StyleRepository::createRec([
             'name' => 'Style 123 B',
             'style_code' => 'ST123',
             'product_category_id' => $categoryTwoId,
@@ -119,22 +119,22 @@ class ProductRepositoryTest extends RepositoryTestCase
             'season_id' => $seasonTwoId,
         ]);
 
-        $this->assertDatabaseHas('products', ['id' => $second->id, 'style_code' => 'ST123', 'customer_id' => $customerTwoId]);
+        $this->assertDatabaseHas('styles', ['id' => $second->id, 'style_code' => 'ST123', 'customer_id' => $customerTwoId]);
     }
 
-    public function testRejectsAnUpdateThatDuplicatesAnotherProductsStyleCodeInTheSameScope()
+    public function testRejectsAnUpdateThatDuplicatesAnotherStylesStyleCodeInTheSameScope()
     {
         $this->actingAsTestUser();
         [$categoryId, $customerId, $seasonId] = $this->makeScope();
 
-        $model = ProductRepository::createRec([
+        $model = StyleRepository::createRec([
             'name' => 'Style 123',
             'style_code' => 'ST123',
             'product_category_id' => $categoryId,
             'customer_id' => $customerId,
             'season_id' => $seasonId,
         ]);
-        ProductRepository::createRec([
+        StyleRepository::createRec([
             'name' => 'Style 456',
             'style_code' => 'ST456',
             'product_category_id' => $categoryId,
@@ -145,7 +145,7 @@ class ProductRepositoryTest extends RepositoryTestCase
         $this->expectException(GeneralException::class);
         $this->expectExceptionMessageMatches('/style.code/i');
 
-        ProductRepository::updateRec($model->id, [
+        StyleRepository::updateRec($model->id, [
             'name' => 'Style 123',
             'style_code' => 'ST456',
             'product_category_id' => $categoryId,

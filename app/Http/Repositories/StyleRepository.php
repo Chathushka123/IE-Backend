@@ -2,7 +2,7 @@
 
 namespace App\Http\Repositories;
 
-use App\Product;
+use App\Style;
 use App\ProductCategory;
 use App\Customer;
 use App\Factory;
@@ -12,10 +12,10 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Exception;
 
-use App\Http\Validators\ProductCreateValidator;
-use App\Http\Validators\ProductUpdateValidator;
+use App\Http\Validators\StyleCreateValidator;
+use App\Http\Validators\StyleUpdateValidator;
 
-class ProductRepository
+class StyleRepository
 {
   /** Filter keys that map straight onto an equal-named `whereIn` column — see applyExportFilters(). */
   private const EXPORT_WHERE_IN_FILTERS = [
@@ -33,8 +33,8 @@ class ProductRepository
   /**
    * Applies every non-empty filter (from the Export/Filter dialog) as an AND
    * condition — an unset/empty filter is simply skipped, not "match nothing".
-   * Shared by ProductsExport (Excel download) and ProductController::filter()
-   * (the Products table's "Filter" button) so both stay identical by construction.
+   * Shared by StylesExport (Excel download) and StyleController::filter()
+   * (the Styles table's "Filter" button) so both stay identical by construction.
    */
   public static function applyExportFilters($query, array $filters): void
   {
@@ -45,7 +45,7 @@ class ProductRepository
       }
     }
 
-    // factory_id is a many-to-many (factory_product pivot), not a column on products.
+    // factory_id is a many-to-many (factory_style pivot), not a column on styles.
     $factoryIds = $filters['factory_id'] ?? null;
     if (!empty($factoryIds)) {
       $query->whereHas('factories', function ($q) use ($factoryIds) {
@@ -69,7 +69,7 @@ class ProductRepository
   {
     $validator = Validator::make(
       $rec,
-      ProductCreateValidator::getCreateRules($rec)
+      StyleCreateValidator::getCreateRules($rec)
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
@@ -78,7 +78,7 @@ class ProductRepository
       Utilities::assertFactoryIdsAllowed($rec['factory_ids'] ?? []);
     }
     try {
-      $model = Product::create($rec);
+      $model = Style::create($rec);
       if (array_key_exists('factory_ids', $rec)) {
         $model->factories()->sync($rec['factory_ids'] ?? []);
       }
@@ -90,7 +90,7 @@ class ProductRepository
 
   public static function updateRec($model_id, array $rec)
   {
-    $model = Product::findOrFail($model_id);
+    $model = Style::findOrFail($model_id);
 
     if (!$model->updated_at->eq(\Carbon\Carbon::parse($rec['updated_at']))) {
       $entity = (new \ReflectionClass($model))->getShortName();
@@ -99,7 +99,7 @@ class ProductRepository
     Utilities::hydrate($model, $rec);
     $validator = Validator::make(
       $rec,
-      ProductUpdateValidator::getUpdateRules($model_id, $rec)
+      StyleUpdateValidator::getUpdateRules($model_id, $rec)
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
@@ -150,11 +150,11 @@ class ProductRepository
 
   public static function deleteRecs(array $recs)
   {
-    Product::destroy($recs);
+    Style::destroy($recs);
   }
 
   /**
-   * Bulk create/update from an Excel import. Rows are matched to an existing product
+   * Bulk create/update from an Excel import. Rows are matched to an existing style
    * by Name (case-insensitively, so a manual casing tweak doesn't create a
    * duplicate). Each row is processed in its own transaction so one bad row doesn't
    * affect the rest — failures are collected and returned instead of aborting the file.
@@ -180,7 +180,7 @@ class ProductRepository
         $seenNames[$nameKey] = $rowNumber;
 
         $rec = self::mapImportRow($row, $name);
-        $existing = Product::whereRaw('LOWER(name) = ?', [$nameKey])->first();
+        $existing = Style::whereRaw('LOWER(name) = ?', [$nameKey])->first();
 
         DB::beginTransaction();
         if ($existing) {
@@ -207,7 +207,7 @@ class ProductRepository
 
   /**
    * Builds the create/update payload for one import row. Optional fields are only
-   * included when the cell has a value, so a blank cell leaves an existing product's
+   * included when the cell has a value, so a blank cell leaves an existing style's
    * value untouched on update (Utilities::hydrate fills missing keys) and lets the DB
    * column default apply on create.
    */

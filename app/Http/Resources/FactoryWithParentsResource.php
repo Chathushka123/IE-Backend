@@ -20,7 +20,7 @@ class FactoryWithParentsResource extends JsonResource
             'teams' => $this->whenLoaded('teams'),
             'employees' => $this->whenLoaded('employees'),
             'users' => $this->whenLoaded('users'),
-            'products' => $this->whenLoaded('products'),
+            'styles' => $this->whenLoaded('styles'),
         ];
     }
 }

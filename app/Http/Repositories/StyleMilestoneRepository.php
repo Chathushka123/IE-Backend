@@ -2,17 +2,17 @@
 
 namespace App\Http\Repositories;
 
-use App\Product;
-use App\ProductMilestone;
+use App\Style;
+use App\StyleMilestone;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Exception;
 
-use App\Http\Validators\ProductMilestoneCreateValidator;
-use App\Http\Validators\ProductMilestoneUpdateValidator;
+use App\Http\Validators\StyleMilestoneCreateValidator;
+use App\Http\Validators\StyleMilestoneUpdateValidator;
 
-class ProductMilestoneRepository
+class StyleMilestoneRepository
 {
   /**
    * Every milestone date column, in the order a style actually moves through the
@@ -55,29 +55,29 @@ class ProductMilestoneRepository
   {
     $customerIds = $filters['customer_id'] ?? null;
     if (!empty($customerIds)) {
-      $query->whereHas('product', function ($q) use ($customerIds) {
+      $query->whereHas('style', function ($q) use ($customerIds) {
         $q->whereIn('customer_id', (array) $customerIds);
       });
     }
 
     $seasonIds = $filters['season_id'] ?? null;
     if (!empty($seasonIds)) {
-      $query->whereHas('product', function ($q) use ($seasonIds) {
+      $query->whereHas('style', function ($q) use ($seasonIds) {
         $q->whereIn('season_id', (array) $seasonIds);
       });
     }
 
     $productCategoryIds = $filters['product_category_id'] ?? null;
     if (!empty($productCategoryIds)) {
-      $query->whereHas('product', function ($q) use ($productCategoryIds) {
+      $query->whereHas('style', function ($q) use ($productCategoryIds) {
         $q->whereIn('product_category_id', (array) $productCategoryIds);
       });
     }
 
-    // factory_id is a many-to-many on products (factory_product pivot), not a column.
+    // factory_id is a many-to-many on styles (factory_style pivot), not a column.
     $factoryIds = $filters['factory_id'] ?? null;
     if (!empty($factoryIds)) {
-      $query->whereHas('product.factories', function ($q) use ($factoryIds) {
+      $query->whereHas('style.factories', function ($q) use ($factoryIds) {
         $q->whereIn('factories.id', (array) $factoryIds);
       });
     }
@@ -98,16 +98,16 @@ class ProductMilestoneRepository
   {
     $validator = Validator::make(
       $rec,
-      ProductMilestoneCreateValidator::getCreateRules($rec),
+      StyleMilestoneCreateValidator::getCreateRules($rec),
       [
-        'product_id.unique' => 'This product already has a milestone record — edit it instead of creating a new one.',
+        'style_id.unique' => 'This style already has a milestone record — edit it instead of creating a new one.',
       ]
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
     }
     try {
-      $model = ProductMilestone::create($rec);
+      $model = StyleMilestone::create($rec);
     } catch (Exception $e) {
       throw new \App\Exceptions\GeneralException($e->getMessage());
     }
@@ -116,7 +116,7 @@ class ProductMilestoneRepository
 
   public static function updateRec($model_id, array $rec)
   {
-    $model = ProductMilestone::findOrFail($model_id);
+    $model = StyleMilestone::findOrFail($model_id);
 
     if (!$model->updated_at->eq(\Carbon\Carbon::parse($rec['updated_at']))) {
       $entity = (new \ReflectionClass($model))->getShortName();
@@ -125,9 +125,9 @@ class ProductMilestoneRepository
     Utilities::hydrate($model, $rec);
     $validator = Validator::make(
       $rec,
-      ProductMilestoneUpdateValidator::getUpdateRules($model_id, $rec),
+      StyleMilestoneUpdateValidator::getUpdateRules($model_id, $rec),
       [
-        'product_id.unique' => 'This product already has a milestone record — edit it instead of creating a new one.',
+        'style_id.unique' => 'This style already has a milestone record — edit it instead of creating a new one.',
       ]
     );
     if ($validator->fails()) {
@@ -143,39 +143,39 @@ class ProductMilestoneRepository
 
   public static function deleteRecs(array $recs)
   {
-    ProductMilestone::destroy($recs);
+    StyleMilestone::destroy($recs);
   }
 
   /**
    * Imports/updates milestone rows from an uploaded Excel file, matched to an
-   * existing product by name (same matching convention as ProductRepository's
-   * own import). One row per product — a second row for an already-imported
-   * product updates its existing milestone record rather than failing, since
+   * existing style by name (same matching convention as StyleRepository's
+   * own import). One row per style — a second row for an already-imported
+   * style updates its existing milestone record rather than failing, since
    * a re-export-edit-reimport round trip is the expected workflow.
    */
   public static function importRows($rows)
   {
     $summary = ['total' => 0, 'created' => 0, 'updated' => 0, 'failed' => []];
-    $seenProducts = [];
+    $seenStyles = [];
 
     foreach ($rows as $index => $row) {
       $rowNumber = $index + 2; // +1 for 0-index, +1 for the heading row
       $summary['total']++;
-      $productName = trim((string) ($row['product'] ?? ''));
-      $productKey = Str::lower($productName);
+      $styleName = trim((string) ($row['style'] ?? ''));
+      $styleKey = Str::lower($styleName);
 
       try {
-        if ($productName === '') {
-          throw new Exception('Product is required');
+        if ($styleName === '') {
+          throw new Exception('Style is required');
         }
-        if (isset($seenProducts[$productKey])) {
-          throw new Exception("Duplicate Product '{$productName}' in file (first seen at row {$seenProducts[$productKey]})");
+        if (isset($seenStyles[$styleKey])) {
+          throw new Exception("Duplicate Style '{$styleName}' in file (first seen at row {$seenStyles[$styleKey]})");
         }
-        $seenProducts[$productKey] = $rowNumber;
+        $seenStyles[$styleKey] = $rowNumber;
 
-        $productId = self::resolveProductId($productName);
-        $rec = self::mapImportRow($row, $productId);
-        $existing = ProductMilestone::where('product_id', $productId)->first();
+        $styleId = self::resolveStyleId($styleName);
+        $rec = self::mapImportRow($row, $styleId);
+        $existing = StyleMilestone::where('style_id', $styleId)->first();
 
         DB::beginTransaction();
         if ($existing) {
@@ -191,7 +191,7 @@ class ProductMilestoneRepository
         DB::rollBack();
         $summary['failed'][] = [
           'row' => $rowNumber,
-          'name' => $productName ?: null,
+          'name' => $styleName ?: null,
           'error' => self::unwrapExceptionMessage($e),
         ];
       }
@@ -200,11 +200,11 @@ class ProductMilestoneRepository
     return $summary;
   }
 
-  private static function resolveProductId(string $productName): int
+  private static function resolveStyleId(string $styleName): int
   {
-    $match = Product::whereRaw('LOWER(name) = ?', [Str::lower(trim($productName))])->first();
+    $match = Style::whereRaw('LOWER(name) = ?', [Str::lower(trim($styleName))])->first();
     if (!$match) {
-      throw new Exception("Product '{$productName}' not found");
+      throw new Exception("Style '{$styleName}' not found");
     }
     return $match->id;
   }
@@ -213,11 +213,11 @@ class ProductMilestoneRepository
    * Builds the create/update payload for one import row. A blank cell is omitted so
    * Utilities::hydrate/model update leaves an existing milestone's value untouched
    * rather than clearing it — the same "blank means unchanged" convention as
-   * ProductRepository::mapImportRow.
+   * StyleRepository::mapImportRow.
    */
-  private static function mapImportRow($row, int $productId): array
+  private static function mapImportRow($row, int $styleId): array
   {
-    $rec = ['product_id' => $productId];
+    $rec = ['style_id' => $styleId];
 
     $plannedQuantity = trim((string) ($row['planned_quantity'] ?? ''));
     if ($plannedQuantity !== '') {

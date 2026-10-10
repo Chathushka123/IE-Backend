@@ -3,24 +3,24 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Repositories\ProductOperationRepository;
-use App\ProductOperation;
+use App\Http\Repositories\StyleOperationRepository;
+use App\StyleOperation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Exception;
 
-class ProductOperationController extends Controller
+class StyleOperationController extends Controller
 {
     private function withRelations()
     {
-        return ['product', 'operation'];
+        return ['style', 'operation'];
     }
 
     public function index()
     {
         try {
-            $records = ProductOperation::with($this->withRelations())
-                ->orderBy('product_id')
+            $records = StyleOperation::with($this->withRelations())
+                ->orderBy('style_id')
                 ->orderBy('sequence_no')
                 ->get();
 
@@ -33,7 +33,7 @@ class ProductOperationController extends Controller
     public function show($id)
     {
         try {
-            $record = ProductOperation::with($this->withRelations())->findOrFail($id);
+            $record = StyleOperation::with($this->withRelations())->findOrFail($id);
 
             return response()->json(['status' => 'success', 'data' => $record], 200);
         } catch (Exception $e) {
@@ -41,11 +41,11 @@ class ProductOperationController extends Controller
         }
     }
 
-    public function getByProduct($productId)
+    public function getByStyle($styleId)
     {
         try {
-            $records = ProductOperation::with(['operation'])
-                ->where('product_id', $productId)
+            $records = StyleOperation::with(['operation'])
+                ->where('style_id', $styleId)
                 ->orderBy('sequence_no')
                 ->get();
 
@@ -58,9 +58,9 @@ class ProductOperationController extends Controller
     public function getByOperation($operationId)
     {
         try {
-            $records = ProductOperation::with(['product'])
+            $records = StyleOperation::with(['style'])
                 ->where('operation_id', $operationId)
-                ->orderBy('product_id')
+                ->orderBy('style_id')
                 ->get();
 
             return response()->json(['status' => 'success', 'data' => $records], 200);
@@ -72,15 +72,15 @@ class ProductOperationController extends Controller
     public function resequence(Request $request)
     {
         $request->validate([
-            'product_id' => 'required|integer|exists:products,id',
+            'style_id' => 'required|integer|exists:styles,id',
             'ids'        => 'required|array|min:1',
-            'ids.*'      => 'integer|exists:product_operations,id',
+            'ids.*'      => 'integer|exists:style_operations,id',
         ]);
 
         try {
             DB::beginTransaction();
-            $records = ProductOperationRepository::resequence(
-                $request->product_id,
+            $records = StyleOperationRepository::resequence(
+                $request->style_id,
                 $request->ids
             );
             DB::commit();
@@ -96,7 +96,7 @@ class ProductOperationController extends Controller
     {
         try {
             DB::beginTransaction();
-            $record = ProductOperationRepository::createRec($request->all());
+            $record = StyleOperationRepository::createRec($request->all());
             DB::commit();
 
             return response()->json([
@@ -113,7 +113,7 @@ class ProductOperationController extends Controller
     {
         try {
             DB::beginTransaction();
-            $record = ProductOperationRepository::updateRec($id, $request->all());
+            $record = StyleOperationRepository::updateRec($id, $request->all());
             DB::commit();
 
             return response()->json([

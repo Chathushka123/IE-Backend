@@ -2,12 +2,12 @@
 
 namespace App\Http\Validators;
 
-class ProductOperationCommonValidator
+class StyleOperationCommonValidator
 {
   public static function getCommonRules()
   {
     return [
-      'product_id' => 'required|integer|exists:products,id',
+      'style_id' => 'required|integer|exists:styles,id',
       'operation_id' => 'required|integer|exists:operations,id',
       'sequence_no' => 'required|integer|min:1',
       'smv' => 'nullable|numeric|min:0',

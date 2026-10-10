@@ -13,14 +13,14 @@ class TeamPlanController extends Controller
 {
     private function withRelations()
     {
-        return ['team', 'product'];
+        return ['team', 'style'];
     }
 
     public function index(Request $request)
     {
         try {
             $request->validate([
-                'product_id'          => 'nullable|integer|exists:products,id',
+                'style_id'          => 'nullable|integer|exists:styles,id',
                 'product_category_id' => 'nullable|integer|exists:product_categories,id',
                 'team_id'             => 'nullable|integer|exists:teams,id',
                 'start_date'          => 'nullable|date',
@@ -35,13 +35,13 @@ class TeamPlanController extends Controller
                 $query->where('team_id', $request->integer('team_id'));
             }
 
-            if ($request->filled('product_id')) {
-                $query->where('product_id', $request->integer('product_id'));
+            if ($request->filled('style_id')) {
+                $query->where('style_id', $request->integer('style_id'));
             }
 
             if ($request->filled('product_category_id')) {
                 $categoryId = $request->integer('product_category_id');
-                $query->whereHas('product', fn ($q) => $q->where('product_category_id', $categoryId));
+                $query->whereHas('style', fn ($q) => $q->where('product_category_id', $categoryId));
             }
 
             // Overlap filter: a task is included if its planned range intersects [start_date, end_date].
@@ -79,7 +79,7 @@ class TeamPlanController extends Controller
     public function getByTeam($teamId)
     {
         try {
-            $records = TeamPlan::with(['product'])
+            $records = TeamPlan::with(['style'])
                 ->where('team_id', $teamId)
                 ->orderBy('sequence_no')
                 ->get();
@@ -90,11 +90,11 @@ class TeamPlanController extends Controller
         }
     }
 
-    public function getByProduct($productId)
+    public function getByStyle($styleId)
     {
         try {
             $records = TeamPlan::with(['team'])
-                ->where('product_id', $productId)
+                ->where('style_id', $styleId)
                 ->orderBy('team_id')
                 ->get();
 
@@ -108,7 +108,7 @@ class TeamPlanController extends Controller
     {
         $request->validate([
             'team_id'             => 'required|integer|exists:teams,id',
-            'product_id'          => 'required|integer|exists:products,id',
+            'style_id'          => 'required|integer|exists:styles,id',
             'planned_quantity'    => 'required|integer|min:1',
             'start_date'          => 'nullable|date',
         ]);
@@ -116,7 +116,7 @@ class TeamPlanController extends Controller
         try {
             $suggestion = TeamPlanRepository::suggestSchedule(
                 $request->team_id,
-                $request->product_id,
+                $request->style_id,
                 $request->planned_quantity,
                 $request->start_date
             );

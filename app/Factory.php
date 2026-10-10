@@ -93,8 +93,8 @@ class Factory extends Model
         return $this->belongsToMany(User::class, 'factory_user');
     }
 
-    public function products()
+    public function styles()
     {
-        return $this->belongsToMany(Product::class, 'factory_product');
+        return $this->belongsToMany(Style::class, 'factory_style');
     }
 }

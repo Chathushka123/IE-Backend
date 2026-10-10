@@ -71,9 +71,9 @@ class GapAnalysisDatasetTest extends TestCase
         return DB::table('teams')->where('code', $code)->value('id');
     }
 
-    private function productId(string $styleCode): int
+    private function styleId(string $styleCode): int
     {
-        return DB::table('products')->where('style_code', $styleCode)->value('id');
+        return DB::table('styles')->where('style_code', $styleCode)->value('id');
     }
 
     public function testRecalculateProducesAllElevenHandComputedCells()
@@ -162,15 +162,15 @@ class GapAnalysisDatasetTest extends TestCase
         $this->assertEquals('Active', DB::table('employees')->where('employee_no', 'GAP-EMP-201')->value('employee_status'));
     }
 
-    public function testOperationEightHasNoSkillDataAtAllDespiteBeingInAProductRouting()
+    public function testOperationEightHasNoSkillDataAtAllDespiteBeingInAStyleRouting()
     {
         $this->seedDataset();
 
         $op8 = $this->opId('GAP-OP-08');
 
         $this->assertEquals(0, DB::table('time_studies')->where('operation_id', $op8)->count());
-        $this->assertDatabaseHas('product_operations', [
-            'product_id' => $this->productId('GAP-P-C'),
+        $this->assertDatabaseHas('style_operations', [
+            'style_id' => $this->styleId('GAP-P-C'),
             'operation_id' => $op8,
         ]);
     }
@@ -182,7 +182,7 @@ class GapAnalysisDatasetTest extends TestCase
 
         $response = $this->withHeaders($headers)->getJson(
             '/api/v1/teamPlans/suggestSchedule?team_id=' . $this->teamId('GAP-T1')
-            . '&product_id=' . $this->productId('GAP-P-A')
+            . '&style_id=' . $this->styleId('GAP-P-A')
             . '&planned_quantity=1800'
         );
 
@@ -203,7 +203,7 @@ class GapAnalysisDatasetTest extends TestCase
 
         $response = $this->withHeaders($headers)->getJson(
             '/api/v1/teamPlans/suggestSchedule?team_id=' . $this->teamId('GAP-T2')
-            . '&product_id=' . $this->productId('GAP-P-B')
+            . '&style_id=' . $this->styleId('GAP-P-B')
             . '&planned_quantity=288'
         );
 
@@ -224,7 +224,7 @@ class GapAnalysisDatasetTest extends TestCase
 
         $response = $this->withHeaders($headers)->getJson(
             '/api/v1/teamPlans/suggestSchedule?team_id=' . $this->teamId('GAP-T3')
-            . '&product_id=' . $this->productId('GAP-P-C')
+            . '&style_id=' . $this->styleId('GAP-P-C')
             . '&planned_quantity=360'
         );
 

@@ -220,7 +220,7 @@ class SkillMatrixCalculationRepository
             ->whereNotNull('time_studies.efficiency_pct')
             ->pluck('time_studies.id');
 
-        $studies = TimeStudy::with(['factory', 'product'])
+        $studies = TimeStudy::with(['factory', 'style'])
             ->whereIn('id', $studyIds)
             ->orderByDesc('study_date')
             ->get();
@@ -243,8 +243,8 @@ class SkillMatrixCalculationRepository
                     'total_down_time_ms' => $study->total_down_time_ms,
                     'efficiency_pct' => $study->efficiency_pct,
                     'factory' => optional($study->factory)->name,
-                    'product' => optional($study->product)->name,
-                    'style_code' => optional($study->product)->style_code,
+                    'style' => optional($study->style)->name,
+                    'style_code' => optional($study->style)->style_code,
                 ];
             })->values(),
         ];

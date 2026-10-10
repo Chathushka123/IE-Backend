@@ -17,7 +17,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE team_plans;
 
 INSERT INTO team_plans
-  (team_id, product_id, sequence_no,
+  (team_id, style_id, sequence_no,
    planned_quantity, planned_start_date, planned_end_date,
    actual_start_date, status, notes, is_changeover, is_active)
 SELECT pl.id, p.id, lp.seq, lp.qty, lp.ps, lp.pe, lp.act, lp.st, lp.ref, 0, 1
@@ -142,6 +142,6 @@ FROM (
 
 ) lp
 JOIN teams    pl ON pl.code = lp.ln
-JOIN products p  ON p.code  = lp.pc;
+JOIN styles p  ON p.code  = lp.pc;
 
 SET FOREIGN_KEY_CHECKS = 1;

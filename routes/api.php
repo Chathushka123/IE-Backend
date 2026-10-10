@@ -50,13 +50,13 @@ Route::prefix('v1')->group(function () {
         Route::post('employees', 'Api\EmployeeController@store')->name('employees.store');
         Route::put('employees/{id}', 'Api\EmployeeController@update')->name('employees.update');
 
-        // Products — export/import only; CRUD goes through the generic masterDetails endpoint
+        // Styles — export/import only; CRUD goes through the generic masterDetails endpoint
         // POST, not GET: the export filter dialog can send several multi-value
         // (array) filters at once, which doesn't fit cleanly in a query string.
-        Route::post('products/export', 'Api\ProductController@export')->name('products.export');
-        Route::post('products/filter', 'Api\ProductController@filter')->name('products.filter');
-        Route::post('products/import', 'Api\ProductController@import')->name('products.import');
-        Route::get('products/byFactories', 'Api\ProductController@getByFactories')->name('products.byFactories');
+        Route::post('styles/export', 'Api\StyleController@export')->name('styles.export');
+        Route::post('styles/filter', 'Api\StyleController@filter')->name('styles.filter');
+        Route::post('styles/import', 'Api\StyleController@import')->name('styles.import');
+        Route::get('styles/byFactories', 'Api\StyleController@getByFactories')->name('styles.byFactories');
 
         // Auth
         Route::get('user', 'Api\AuthController@user')->name('user.get');
@@ -91,14 +91,14 @@ Route::prefix('v1')->group(function () {
         Route::post('operationSkills', 'Api\OperationSkillController@store')->name('operationSkills.store');
         Route::put('operationSkills/{id}', 'Api\OperationSkillController@update')->name('operationSkills.update');
 
-        // Product Operations — specific paths must come before {id} wildcard
-        Route::get('productOperations', 'Api\ProductOperationController@index')->name('productOperations.index');
-        Route::get('productOperations/byProduct/{productId}', 'Api\ProductOperationController@getByProduct')->name('productOperations.byProduct');
-        Route::get('productOperations/byOperation/{operationId}', 'Api\ProductOperationController@getByOperation')->name('productOperations.byOperation');
-        Route::put('productOperations/resequence', 'Api\ProductOperationController@resequence')->name('productOperations.resequence');
-        Route::get('productOperations/{id}', 'Api\ProductOperationController@show')->name('productOperations.show');
-        Route::post('productOperations', 'Api\ProductOperationController@store')->name('productOperations.store');
-        Route::put('productOperations/{id}', 'Api\ProductOperationController@update')->name('productOperations.update');
+        // Style Operations — specific paths must come before {id} wildcard
+        Route::get('styleOperations', 'Api\StyleOperationController@index')->name('styleOperations.index');
+        Route::get('styleOperations/byStyle/{styleId}', 'Api\StyleOperationController@getByStyle')->name('styleOperations.byStyle');
+        Route::get('styleOperations/byOperation/{operationId}', 'Api\StyleOperationController@getByOperation')->name('styleOperations.byOperation');
+        Route::put('styleOperations/resequence', 'Api\StyleOperationController@resequence')->name('styleOperations.resequence');
+        Route::get('styleOperations/{id}', 'Api\StyleOperationController@show')->name('styleOperations.show');
+        Route::post('styleOperations', 'Api\StyleOperationController@store')->name('styleOperations.store');
+        Route::put('styleOperations/{id}', 'Api\StyleOperationController@update')->name('styleOperations.update');
 
         // Time Studies — specific paths must come before {id} wildcard
         Route::get('timeStudies', 'Api\TimeStudyController@index')->name('timeStudies.index');
@@ -118,19 +118,19 @@ Route::prefix('v1')->group(function () {
         Route::get('teamPlans', 'Api\TeamPlanController@index')->name('teamPlans.index');
         Route::get('teamPlans/suggestSchedule', 'Api\TeamPlanController@suggestSchedule')->name('teamPlans.suggestSchedule');
         Route::get('teamPlans/byTeam/{teamId}', 'Api\TeamPlanController@getByTeam')->name('teamPlans.byTeam');
-        Route::get('teamPlans/byProduct/{productId}', 'Api\TeamPlanController@getByProduct')->name('teamPlans.byProduct');
+        Route::get('teamPlans/byStyle/{styleId}', 'Api\TeamPlanController@getByStyle')->name('teamPlans.byStyle');
         Route::put('teamPlans/resequence', 'Api\TeamPlanController@resequence')->name('teamPlans.resequence');
         Route::get('teamPlans/{id}', 'Api\TeamPlanController@show')->name('teamPlans.show');
         Route::post('teamPlans', 'Api\TeamPlanController@store')->name('teamPlans.store');
         Route::put('teamPlans/{id}', 'Api\TeamPlanController@update')->name('teamPlans.update');
 
-        // Product Milestones — apparel-industry order lifecycle dates, 1:1 with a product
-        Route::get('productMilestones/byProduct/{productId}', 'Api\ProductMilestoneController@getByProduct')->name('productMilestones.byProduct');
-        Route::post('productMilestones/export', 'Api\ProductMilestoneController@export')->name('productMilestones.export');
-        Route::post('productMilestones/filter', 'Api\ProductMilestoneController@filter')->name('productMilestones.filter');
-        Route::post('productMilestones/import', 'Api\ProductMilestoneController@import')->name('productMilestones.import');
-        Route::post('productMilestones', 'Api\ProductMilestoneController@store')->name('productMilestones.store');
-        Route::put('productMilestones/{id}', 'Api\ProductMilestoneController@update')->name('productMilestones.update');
+        // Style Milestones — apparel-industry order lifecycle dates, 1:1 with a style
+        Route::get('styleMilestones/byStyle/{styleId}', 'Api\StyleMilestoneController@getByStyle')->name('styleMilestones.byStyle');
+        Route::post('styleMilestones/export', 'Api\StyleMilestoneController@export')->name('styleMilestones.export');
+        Route::post('styleMilestones/filter', 'Api\StyleMilestoneController@filter')->name('styleMilestones.filter');
+        Route::post('styleMilestones/import', 'Api\StyleMilestoneController@import')->name('styleMilestones.import');
+        Route::post('styleMilestones', 'Api\StyleMilestoneController@store')->name('styleMilestones.store');
+        Route::put('styleMilestones/{id}', 'Api\StyleMilestoneController@update')->name('styleMilestones.update');
 
         // Gap Analysis — live-computed Team Plan x Operation headcount/quality gap matrix
         Route::get('gapAnalysis', 'Api\GapAnalysisController@matrix')->name('gapAnalysis.matrix');

@@ -4,9 +4,9 @@ namespace App\Http\Repositories;
 
 use App\Employee;
 use App\TeamPlan;
-use App\Product;
+use App\Style;
 use App\Team;
-use App\ProductOperation;
+use App\StyleOperation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Exception;
@@ -36,7 +36,7 @@ class TeamPlanRepository
   }
 
   /**
-   * A team can only run one product/changeover at a time, so a new or edited
+   * A team can only run one style/changeover at a time, so a new or edited
    * plan's [planned_start_date, planned_end_date] (inclusive on both ends —
    * an end date of 09-05 and the next plan's start date of 09-06 are back to
    * back, not overlapping) must not intersect any other non-cancelled plan
@@ -62,7 +62,7 @@ class TeamPlanRepository
     if ($conflict) {
       $label = $conflict->is_changeover
         ? 'a style changeover'
-        : 'product #' . $conflict->product_id;
+        : 'style #' . $conflict->style_id;
       $conflictStart = $conflict->planned_start_date->format('Y-m-d');
       $conflictEnd = $conflict->planned_end_date->format('Y-m-d');
       throw new \App\Exceptions\GeneralException(
@@ -183,20 +183,20 @@ class TeamPlanRepository
   }
 
   /**
-   * Hourly capacity = (active operators on the line x 60 min x target efficiency%) / total SMV of the product.
+   * Hourly capacity = (active operators on the line x 60 min x target efficiency%) / total SMV of the style.
    * Treats the line as continuously available for the needed duration — it does not model
    * shift/working-hours calendars. Returned as a suggestion only; nothing here is persisted.
    */
-  public static function suggestSchedule(int $teamId, int $productId, int $plannedQuantity, ?string $startDate = null)
+  public static function suggestSchedule(int $teamId, int $styleId, int $plannedQuantity, ?string $startDate = null)
   {
     $line = Team::findOrFail($teamId);
-    Product::findOrFail($productId);
+    Style::findOrFail($styleId);
 
     $operatorCount = Employee::where('team_id', $teamId)
       ->where('employee_status', 'Active')
       ->count();
 
-    $totalSmv = (float) ProductOperation::where('product_id', $productId)
+    $totalSmv = (float) StyleOperation::where('style_id', $styleId)
       ->where('is_active', true)
       ->sum('smv');
 
@@ -206,7 +206,7 @@ class TeamPlanRepository
       throw new \App\Exceptions\GeneralException('Cannot suggest a schedule: this team has no active operators assigned.');
     }
     if ($totalSmv <= 0) {
-      throw new \App\Exceptions\GeneralException('Cannot suggest a schedule: the selected product has no SMV defined in its operation gradings.');
+      throw new \App\Exceptions\GeneralException('Cannot suggest a schedule: the selected style has no SMV defined in its operation gradings.');
     }
     if (empty($efficiencyPct)) {
       throw new \App\Exceptions\GeneralException('Cannot suggest a schedule: set a target efficiency % on this team first.');

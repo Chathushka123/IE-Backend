@@ -6,7 +6,7 @@ use App\Support\FactoryContext;
 
 /**
  * For models related to factories many-to-many via a `factories()` relation
- * (Product, User). Laravel auto-calls bootScopedToFactories() for any model
+ * (Style, User). Laravel auto-calls bootScopedToFactories() for any model
  * using this trait — no changes needed to the model's own boot() override.
  */
 trait ScopedToFactories

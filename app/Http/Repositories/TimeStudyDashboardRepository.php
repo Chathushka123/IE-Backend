@@ -47,8 +47,8 @@ class TimeStudyDashboardRepository
         if (!empty($filters['employee_ids'])) {
             $query->whereIn('time_studies.employee_id', (array) $filters['employee_ids']);
         }
-        if (!empty($filters['product_ids'])) {
-            $query->whereIn('time_studies.product_id', (array) $filters['product_ids']);
+        if (!empty($filters['style_ids'])) {
+            $query->whereIn('time_studies.style_id', (array) $filters['style_ids']);
         }
         if (!empty($filters['factory_ids'])) {
             $query->whereIn('time_studies.factory_id', (array) $filters['factory_ids']);

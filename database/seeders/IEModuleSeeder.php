@@ -25,8 +25,8 @@ class IEModuleSeeder extends Seeder
         $this->seedSkills();
         $this->seedOperations();
         $this->seedOperationGradings();
-        $this->seedProducts();
-        $this->seedProductOperationGradings();
+        $this->seedStyles();
+        $this->seedStyleOperationGradings();
 
         DB::statement('SET FOREIGN_KEY_CHECKS = 1');
 
@@ -466,7 +466,7 @@ class IEModuleSeeder extends Seeder
 
     /**
      * Insert operation rows (table `operations`, was `operation_gradings`) for a given product_category_id.
-     * Skips rows whose code or (op, product_cat, machine_type) unique key already exists.
+     * Skips rows whose code or (op, style_cat, machine_type) unique key already exists.
      *
      * @param  int    $productCategoryId
      * @param  array  $rows  Each: [sequence_no, base_operation_id, machine_type_id, grade_id, smv, code, description]
@@ -516,11 +516,11 @@ class IEModuleSeeder extends Seeder
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 7. PRODUCTS (62 products across 14 categories)
+    // 7. STYLES (62 styles across 14 categories)
     // ─────────────────────────────────────────────────────────────
-    private function seedProducts(): void
+    private function seedStyles(): void
     {
-        DB::table('products')->insertOrIgnore([
+        DB::table('styles')->insertOrIgnore([
             // BRA (cat 2)
             ['description' => 'Ladies Underwire Bra Classic',    'code' => 'P-BRA-001', 'product_category_id' => 2,  'is_active' => 1],
             ['description' => 'Ladies Push-Up Bra Deluxe',       'code' => 'P-BRA-002', 'product_category_id' => 2,  'is_active' => 1],
@@ -613,20 +613,20 @@ class IEModuleSeeder extends Seeder
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 8. PRODUCT OPERATIONS (was PRODUCT OPERATION GRADINGS)
+    // 8. STYLE OPERATIONS (was STYLE OPERATION GRADINGS)
     // ─────────────────────────────────────────────────────────────
-    private function seedProductOperationGradings(): void
+    private function seedStyleOperationGradings(): void
     {
-        // Map: product_code → [og_code_prefix, smv_multiplier]
-        $productToCategory = [
-            // BRA products → BRA OGs (17 ops)
+        // Map: style_code → [og_code_prefix, smv_multiplier]
+        $styleToCategory = [
+            // BRA styles → BRA OGs (17 ops)
             'P-BRA-001' => ['OG-BRA-', 1.00],
             'P-BRA-002' => ['OG-BRA-', 1.08],
             'P-BRA-003' => ['OG-BRA-', 0.92],
             'P-BRA-004' => ['OG-BRA-', 1.03],
             'P-BRA-005' => ['OG-BRA-', 1.05],
             'P-BRA-006' => ['OG-BRA-', 1.02],
-            // BRALETTE products → BRL OGs (12 ops)
+            // BRALETTE styles → BRL OGs (12 ops)
             'P-BRL-001' => ['OG-BRL-', 1.00],
             'P-BRL-002' => ['OG-BRL-', 1.10],
             'P-BRL-003' => ['OG-BRL-', 0.93],
@@ -683,9 +683,9 @@ class IEModuleSeeder extends Seeder
             'P-SWM-003' => ['OG-SWM-', 0.88],
         ];
 
-        foreach ($productToCategory as $productCode => [$ogPrefix, $smvMult]) {
-            $productId = DB::table('products')->where('code', $productCode)->value('id');
-            if (!$productId) {
+        foreach ($styleToCategory as $styleCode => [$ogPrefix, $smvMult]) {
+            $styleId = DB::table('styles')->where('code', $styleCode)->value('id');
+            if (!$styleId) {
                 continue;
             }
 
@@ -697,8 +697,8 @@ class IEModuleSeeder extends Seeder
 
             $seqNo = 1;
             foreach ($gradings as $grading) {
-                $alreadyLinked = DB::table('product_operations')
-                    ->where('product_id', $productId)
+                $alreadyLinked = DB::table('style_operations')
+                    ->where('style_id', $styleId)
                     ->where('operation_id', $grading->id)
                     ->exists();
 
@@ -707,20 +707,20 @@ class IEModuleSeeder extends Seeder
                     continue;
                 }
 
-                // Check if this sequence_no is already used for this product
-                $seqTaken = DB::table('product_operations')
-                    ->where('product_id', $productId)
+                // Check if this sequence_no is already used for this style
+                $seqTaken = DB::table('style_operations')
+                    ->where('style_id', $styleId)
                     ->where('sequence_no', $seqNo)
                     ->exists();
 
                 $finalSeq = $seqTaken
-                    ? (DB::table('product_operations')
-                        ->where('product_id', $productId)
+                    ? (DB::table('style_operations')
+                        ->where('style_id', $styleId)
                         ->max('sequence_no') + 1)
                     : $seqNo;
 
-                DB::table('product_operations')->insert([
-                    'product_id'           => $productId,
+                DB::table('style_operations')->insert([
+                    'style_id'           => $styleId,
                     'operation_id'         => $grading->id,
                     'sequence_no'          => $finalSeq,
                     'smv'                  => $grading->smv !== null

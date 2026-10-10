@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use App\Support\Concerns\ScopedToFactories;
 
-class Product extends Model
+class Style extends Model
 {
     use ScopedToFactories;
 
@@ -60,23 +60,23 @@ class Product extends Model
         return $this->belongsTo(Season::class);
     }
 
-    public function productOperations()
+    public function styleOperations()
     {
-        return $this->hasMany(ProductOperation::class, 'product_id');
+        return $this->hasMany(StyleOperation::class, 'style_id');
     }
 
     public function teamPlans()
     {
-        return $this->hasMany(TeamPlan::class, 'product_id');
+        return $this->hasMany(TeamPlan::class, 'style_id');
     }
 
     public function milestones()
     {
-        return $this->hasOne(ProductMilestone::class, 'product_id');
+        return $this->hasOne(StyleMilestone::class, 'style_id');
     }
 
     public function factories()
     {
-        return $this->belongsToMany(Factory::class, 'factory_product');
+        return $this->belongsToMany(Factory::class, 'factory_style');
     }
 }

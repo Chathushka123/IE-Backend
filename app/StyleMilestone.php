@@ -5,7 +5,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
-class ProductMilestone extends Model
+class StyleMilestone extends Model
 {
     public static function boot()
     {
@@ -22,7 +22,7 @@ class ProductMilestone extends Model
     }
 
     protected $fillable = [
-        'product_id',
+        'style_id',
         'planned_quantity',
         'planned_cut_date',
         'actual_cut_date',
@@ -66,8 +66,8 @@ class ProductMilestone extends Model
         'actual_eta' => 'date:Y-m-d',
     ];
 
-    public function product()
+    public function style()
     {
-        return $this->belongsTo(Product::class, 'product_id');
+        return $this->belongsTo(Style::class, 'style_id');
     }
 }

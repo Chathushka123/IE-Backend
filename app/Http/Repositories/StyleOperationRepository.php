@@ -3,23 +3,23 @@
 namespace App\Http\Repositories;
 
 use App\Operation;
-use App\Product;
-use App\ProductOperation;
+use App\Style;
+use App\StyleOperation;
 use Illuminate\Support\Facades\Validator;
 use Exception;
 
-use App\Http\Validators\ProductOperationCreateValidator;
-use App\Http\Validators\ProductOperationUpdateValidator;
+use App\Http\Validators\StyleOperationCreateValidator;
+use App\Http\Validators\StyleOperationUpdateValidator;
 
-class ProductOperationRepository
+class StyleOperationRepository
 {
   private static function assertSameCategory(array $rec)
   {
-    $product = Product::find($rec['product_id'] ?? null);
+    $style = Style::find($rec['style_id'] ?? null);
     $operation = Operation::find($rec['operation_id'] ?? null);
 
-    if ($product && $operation && $product->product_category_id !== $operation->product_category_id) {
-      throw new \App\Exceptions\GeneralException("This operation does not belong to the product's category.");
+    if ($style && $operation && $style->product_category_id !== $operation->product_category_id) {
+      throw new \App\Exceptions\GeneralException("This operation does not belong to the style's category.");
     }
   }
 
@@ -27,10 +27,10 @@ class ProductOperationRepository
   {
     $validator = Validator::make(
       $rec,
-      ProductOperationCreateValidator::getCreateRules($rec),
+      StyleOperationCreateValidator::getCreateRules($rec),
       [
-        'operation_id.unique' => 'This operation is already mapped to the selected product.',
-        'sequence_no.unique' => 'This sequence number is already used by another operation for this product.',
+        'operation_id.unique' => 'This operation is already mapped to the selected style.',
+        'sequence_no.unique' => 'This sequence number is already used by another operation for this style.',
       ]
     );
     if ($validator->fails()) {
@@ -38,7 +38,7 @@ class ProductOperationRepository
     }
     self::assertSameCategory($rec);
     try {
-      $model = ProductOperation::create($rec);
+      $model = StyleOperation::create($rec);
     } catch (Exception $e) {
       throw new \App\Exceptions\GeneralException($e->getMessage());
     }
@@ -47,7 +47,7 @@ class ProductOperationRepository
 
   public static function updateRec($model_id, array $rec)
   {
-    $model = ProductOperation::findOrFail($model_id);
+    $model = StyleOperation::findOrFail($model_id);
 
     if (!$model->updated_at->eq(\Carbon\Carbon::parse($rec['updated_at']))) {
       $entity = (new \ReflectionClass($model))->getShortName();
@@ -56,10 +56,10 @@ class ProductOperationRepository
     Utilities::hydrate($model, $rec);
     $validator = Validator::make(
       $rec,
-      ProductOperationUpdateValidator::getUpdateRules($model_id, $rec),
+      StyleOperationUpdateValidator::getUpdateRules($model_id, $rec),
       [
-        'operation_id.unique' => 'This operation is already mapped to the selected product.',
-        'sequence_no.unique' => 'This sequence number is already used by another operation for this product.',
+        'operation_id.unique' => 'This operation is already mapped to the selected style.',
+        'sequence_no.unique' => 'This sequence number is already used by another operation for this style.',
       ]
     );
     if ($validator->fails()) {
@@ -106,31 +106,31 @@ class ProductOperationRepository
 
   public static function deleteRecs(array $recs)
   {
-    ProductOperation::destroy($recs);
+    StyleOperation::destroy($recs);
   }
 
-  public static function resequence(int $productId, array $ids)
+  public static function resequence(int $styleId, array $ids)
   {
-    $records = ProductOperation::whereIn('id', $ids)
-      ->where('product_id', $productId)
+    $records = StyleOperation::whereIn('id', $ids)
+      ->where('style_id', $styleId)
       ->get()
       ->keyBy('id');
 
     if ($records->count() !== count($ids)) {
       throw new \App\Exceptions\GeneralException(
-        'One or more IDs do not belong to the given product.'
+        'One or more IDs do not belong to the given style.'
       );
     }
 
     // Null out all sequence numbers first to avoid unique constraint conflicts
-    ProductOperation::whereIn('id', $ids)->update(['sequence_no' => null]);
+    StyleOperation::whereIn('id', $ids)->update(['sequence_no' => null]);
 
     // Use query builder directly — Eloquent's dirty-check would skip save()
     // for any record whose new sequence_no equals its original value
     foreach ($ids as $index => $id) {
-      ProductOperation::where('id', $id)->update(['sequence_no' => $index + 1]);
+      StyleOperation::where('id', $id)->update(['sequence_no' => $index + 1]);
     }
 
-    return ProductOperation::whereIn('id', $ids)->orderBy('sequence_no')->get();
+    return StyleOperation::whereIn('id', $ids)->orderBy('sequence_no')->get();
   }
 }

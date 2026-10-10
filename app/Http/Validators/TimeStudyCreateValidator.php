@@ -11,7 +11,7 @@ class TimeStudyCreateValidator
       'study_date' => 'required|date',
       'time_study_type' => 'required|in:interview_training,production_floor',
       'operation_id' => 'required|integer|exists:operations,id',
-      'product_id' => 'nullable|integer|exists:products,id',
+      'style_id' => 'nullable|integer|exists:styles,id',
       'employee_id' => 'required|integer|exists:employees,id',
       'product_category_id' => 'nullable|integer|exists:product_categories,id',
       'machine_type_id' => 'nullable|integer|exists:machine_types,id',

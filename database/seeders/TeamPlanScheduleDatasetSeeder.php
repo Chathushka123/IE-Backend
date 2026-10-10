@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * Small, hand-verifiable dataset for the date-only Schedule Board and the
  * apparel order-milestone tracker (TeamPlanRepository::assertNoOverlap,
- * ProductMilestone). Mirrors GapAnalysisDatasetSeeder's isolation approach:
+ * StyleMilestone). Mirrors GapAnalysisDatasetSeeder's isolation approach:
  * everything lives under its own "SCHED-" prefixed demo factory, so it can
  * never collide with or disturb a real factory's schedule.
  *
@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\DB;
  *
  * ── Scenario reference (kept here as the single source of truth) ──────────
  *
- * Team Plans — two teams, three products, deliberately built to exercise
+ * Team Plans — two teams, three styles, deliberately built to exercise
  * both halves of the inclusive-date-range overlap rule:
  *
  *   SCHED-T1: SCHED-P1 [09-01..09-05] -> SCHED-P3 [09-06..09-09]
@@ -28,8 +28,8 @@ use Illuminate\Support\Facades\DB;
  *
  *   Every adjacent pair above is back-to-back (one ends the day before the
  *   next starts) and is accepted by assertNoOverlap. The same team is also
- *   given the same product twice on non-consecutive ranges (SCHED-P1 and
- *   SCHED-P3 both run on SCHED-T1 twice), demonstrating that a product can
+ *   given the same style twice on non-consecutive ranges (SCHED-P1 and
+ *   SCHED-P3 both run on SCHED-T1 twice), demonstrating that a style can
  *   have multiple disjoint bookings on one team.
  *
  *   Deliberate overlap-guard demonstration (NOT inserted — would be
@@ -40,7 +40,7 @@ use Illuminate\Support\Facades\DB;
  *   team_id=SCHED-T1, planned_start_date=2026-09-09, planned_end_date=
  *   2026-09-11 is rejected because it shares 09-09 with SCHED-P1's second run.
  *
- * Product Milestones — one row per product, staggered against "today" so
+ * Style Milestones — one row per style, staggered against "today" so
  * the planned-vs-actual split in the UI has something real to show:
  *
  *   SCHED-P1 — cutting already done, 1 day later than planned (a small PCD
@@ -61,17 +61,17 @@ class TeamPlanScheduleDatasetSeeder extends Seeder
 
             $factoryId = $this->seedFactory();
             [$deptId, $sectionId] = $this->seedDeptAndSection();
-            [$customerId, $seasonId, $productCategoryId] = $this->seedProductTaxonomy();
+            [$customerId, $seasonId, $productCategoryId] = $this->seedStyleTaxonomy();
 
             $teamIds = $this->seedTeams($factoryId, $sectionId, $deptId);
-            $productIds = $this->seedProducts($productCategoryId, $customerId, $seasonId);
-            $this->linkFactoryProducts($factoryId, $productIds);
+            $styleIds = $this->seedStyles($productCategoryId, $customerId, $seasonId);
+            $this->linkFactoryStyles($factoryId, $styleIds);
 
-            $this->seedTeamPlans($teamIds, $productIds);
-            $this->seedProductMilestones($productIds);
+            $this->seedTeamPlans($teamIds, $styleIds);
+            $this->seedStyleMilestones($styleIds);
         });
 
-        $this->command?->info('Team Plan Schedule demo dataset seeded: 1 factory, 2 teams, 3 products, 7 team plans, 3 milestone records.');
+        $this->command?->info('Team Plan Schedule demo dataset seeded: 1 factory, 2 teams, 3 styles, 7 team plans, 3 milestone records.');
     }
 
     /**
@@ -89,21 +89,21 @@ class TeamPlanScheduleDatasetSeeder extends Seeder
 
         // Matched by code, not factory_id — a demo team's factory can drift (e.g.
         // reassigned manually while testing the Teams admin page), same rationale
-        // as matching products by style_code below rather than a factory_product link.
+        // as matching styles by style_code below rather than a factory_style link.
         $teamIds = DB::table('teams')->where('code', 'LIKE', 'SCHED-T%')->pluck('id');
-        $productIds = DB::table('products')->where('style_code', 'LIKE', 'SCHED-P%')->pluck('id');
+        $styleIds = DB::table('styles')->where('style_code', 'LIKE', 'SCHED-P%')->pluck('id');
 
         // Also catches a team_plan on some other (non-demo) team that references one of
-        // these demo products — e.g. picked manually while testing the Schedule Board —
+        // these demo styles — e.g. picked manually while testing the Schedule Board —
         // which whereIn('team_id', $teamIds) alone wouldn't reach, and would otherwise
-        // block deleting the product below via fk_team_plans_product.
+        // block deleting the style below via fk_team_plans_style.
         DB::table('team_plans')
-            ->where(function ($q) use ($teamIds, $productIds) {
-                $q->whereIn('team_id', $teamIds)->orWhereIn('product_id', $productIds);
+            ->where(function ($q) use ($teamIds, $styleIds) {
+                $q->whereIn('team_id', $teamIds)->orWhereIn('style_id', $styleIds);
             })
             ->delete();
-        DB::table('product_milestones')->whereIn('product_id', $productIds)->delete();
-        DB::table('products')->whereIn('id', $productIds)->delete();
+        DB::table('style_milestones')->whereIn('style_id', $styleIds)->delete();
+        DB::table('styles')->whereIn('id', $styleIds)->delete();
         DB::table('teams')->whereIn('id', $teamIds)->delete();
 
         DB::table('product_categories')->where('code', 'SCHED-PC')->delete();
@@ -150,7 +150,7 @@ class TeamPlanScheduleDatasetSeeder extends Seeder
     }
 
     /** @return array{0: int, 1: int, 2: int} [customerId, seasonId, productCategoryId] */
-    private function seedProductTaxonomy(): array
+    private function seedStyleTaxonomy(): array
     {
         $customerId = DB::table('customers')->insertGetId([
             'description' => 'Schedule Demo Customer',
@@ -217,7 +217,7 @@ class TeamPlanScheduleDatasetSeeder extends Seeder
     }
 
     /** @return array<string, int> style_code => id */
-    private function seedProducts(int $productCategoryId, int $customerId, int $seasonId): array
+    private function seedStyles(int $productCategoryId, int $customerId, int $seasonId): array
     {
         $defs = [
             ['SCHED-P1', 'Schedule Demo Style One'],
@@ -225,9 +225,9 @@ class TeamPlanScheduleDatasetSeeder extends Seeder
             ['SCHED-P3', 'Schedule Demo Style Three'],
         ];
 
-        $productIds = [];
+        $styleIds = [];
         foreach ($defs as [$styleCode, $name]) {
-            $productIds[$styleCode] = DB::table('products')->insertGetId([
+            $styleIds[$styleCode] = DB::table('styles')->insertGetId([
                 'name' => $name,
                 'style_code' => $styleCode,
                 'product_category_id' => $productCategoryId,
@@ -239,26 +239,26 @@ class TeamPlanScheduleDatasetSeeder extends Seeder
             ]);
         }
 
-        return $productIds;
+        return $styleIds;
     }
 
     /**
-     * Product is factory-scoped (ScopedToFactories) — a product linked to zero
+     * Style is factory-scoped (ScopedToFactories) — a style linked to zero
      * factories is invisible to any query touching it (direct or eager-loaded)
      * once a request resolves to a real, non-bypassed factory context, even
      * though the row itself exists.
      */
-    private function linkFactoryProducts(int $factoryId, array $productIds): void
+    private function linkFactoryStyles(int $factoryId, array $styleIds): void
     {
-        DB::table('factory_product')->insert(array_map(
-            fn ($productId) => ['factory_id' => $factoryId, 'product_id' => $productId, 'created_at' => now(), 'updated_at' => now()],
-            array_values($productIds)
+        DB::table('factory_style')->insert(array_map(
+            fn ($styleId) => ['factory_id' => $factoryId, 'style_id' => $styleId, 'created_at' => now(), 'updated_at' => now()],
+            array_values($styleIds)
         ));
     }
 
-    private function seedTeamPlans(array $teamIds, array $productIds): void
+    private function seedTeamPlans(array $teamIds, array $styleIds): void
     {
-        // team code, product style_code (null = changeover), sequence_no, planned_quantity,
+        // team code, style_code (null = changeover), sequence_no, planned_quantity,
         // planned_start_date, planned_end_date, notes
         $defs = [
             ['SCHED-T1', 'SCHED-P1', 1, 1000, '2026-09-01', '2026-09-05', 'First run of Style One'],
@@ -273,7 +273,7 @@ class TeamPlanScheduleDatasetSeeder extends Seeder
         foreach ($defs as [$teamCode, $styleCode, $seq, $qty, $start, $end, $notes]) {
             DB::table('team_plans')->insert([
                 'team_id' => $teamIds[$teamCode],
-                'product_id' => $styleCode ? $productIds[$styleCode] : null,
+                'style_id' => $styleCode ? $styleIds[$styleCode] : null,
                 'sequence_no' => $seq,
                 'planned_quantity' => $qty,
                 'planned_start_date' => $start,
@@ -288,7 +288,7 @@ class TeamPlanScheduleDatasetSeeder extends Seeder
         }
     }
 
-    private function seedProductMilestones(array $productIds): void
+    private function seedStyleMilestones(array $styleIds): void
     {
         // style_code, planned_quantity (sum of that style's team_plan segments), planned_cut_date,
         // actual_cut_date, planned_production_start_date, planned_production_end_date,
@@ -301,8 +301,8 @@ class TeamPlanScheduleDatasetSeeder extends Seeder
         ];
 
         foreach ($defs as [$styleCode, $plannedQty, $plannedCut, $actualCut, $psd, $ped, $fnd, $fri, $exf, $crd, $etd, $eta]) {
-            DB::table('product_milestones')->insert([
-                'product_id' => $productIds[$styleCode],
+            DB::table('style_milestones')->insert([
+                'style_id' => $styleIds[$styleCode],
                 'planned_quantity' => $plannedQty,
                 'planned_cut_date' => $plannedCut,
                 'actual_cut_date' => $actualCut,
