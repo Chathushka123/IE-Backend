@@ -367,7 +367,7 @@ VALUES
 -- 8. OPERATION SKILLS (was OPERATION GRADING SKILLS)
 -- Maps skills required per operation
 -- =====================================================
-INSERT INTO operation_skill (operation_id, soft_skill_id, is_active) VALUES
+INSERT INTO operation_skill (operation_id, base_skill_id, is_active) VALUES
 -- BRA gradings (1-17)
 (1,  19, 1), -- Fabric Laying → Quality Inspection
 (2,  11, 1), (2,  12, 1), -- Cutting → Fabric Cutting, Pattern Matching

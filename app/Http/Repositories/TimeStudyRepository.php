@@ -31,10 +31,10 @@ class TimeStudyRepository
     try {
       $model = TimeStudy::create($headerData);
 
-      foreach ($skillIds as $softSkillId) {
+      foreach ($skillIds as $baseSkillId) {
         TimeStudySkill::create([
           'time_study_id' => $model->id,
-          'soft_skill_id' => $softSkillId,
+          'base_skill_id' => $baseSkillId,
         ]);
       }
 

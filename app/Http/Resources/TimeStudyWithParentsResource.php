@@ -37,7 +37,7 @@ class TimeStudyWithParentsResource extends JsonResource
             'employee' => $this->whenLoaded('employee'),
             'productCategory' => $this->whenLoaded('productCategory'),
             'machineType' => $this->whenLoaded('machineType'),
-            'softSkills' => $this->whenLoaded('softSkills'),
+            'baseSkills' => $this->whenLoaded('baseSkills'),
             'laps' => $this->whenLoaded('laps'),
             'downtimes' => $this->whenLoaded('downtimes'),
         ];

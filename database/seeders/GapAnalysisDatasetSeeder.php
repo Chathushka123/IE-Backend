@@ -72,7 +72,7 @@ class GapAnalysisDatasetSeeder extends Seeder
             $mgmtHierarchyId = $this->seedManagementHierarchy();
 
             $operationIds = $this->seedOperations($baseOpCategoryId, $productCategoryId, $machineTypeId, $gradeId);
-            $this->seedSoftSkillsAndTags($operationIds);
+            $this->seedBaseSkillsAndTags($operationIds);
 
             $styleIds = $this->seedStyles($productCategoryId, $customerId, $seasonId);
             $this->linkFactoryStyles($factoryId, $styleIds);
@@ -121,7 +121,7 @@ class GapAnalysisDatasetSeeder extends Seeder
         DB::table('styles')->whereIn('id', $styleIds)->delete();
         DB::table('operations')->whereIn('id', $operationIds)->delete();
         DB::table('teams')->where('factory_id', $factoryId)->delete();
-        DB::table('soft_skills')->where('code', 'LIKE', 'GAP-SK-%')->delete();
+        DB::table('base_skills')->where('code', 'LIKE', 'GAP-SK-%')->delete();
 
         DB::table('product_categories')->where('code', 'GAP-PC')->delete();
         DB::table('product_groups')->where('code', 'GAP-PG')->delete();
@@ -318,9 +318,9 @@ class GapAnalysisDatasetSeeder extends Seeder
         return $operationIds;
     }
 
-    private function seedSoftSkillsAndTags(array $operationIds): void
+    private function seedBaseSkillsAndTags(array $operationIds): void
     {
-        $detailId = DB::table('soft_skills')->insertGetId([
+        $detailId = DB::table('base_skills')->insertGetId([
             'name' => 'Attention to Detail',
             'code' => 'GAP-SK-01',
             'is_active' => true,
@@ -328,7 +328,7 @@ class GapAnalysisDatasetSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        $precisionId = DB::table('soft_skills')->insertGetId([
+        $precisionId = DB::table('base_skills')->insertGetId([
             'name' => 'Fine Motor Precision',
             'code' => 'GAP-SK-02',
             'is_active' => true,
@@ -339,14 +339,14 @@ class GapAnalysisDatasetSeeder extends Seeder
         DB::table('operation_skill')->insert([
             [
                 'operation_id' => $operationIds['GAP-OP-07'],
-                'soft_skill_id' => $detailId,
+                'base_skill_id' => $detailId,
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'operation_id' => $operationIds['GAP-OP-05'],
-                'soft_skill_id' => $precisionId,
+                'base_skill_id' => $precisionId,
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),

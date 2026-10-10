@@ -10,10 +10,10 @@ class OperationSkillCreateValidator
   public static function getCreateRules(array $rec = [])
   {
     return array_merge(OperationSkillCommonValidator::getCommonRules(), [
-      'soft_skill_id' => [
+      'base_skill_id' => [
         'required',
         'integer',
-        'exists:soft_skills,id',
+        'exists:base_skills,id',
         Rule::unique('operation_skill')->where('operation_id', $rec['operation_id'] ?? null),
       ],
     ]);

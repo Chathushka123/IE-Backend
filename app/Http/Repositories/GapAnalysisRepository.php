@@ -22,7 +22,7 @@ use App\TeamPlan;
  * "Qualified" = selected_efficiency >= operation.expected_lower_mid_level_efficiency.
  * expected_top_level_efficiency is a separate "quality gap" signal (staffed
  * at the minimum bar, nobody clears the top band). Operation = skill 1:1 —
- * no operation_skill/soft_skills involved.
+ * no operation_skill/base_skills involved.
  */
 class GapAnalysisRepository
 {

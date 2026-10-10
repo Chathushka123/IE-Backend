@@ -25,7 +25,7 @@ class OperationSkill extends Model
 
     protected $fillable = [
         'operation_id',
-        'soft_skill_id',
+        'base_skill_id',
         'is_active',
     ];
 
@@ -34,8 +34,8 @@ class OperationSkill extends Model
         return $this->belongsTo(Operation::class, 'operation_id');
     }
 
-    public function softSkill()
+    public function baseSkill()
     {
-        return $this->belongsTo(SoftSkill::class, 'soft_skill_id');
+        return $this->belongsTo(BaseSkill::class, 'base_skill_id');
     }
 }

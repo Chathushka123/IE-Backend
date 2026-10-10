@@ -8,7 +8,7 @@ class OperationSkillCommonValidator
   {
     return [
       'operation_id' => 'required|integer|exists:operations,id',
-      'soft_skill_id' => 'required|integer|exists:soft_skills,id',
+      'base_skill_id' => 'required|integer|exists:base_skills,id',
       'is_active' => 'nullable|boolean',
     ];
   }

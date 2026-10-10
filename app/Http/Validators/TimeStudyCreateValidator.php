@@ -27,7 +27,7 @@ class TimeStudyCreateValidator
       'efficiency_pct' => 'nullable|numeric|min:0',
 
       'skill_ids' => 'nullable|array',
-      'skill_ids.*' => 'integer|exists:soft_skills,id',
+      'skill_ids.*' => 'integer|exists:base_skills,id',
 
       'laps' => 'required|array|min:1',
       'laps.*.lap_no' => 'required|integer|min:1',

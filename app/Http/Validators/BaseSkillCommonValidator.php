@@ -2,7 +2,7 @@
 
 namespace App\Http\Validators;
 
-class SoftSkillCommonValidator
+class BaseSkillCommonValidator
 {
   public static function getCommonRules()
   {

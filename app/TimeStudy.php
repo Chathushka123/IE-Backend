@@ -80,9 +80,9 @@ class TimeStudy extends Model
         return $this->belongsTo(MachineType::class, 'machine_type_id');
     }
 
-    public function softSkills()
+    public function baseSkills()
     {
-        return $this->belongsToMany(SoftSkill::class, 'time_study_skills', 'time_study_id', 'soft_skill_id');
+        return $this->belongsToMany(BaseSkill::class, 'time_study_skills', 'time_study_id', 'base_skill_id');
     }
 
     public function laps()

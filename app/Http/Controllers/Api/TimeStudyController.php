@@ -27,7 +27,7 @@ class TimeStudyController extends Controller
             'employee.department',
             'productCategory',
             'machineType',
-            'softSkills',
+            'baseSkills',
             'laps',
             'downtimes.reason',
         ];

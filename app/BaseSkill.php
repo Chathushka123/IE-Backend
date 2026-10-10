@@ -5,7 +5,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
-class SoftSkill extends Model
+class BaseSkill extends Model
 {
     public static function boot()
     {
@@ -29,6 +29,6 @@ class SoftSkill extends Model
 
     public function operations()
     {
-        return $this->belongsToMany(Operation::class, 'operation_skill', 'soft_skill_id', 'operation_id');
+        return $this->belongsToMany(Operation::class, 'operation_skill', 'base_skill_id', 'operation_id');
     }
 }

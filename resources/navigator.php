@@ -68,7 +68,7 @@ $navigator_json = '
           "path":"/ie/machines"
         },
         {
-          "caption":"Base Operations & Soft Skills",
+          "caption":"Base Operations & Base Skills",
           "icon":"fas fa-list-check",
           "type":"node",
           "permitted" : 0,

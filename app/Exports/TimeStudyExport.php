@@ -55,7 +55,7 @@ class TimeStudyExport implements FromCollection, WithHeadings, WithMapping, With
                 'employee.department',
                 'productCategory',
                 'machineType',
-                'softSkills',
+                'baseSkills',
                 'laps',
                 'downtimes.reason',
             ])
@@ -120,7 +120,7 @@ class TimeStudyExport implements FromCollection, WithHeadings, WithMapping, With
             optional($study->employee)->full_name
                 ?: trim(optional($study->employee)->first_name . ' ' . optional($study->employee)->last_name),
             optional(optional($study->employee)->department)->name,
-            $study->softSkills->pluck('name')->implode(', '),
+            $study->baseSkills->pluck('name')->implode(', '),
             $study->smv,
             $study->smv !== null ? round($study->smv * 60, 2) : null,
             $this->msToSec($study->total_productive_ms),

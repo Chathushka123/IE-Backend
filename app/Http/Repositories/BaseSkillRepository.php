@@ -2,26 +2,26 @@
 
 namespace App\Http\Repositories;
 
-use App\SoftSkill;
+use App\BaseSkill;
 use Illuminate\Support\Facades\Validator;
 use Exception;
 
-use App\Http\Validators\SoftSkillCreateValidator;
-use App\Http\Validators\SoftSkillUpdateValidator;
+use App\Http\Validators\BaseSkillCreateValidator;
+use App\Http\Validators\BaseSkillUpdateValidator;
 
-class SoftSkillRepository
+class BaseSkillRepository
 {
   public static function createRec(array $rec)
   {
     $validator = Validator::make(
       $rec,
-      SoftSkillCreateValidator::getCreateRules()
+      BaseSkillCreateValidator::getCreateRules()
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
     }
     try {
-      $model = SoftSkill::create($rec);
+      $model = BaseSkill::create($rec);
     } catch (Exception $e) {
       throw new \App\Exceptions\GeneralException($e->getMessage());
     }
@@ -30,7 +30,7 @@ class SoftSkillRepository
 
   public static function updateRec($model_id, array $rec)
   {
-    $model = SoftSkill::findOrFail($model_id);
+    $model = BaseSkill::findOrFail($model_id);
 
     if (!$model->updated_at->eq(\Carbon\Carbon::parse($rec['updated_at']))) {
       $entity = (new \ReflectionClass($model))->getShortName();
@@ -39,7 +39,7 @@ class SoftSkillRepository
     Utilities::hydrate($model, $rec);
     $validator = Validator::make(
       $rec,
-      SoftSkillUpdateValidator::getUpdateRules($model_id)
+      BaseSkillUpdateValidator::getUpdateRules($model_id)
     );
     if ($validator->fails()) {
       Utilities::extractError($validator);
@@ -84,6 +84,6 @@ class SoftSkillRepository
 
   public static function deleteRecs(array $recs)
   {
-    SoftSkill::destroy($recs);
+    BaseSkill::destroy($recs);
   }
 }
