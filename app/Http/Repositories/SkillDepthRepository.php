@@ -4,14 +4,14 @@ namespace App\Http\Repositories;
 
 use App\Employee;
 use App\Operation;
-use App\Product;
-use App\ProductOperation;
+use App\Style;
+use App\StyleOperation;
 use App\SkillMatrixCalculationCell;
 use App\SkillMatrixCalculationRun;
 
 /**
  * Factory-wide, read-only rollup of the latest saved Skill Matrix Insights
- * run: for every operation routed into any active product currently linked
+ * run: for every operation routed into any active style currently linked
  * to this factory (regardless of team_plan/production status — unlike Gap
  * Analysis), how many currently-active employees are qualified on it.
  * Surfaces "bus factor" risk — single_point_of_failure (exactly 1 qualified
@@ -33,11 +33,11 @@ class SkillDepthRepository
 
     public static function getReport(array $filters = []): array
     {
-        // Product::/Employee:: (not DB::table()) so ScopedToFactories/ScopedToFactory
+        // Style::/Employee:: (not DB::table()) so ScopedToFactories/ScopedToFactory
         // auto-filter to the current factory scope — the load-bearing detail here.
-        $productIds = Product::where('is_active', true)->pluck('id');
+        $styleIds = Style::where('is_active', true)->pluck('id');
 
-        $operationIds = ProductOperation::whereIn('product_id', $productIds)
+        $operationIds = StyleOperation::whereIn('style_id', $styleIds)
             ->where('is_active', true)
             ->pluck('operation_id')
             ->unique()

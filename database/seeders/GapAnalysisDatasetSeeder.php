@@ -26,9 +26,9 @@ use Illuminate\Support\Facades\DB;
  * ── Scenario reference (kept here as the single source of truth) ──────────
  *
  * Teams / suggestSchedule (operator_count / hourly_capacity / hours_needed):
- *   GAP-T1 Alpha  — fully staffed        — 6 / 180 / 10  (product GAP-P-A, qty 1800, total smv 1.20, target eff 60%)
- *   GAP-T2 Beta   — headcount gap        — 2 /  36 /  8  (product GAP-P-B, qty  288, total smv 2.00, target eff 60%)
- *   GAP-T3 Gamma  — quality/training gap — 4 /  60 /  6  (product GAP-P-C, qty  360, total smv 2.00, target eff 50%)
+ *   GAP-T1 Alpha  — fully staffed        — 6 / 180 / 10  (style GAP-P-A, qty 1800, total smv 1.20, target eff 60%)
+ *   GAP-T2 Beta   — headcount gap        — 2 /  36 /  8  (style GAP-P-B, qty  288, total smv 2.00, target eff 60%)
+ *   GAP-T3 Gamma  — quality/training gap — 4 /  60 /  6  (style GAP-P-C, qty  360, total smv 2.00, target eff 50%)
  *
  * Skill matrix cells (employee x operation -> mean / median / mode / stddev / selected):
  *   GAP-EMP-101 x GAP-OP-01 (mean)         88,90,92          -> mean 90.00, stddev 2.0000,  selected 90.00
@@ -65,27 +65,27 @@ class GapAnalysisDatasetSeeder extends Seeder
 
             $factoryId = $this->seedFactory();
             [$deptId, $sectionId] = $this->seedDeptAndSection();
-            [$customerId, $seasonId, $productCategoryId] = $this->seedProductTaxonomy();
+            [$customerId, $seasonId, $productCategoryId] = $this->seedStyleTaxonomy();
             $machineTypeId = $this->seedMachine();
             $baseOpCategoryId = $this->seedBaseOperationCategory();
             $gradeId = $this->seedOperationGrade();
             $mgmtHierarchyId = $this->seedManagementHierarchy();
 
             $operationIds = $this->seedOperations($baseOpCategoryId, $productCategoryId, $machineTypeId, $gradeId);
-            $this->seedSoftSkillsAndTags($operationIds);
+            $this->seedBaseSkillsAndTags($operationIds);
 
-            $productIds = $this->seedProducts($productCategoryId, $customerId, $seasonId);
-            $this->linkFactoryProducts($factoryId, $productIds);
-            $this->seedProductOperations($productIds, $operationIds);
+            $styleIds = $this->seedStyles($productCategoryId, $customerId, $seasonId);
+            $this->linkFactoryStyles($factoryId, $styleIds);
+            $this->seedStyleOperations($styleIds, $operationIds);
 
             $teamIds = $this->seedTeams($factoryId, $sectionId, $deptId);
             $employeeIds = $this->seedEmployees($factoryId, $mgmtHierarchyId, $teamIds);
 
-            $this->seedTeamPlans($teamIds, $productIds);
+            $this->seedTeamPlans($teamIds, $styleIds);
             $this->seedTimeStudies($factoryId, $operationIds, $employeeIds);
         });
 
-        $this->command?->info('Gap Analysis demo dataset seeded: 1 factory, 3 teams, 15 employees, 8 operations, 3 products, 35 time studies.');
+        $this->command?->info('Gap Analysis demo dataset seeded: 1 factory, 3 teams, 15 employees, 8 operations, 3 styles, 35 time studies.');
     }
 
     /**
@@ -103,7 +103,7 @@ class GapAnalysisDatasetSeeder extends Seeder
 
         $teamIds = DB::table('teams')->where('factory_id', $factoryId)->pluck('id');
         $employeeIds = DB::table('employees')->where('factory_id', $factoryId)->pluck('id');
-        $productIds = DB::table('products')->where('style_code', 'LIKE', 'GAP-P-%')->pluck('id');
+        $styleIds = DB::table('styles')->where('style_code', 'LIKE', 'GAP-P-%')->pluck('id');
         $operationIds = DB::table('operations')->where('code', 'LIKE', 'GAP-OP-%')->pluck('id');
 
         DB::table('skill_matrix_calculation_runs')
@@ -115,13 +115,13 @@ class GapAnalysisDatasetSeeder extends Seeder
         DB::table('time_studies')->where('factory_id', $factoryId)->delete();
         DB::table('team_plans')->whereIn('team_id', $teamIds)->delete();
         DB::table('operation_skill')->whereIn('operation_id', $operationIds)->delete();
-        DB::table('product_operations')->whereIn('product_id', $productIds)->delete();
-        DB::table('factory_product')->where('factory_id', $factoryId)->delete();
+        DB::table('style_operations')->whereIn('style_id', $styleIds)->delete();
+        DB::table('factory_style')->where('factory_id', $factoryId)->delete();
         DB::table('employees')->whereIn('id', $employeeIds)->delete();
-        DB::table('products')->whereIn('id', $productIds)->delete();
+        DB::table('styles')->whereIn('id', $styleIds)->delete();
         DB::table('operations')->whereIn('id', $operationIds)->delete();
         DB::table('teams')->where('factory_id', $factoryId)->delete();
-        DB::table('soft_skills')->where('code', 'LIKE', 'GAP-SK-%')->delete();
+        DB::table('base_skills')->where('code', 'LIKE', 'GAP-SK-%')->delete();
 
         DB::table('product_categories')->where('code', 'GAP-PC')->delete();
         DB::table('product_groups')->where('code', 'GAP-PG')->delete();
@@ -173,7 +173,7 @@ class GapAnalysisDatasetSeeder extends Seeder
     }
 
     /** @return array{0: int, 1: int, 2: int} [customerId, seasonId, productCategoryId] */
-    private function seedProductTaxonomy(): array
+    private function seedStyleTaxonomy(): array
     {
         $customerId = DB::table('customers')->insertGetId([
             'description' => 'Gap Demo Customer',
@@ -318,9 +318,9 @@ class GapAnalysisDatasetSeeder extends Seeder
         return $operationIds;
     }
 
-    private function seedSoftSkillsAndTags(array $operationIds): void
+    private function seedBaseSkillsAndTags(array $operationIds): void
     {
-        $detailId = DB::table('soft_skills')->insertGetId([
+        $detailId = DB::table('base_skills')->insertGetId([
             'name' => 'Attention to Detail',
             'code' => 'GAP-SK-01',
             'is_active' => true,
@@ -328,7 +328,7 @@ class GapAnalysisDatasetSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        $precisionId = DB::table('soft_skills')->insertGetId([
+        $precisionId = DB::table('base_skills')->insertGetId([
             'name' => 'Fine Motor Precision',
             'code' => 'GAP-SK-02',
             'is_active' => true,
@@ -339,14 +339,14 @@ class GapAnalysisDatasetSeeder extends Seeder
         DB::table('operation_skill')->insert([
             [
                 'operation_id' => $operationIds['GAP-OP-07'],
-                'soft_skill_id' => $detailId,
+                'base_skill_id' => $detailId,
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'operation_id' => $operationIds['GAP-OP-05'],
-                'soft_skill_id' => $precisionId,
+                'base_skill_id' => $precisionId,
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -354,8 +354,8 @@ class GapAnalysisDatasetSeeder extends Seeder
         ]);
     }
 
-    /** @return array<string, int> style_code => product id */
-    private function seedProducts(int $productCategoryId, int $customerId, int $seasonId): array
+    /** @return array<string, int> style_code => style id */
+    private function seedStyles(int $productCategoryId, int $customerId, int $seasonId): array
     {
         $defs = [
             ['GAP-P-A', 'Gap Demo Tee Classic'],
@@ -363,9 +363,9 @@ class GapAnalysisDatasetSeeder extends Seeder
             ['GAP-P-C', 'Gap Demo Tee Raglan'],
         ];
 
-        $productIds = [];
+        $styleIds = [];
         foreach ($defs as [$styleCode, $name]) {
-            $productIds[$styleCode] = DB::table('products')->insertGetId([
+            $styleIds[$styleCode] = DB::table('styles')->insertGetId([
                 'name' => $name,
                 'style_code' => $styleCode,
                 'product_category_id' => $productCategoryId,
@@ -377,20 +377,20 @@ class GapAnalysisDatasetSeeder extends Seeder
             ]);
         }
 
-        return $productIds;
+        return $styleIds;
     }
 
-    private function linkFactoryProducts(int $factoryId, array $productIds): void
+    private function linkFactoryStyles(int $factoryId, array $styleIds): void
     {
-        DB::table('factory_product')->insert(array_map(
-            fn ($productId) => ['factory_id' => $factoryId, 'product_id' => $productId, 'created_at' => now(), 'updated_at' => now()],
-            array_values($productIds)
+        DB::table('factory_style')->insert(array_map(
+            fn ($styleId) => ['factory_id' => $factoryId, 'style_id' => $styleId, 'created_at' => now(), 'updated_at' => now()],
+            array_values($styleIds)
         ));
     }
 
-    private function seedProductOperations(array $productIds, array $operationIds): void
+    private function seedStyleOperations(array $styleIds, array $operationIds): void
     {
-        // product style_code => [ [operation code, smv], ... ] in routing order
+        // style_code => [ [operation code, smv], ... ] in routing order
         $routings = [
             'GAP-P-A' => [['GAP-OP-01', 0.30], ['GAP-OP-02', 0.30], ['GAP-OP-03', 0.30], ['GAP-OP-06', 0.30]], // total 1.20
             'GAP-P-B' => [['GAP-OP-01', 0.50], ['GAP-OP-04', 0.50], ['GAP-OP-07', 0.50], ['GAP-OP-06', 0.50]], // total 2.00
@@ -399,8 +399,8 @@ class GapAnalysisDatasetSeeder extends Seeder
 
         foreach ($routings as $styleCode => $ops) {
             foreach ($ops as $i => [$opCode, $smv]) {
-                DB::table('product_operations')->insert([
-                    'product_id' => $productIds[$styleCode],
+                DB::table('style_operations')->insert([
+                    'style_id' => $styleIds[$styleCode],
                     'operation_id' => $operationIds[$opCode],
                     'sequence_no' => $i + 1,
                     'smv' => $smv,
@@ -481,10 +481,10 @@ class GapAnalysisDatasetSeeder extends Seeder
         return $employeeIds;
     }
 
-    private function seedTeamPlans(array $teamIds, array $productIds): void
+    private function seedTeamPlans(array $teamIds, array $styleIds): void
     {
         $defs = [
-            // team code, product style_code, planned_quantity, notes
+            // team code, style_code, planned_quantity, notes
             ['GAP-T1', 'GAP-P-A', 1800, 'Fully staffed line — every routed operation has qualified active operators.'],
             ['GAP-T2', 'GAP-P-B', 288, 'Headcount-constrained line — Final Inspection (GAP-OP-07) has zero active qualified operators.'],
             ['GAP-T3', 'GAP-P-C', 360, 'Staffed line, quality gap — nobody on Bartack (GAP-OP-05) clears the top efficiency band.'],
@@ -493,7 +493,7 @@ class GapAnalysisDatasetSeeder extends Seeder
         foreach ($defs as [$teamCode, $styleCode, $qty, $notes]) {
             DB::table('team_plans')->insert([
                 'team_id' => $teamIds[$teamCode],
-                'product_id' => $productIds[$styleCode],
+                'style_id' => $styleIds[$styleCode],
                 'sequence_no' => 1,
                 'planned_quantity' => $qty,
                 'planned_start_date' => '2026-01-05',

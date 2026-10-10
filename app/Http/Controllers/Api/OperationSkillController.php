@@ -14,7 +14,7 @@ class OperationSkillController extends Controller
     public function index()
     {
         try {
-            $records = OperationSkill::with('operation', 'softSkill')
+            $records = OperationSkill::with('operation', 'baseSkill')
                 ->orderBy('operation_id')
                 ->get();
             return response()->json(['status' => 'success', 'data' => $records], 200);
@@ -26,7 +26,7 @@ class OperationSkillController extends Controller
     public function show($id)
     {
         try {
-            $record = OperationSkill::with('operation', 'softSkill')->findOrFail($id);
+            $record = OperationSkill::with('operation', 'baseSkill')->findOrFail($id);
             return response()->json(['status' => 'success', 'data' => $record], 200);
         } catch (Exception $e) {
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 400);
@@ -36,7 +36,7 @@ class OperationSkillController extends Controller
     public function getByOperation($operationId)
     {
         try {
-            $records = OperationSkill::with('softSkill')
+            $records = OperationSkill::with('baseSkill')
                 ->where('operation_id', $operationId)
                 ->get();
             return response()->json(['status' => 'success', 'data' => $records], 200);
@@ -49,7 +49,7 @@ class OperationSkillController extends Controller
     {
         try {
             $records = OperationSkill::with('operation')
-                ->where('soft_skill_id', $skillId)
+                ->where('base_skill_id', $skillId)
                 ->get();
             return response()->json(['status' => 'success', 'data' => $records], 200);
         } catch (Exception $e) {
@@ -63,7 +63,7 @@ class OperationSkillController extends Controller
             DB::beginTransaction();
             $record = OperationSkillRepository::createRec($request->all());
             DB::commit();
-            return response()->json(['status' => 'success', 'data' => $record->load('operation', 'softSkill')], 200);
+            return response()->json(['status' => 'success', 'data' => $record->load('operation', 'baseSkill')], 200);
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 400);
@@ -76,7 +76,7 @@ class OperationSkillController extends Controller
             DB::beginTransaction();
             $record = OperationSkillRepository::updateRec($id, $request->all());
             DB::commit();
-            return response()->json(['status' => 'success', 'data' => $record->load('operation', 'softSkill')], 200);
+            return response()->json(['status' => 'success', 'data' => $record->load('operation', 'baseSkill')], 200);
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 400);

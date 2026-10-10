@@ -38,8 +38,8 @@ class ProductCategory extends Model
         return $this->hasMany(Operation::class, 'product_category_id');
     }
 
-    public function products()
+    public function styles()
     {
-        return $this->hasMany(Product::class, 'product_category_id');
+        return $this->hasMany(Style::class, 'product_category_id');
     }
 }

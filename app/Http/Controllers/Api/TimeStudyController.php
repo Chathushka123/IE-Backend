@@ -23,11 +23,13 @@ class TimeStudyController extends Controller
             'operation.baseOperation',
             'operation.productCategory',
             'operation.machineType',
-            'product',
+            'style',
             'employee.department',
+            // Column-restricted: never serialize password/token fields.
+            'conductedBy:id,name,email',
             'productCategory',
             'machineType',
-            'softSkills',
+            'baseSkills',
             'laps',
             'downtimes.reason',
         ];

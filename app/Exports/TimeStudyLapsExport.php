@@ -54,6 +54,7 @@ class TimeStudyLapsExport implements FromCollection, WithHeadings, WithMapping, 
             'Duration (sec)',
             'Down Time (sec)',
             'Net Time (sec)',
+            'Ignored in Calculations',
         ];
     }
 
@@ -72,6 +73,7 @@ class TimeStudyLapsExport implements FromCollection, WithHeadings, WithMapping, 
             $this->msToSec($lap->duration_ms),
             $this->msToSec($lap->down_time_ms),
             $this->msToSec($lap->net_ms),
+            $lap->is_excluded ? 'Yes' : 'No',
         ];
     }
 
@@ -105,6 +107,7 @@ class TimeStudyLapsExport implements FromCollection, WithHeadings, WithMapping, 
             'G' => 14, // Duration (sec)
             'H' => 14, // Down Time (sec)
             'I' => 14, // Net Time (sec)
+            'J' => 22, // Ignored in Calculations
         ];
     }
 }

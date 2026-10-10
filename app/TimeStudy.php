@@ -29,8 +29,9 @@ class TimeStudy extends Model
         'study_date',
         'time_study_type',
         'operation_id',
-        'product_id',
+        'style_id',
         'employee_id',
+        'conducted_by_id',
         'product_category_id',
         'machine_type_id',
         'smv',
@@ -60,14 +61,19 @@ class TimeStudy extends Model
         return $this->belongsTo(Operation::class, 'operation_id');
     }
 
-    public function product()
+    public function style()
     {
-        return $this->belongsTo(Product::class, 'product_id');
+        return $this->belongsTo(Style::class, 'style_id');
     }
 
     public function employee()
     {
         return $this->belongsTo(Employee::class, 'employee_id');
+    }
+
+    public function conductedBy()
+    {
+        return $this->belongsTo(User::class, 'conducted_by_id');
     }
 
     public function productCategory()
@@ -80,9 +86,9 @@ class TimeStudy extends Model
         return $this->belongsTo(MachineType::class, 'machine_type_id');
     }
 
-    public function softSkills()
+    public function baseSkills()
     {
-        return $this->belongsToMany(SoftSkill::class, 'time_study_skills', 'time_study_id', 'soft_skill_id');
+        return $this->belongsToMany(BaseSkill::class, 'time_study_skills', 'time_study_id', 'base_skill_id');
     }
 
     public function laps()

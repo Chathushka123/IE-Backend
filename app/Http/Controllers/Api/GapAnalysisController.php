@@ -21,8 +21,8 @@ class GapAnalysisController extends Controller
             $filters = $request->validate([
                 'team_ids' => 'nullable|array',
                 'team_ids.*' => 'integer|exists:teams,id',
-                'product_ids' => 'nullable|array',
-                'product_ids.*' => 'integer|exists:products,id',
+                'style_ids' => 'nullable|array',
+                'style_ids.*' => 'integer|exists:styles,id',
                 'statuses' => 'nullable|array',
                 'statuses.*' => 'in:planned,in_progress,completed,on_hold,cancelled',
                 'date_from' => 'nullable|date',

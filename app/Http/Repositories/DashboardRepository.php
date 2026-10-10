@@ -6,7 +6,7 @@ use App\Department;
 use App\Employee;
 use App\Section;
 use App\TeamPlan;
-use App\Product;
+use App\Style;
 use App\Team;
 use Illuminate\Support\Facades\DB;
 use App\Support\RequestTimezone;
@@ -32,8 +32,8 @@ class DashboardRepository
             'sections_total'    => Section::where('is_active', true)->count(),
             'teams_total'       => Team::count(),
             'teams_active'      => Team::where('is_active', true)->count(),
-            'products_total'    => Product::count(),
-            'products_active'   => Product::where('is_active', true)->count(),
+            'styles_total'    => Style::count(),
+            'styles_active'   => Style::where('is_active', true)->count(),
             'team_plans_active' => self::teamPlansInFactoryScope()
                 ->where('status', 'in_progress')
                 ->count(),
@@ -86,18 +86,18 @@ class DashboardRepository
         return self::teamPlansInFactoryScope()
             ->with([
                 'team:id,name,code',
-                'product:id,name,style_code',
+                'style:id,name,style_code',
             ])
             ->whereIn('status', ['planned', 'in_progress'])
             ->whereNotNull('planned_start_date')
             ->whereBetween('planned_start_date', self::next7DaysWindow())
             ->orderBy('planned_start_date')
             ->limit(8)
-            ->get(['id', 'team_id', 'product_id', 'planned_start_date', 'planned_end_date', 'status'])
+            ->get(['id', 'team_id', 'style_id', 'planned_start_date', 'planned_end_date', 'status'])
             ->map(fn ($plan) => [
                 'id'                 => $plan->id,
                 'team'               => optional($plan->team)->name,
-                'product'            => optional($plan->product)->style_code ?? optional($plan->product)->name,
+                'style'            => optional($plan->style)->style_code ?? optional($plan->style)->name,
                 'planned_start_date' => optional($plan->planned_start_date)->toDateString(),
                 'planned_end_date'   => optional($plan->planned_end_date)->toDateString(),
                 'status'             => $plan->status,

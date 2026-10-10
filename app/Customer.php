@@ -27,9 +27,9 @@ class Customer extends Model
         'is_active',
     ];
 
-    public function products()
+    public function styles()
     {
-        return $this->hasMany(Product::class, 'customer_id');
+        return $this->hasMany(Style::class, 'customer_id');
     }
 
     public function seasons()

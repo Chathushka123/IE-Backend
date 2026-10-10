@@ -26,7 +26,7 @@ class TeamPlan extends Model
 
     protected $fillable = [
         'team_id',
-        'product_id',
+        'style_id',
         'sequence_no',
         'planned_quantity',
         'planned_start_date',
@@ -53,8 +53,8 @@ class TeamPlan extends Model
         return $this->belongsTo(Team::class, 'team_id');
     }
 
-    public function product()
+    public function style()
     {
-        return $this->belongsTo(Product::class, 'product_id');
+        return $this->belongsTo(Style::class, 'style_id');
     }
 }

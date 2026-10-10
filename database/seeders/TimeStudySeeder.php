@@ -31,8 +31,8 @@ class TimeStudySeeder extends Seeder
             ->whereNotNull('machine_type_id')
             ->get();
         $downtimeReasonIds = DB::table('time_study_downtime_reasons')->pluck('id')->all();
-        $productOperations = DB::table('product_operations')
-            ->select('product_id', 'operation_id', 'smv')
+        $styleOperations = DB::table('style_operations')
+            ->select('style_id', 'operation_id', 'smv')
             ->get()
             ->groupBy('operation_id');
         $userId = DB::table('users')->value('id');
@@ -59,11 +59,11 @@ class TimeStudySeeder extends Seeder
             $operation = $operations->random();
 
             $smv = (float) $operation->smv;
-            $productId = null;
+            $styleId = null;
 
-            if (mt_rand(1, 100) <= 35 && $productOperations->has($operation->id)) {
-                $po = $productOperations->get($operation->id)->random();
-                $productId = $po->product_id;
+            if (mt_rand(1, 100) <= 35 && $styleOperations->has($operation->id)) {
+                $po = $styleOperations->get($operation->id)->random();
+                $styleId = $po->style_id;
                 if ($po->smv !== null) {
                     $smv = (float) $po->smv;
                 }
@@ -98,7 +98,7 @@ class TimeStudySeeder extends Seeder
                 'study_date' => $studyDate->toDateString(),
                 'time_study_type' => $timeStudyType,
                 'operation_id' => $operation->id,
-                'product_id' => $productId,
+                'style_id' => $styleId,
                 'employee_id' => $employee->id,
                 'product_category_id' => $operation->product_category_id,
                 'machine_type_id' => $operation->machine_type_id,

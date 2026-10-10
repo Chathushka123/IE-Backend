@@ -8,7 +8,7 @@ class TimeStudySkill extends Model
 {
     protected $fillable = [
         'time_study_id',
-        'soft_skill_id',
+        'base_skill_id',
     ];
 
     public function timeStudy()
@@ -16,8 +16,8 @@ class TimeStudySkill extends Model
         return $this->belongsTo(TimeStudy::class, 'time_study_id');
     }
 
-    public function softSkill()
+    public function baseSkill()
     {
-        return $this->belongsTo(SoftSkill::class, 'soft_skill_id');
+        return $this->belongsTo(BaseSkill::class, 'base_skill_id');
     }
 }

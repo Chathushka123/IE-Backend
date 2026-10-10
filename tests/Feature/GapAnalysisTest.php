@@ -12,7 +12,7 @@ use Tests\TestCase;
 /**
  * Proves the live Gap Analysis endpoints (GapAnalysisRepository::getMatrix()/
  * getCellDetail()) correctly join GapAnalysisDatasetSeeder's demand
- * (team_plans + product_operations) against its supply (skill_matrix_
+ * (team_plans + style_operations) against its supply (skill_matrix_
  * calculation_cells, via a Skill Matrix Insights recalculate) into the
  * documented gap scenarios.
  */
@@ -135,7 +135,7 @@ class GapAnalysisTest extends TestCase
         $this->assertEquals('unknown', $unknownCell['status']);
         $this->assertFalse($unknownCell['has_any_historical_data']);
 
-        // Label Attach (in every product's routing) is critical for ALL THREE
+        // Label Attach (in every style's routing) is critical for ALL THREE
         // teams: the only employee ever studied on it (GAP-EMP-101, on Alpha)
         // scored 55% mean efficiency, below the operation's 60% lower-mid bar
         // -> zero qualified active operators factory-wide, including on

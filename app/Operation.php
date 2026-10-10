@@ -61,9 +61,9 @@ class Operation extends Model
         return $this->belongsTo(MachineType::class, 'machine_type_id');
     }
 
-    public function softSkills()
+    public function baseSkills()
     {
-        return $this->belongsToMany(SoftSkill::class, 'operation_skill', 'operation_id', 'soft_skill_id');
+        return $this->belongsToMany(BaseSkill::class, 'operation_skill', 'operation_id', 'base_skill_id');
     }
 
     public function grade()

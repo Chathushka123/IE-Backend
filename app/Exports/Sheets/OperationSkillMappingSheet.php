@@ -20,7 +20,7 @@ class OperationSkillMappingSheet implements FromCollection, WithHeadings, WithMa
             'operation.baseOperation.category',
             'operation.productCategory',
             'operation.machineType',
-            'softSkill',
+            'baseSkill',
         ])
             ->orderBy('operation_id')
             ->get();
@@ -57,8 +57,8 @@ class OperationSkillMappingSheet implements FromCollection, WithHeadings, WithMa
             optional(optional($baseOperation)->category)->name,
             optional(optional($row->operation)->productCategory)->name,
             optional(optional($row->operation)->machineType)->name,
-            optional($row->softSkill)->code,
-            optional($row->softSkill)->name,
+            optional($row->baseSkill)->code,
+            optional($row->baseSkill)->name,
             $row->is_active ? 'Yes' : 'No',
         ];
     }

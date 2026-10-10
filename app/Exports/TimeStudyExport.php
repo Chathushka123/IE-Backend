@@ -39,7 +39,7 @@ class TimeStudyExport implements FromCollection, WithHeadings, WithMapping, With
             ->when($filters['product_category_ids'] ?? null, fn ($q, $v) => $q->whereIn('product_category_id', (array) $v))
             ->when($filters['machine_type_ids'] ?? null, fn ($q, $v) => $q->whereIn('machine_type_id', (array) $v))
             ->when($filters['employee_ids'] ?? null, fn ($q, $v) => $q->whereIn('employee_id', (array) $v))
-            ->when($filters['product_ids'] ?? null, fn ($q, $v) => $q->whereIn('product_id', (array) $v))
+            ->when($filters['style_ids'] ?? null, fn ($q, $v) => $q->whereIn('style_id', (array) $v))
             ->when($filters['factory_ids'] ?? null, fn ($q, $v) => $q->whereIn('factory_id', (array) $v))
             ->when($filters['created_by_ids'] ?? null, fn ($q, $v) => $q->whereIn('created_by_id', (array) $v))
             ->when($filters['ids'] ?? null, fn ($q, $v) => $q->whereIn('id', (array) $v));
@@ -51,11 +51,12 @@ class TimeStudyExport implements FromCollection, WithHeadings, WithMapping, With
             ->with([
                 'factory',
                 'operation.baseOperation',
-                'product',
+                'style',
                 'employee.department',
+                'conductedBy:id,name,email',
                 'productCategory',
                 'machineType',
-                'softSkills',
+                'baseSkills',
                 'laps',
                 'downtimes.reason',
             ])
@@ -80,7 +81,7 @@ class TimeStudyExport implements FromCollection, WithHeadings, WithMapping, With
             'Base Operation',
             'Product Category',
             'Machine Type',
-            'Style (Product)',
+            'Style',
             'Style Code',
             'Operator No',
             'Operator Name',
@@ -99,6 +100,7 @@ class TimeStudyExport implements FromCollection, WithHeadings, WithMapping, With
             'Lap Count',
             'Down Time Entries',
             'Recorded At',
+            'Conducted By',
         ];
     }
 
@@ -114,13 +116,13 @@ class TimeStudyExport implements FromCollection, WithHeadings, WithMapping, With
             optional(optional($study->operation)->baseOperation)->name,
             optional($study->productCategory)->name,
             optional($study->machineType)->name,
-            optional($study->product)->name,
-            optional($study->product)->style_code,
+            optional($study->style)->name,
+            optional($study->style)->style_code,
             optional($study->employee)->employee_no,
             optional($study->employee)->full_name
                 ?: trim(optional($study->employee)->first_name . ' ' . optional($study->employee)->last_name),
             optional(optional($study->employee)->department)->name,
-            $study->softSkills->pluck('name')->implode(', '),
+            $study->baseSkills->pluck('name')->implode(', '),
             $study->smv,
             $study->smv !== null ? round($study->smv * 60, 2) : null,
             $this->msToSec($study->total_productive_ms),
@@ -134,6 +136,7 @@ class TimeStudyExport implements FromCollection, WithHeadings, WithMapping, With
             $study->laps->count(),
             $study->downtimes->map(fn ($d) => optional($d->reason)->name)->filter()->implode(', '),
             $study->created_at?->copy()->setTimezone(RequestTimezone::get())->format('Y-m-d H:i'),
+            optional($study->conductedBy)->name,
         ];
     }
 
@@ -167,7 +170,7 @@ class TimeStudyExport implements FromCollection, WithHeadings, WithMapping, With
             'G' => 20,  // Base Operation
             'H' => 18,  // Product Category
             'I' => 16,  // Machine Type
-            'J' => 22,  // Style (Product)
+            'J' => 22,  // Style
             'K' => 14,  // Style Code
             'L' => 14,  // Operator No
             'M' => 22,  // Operator Name
@@ -186,6 +189,7 @@ class TimeStudyExport implements FromCollection, WithHeadings, WithMapping, With
             'Z' => 10,  // Lap Count
             'AA' => 25, // Down Time Entries
             'AB' => 16, // Recorded At
+            'AC' => 22, // Conducted By
         ];
     }
 }

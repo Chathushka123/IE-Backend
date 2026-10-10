@@ -12,7 +12,7 @@ class TeamPlanCommonValidator
 
     return [
       'team_id' => 'required|integer|exists:teams,id',
-      'product_id' => [Rule::requiredIf(!$isChangeover), 'nullable', 'integer', 'exists:products,id'],
+      'style_id' => [Rule::requiredIf(!$isChangeover), 'nullable', 'integer', 'exists:styles,id'],
       'sequence_no' => 'required|integer|min:1',
       'planned_quantity' => [Rule::requiredIf(!$isChangeover), 'nullable', 'integer', 'min:1'],
       'planned_start_date' => 'nullable|date',

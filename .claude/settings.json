@@ -67,7 +67,14 @@
       "Bash(mysql -u app_user -p'Doomdoom1@' ie_module -e \"DESCRIBE employees;\")",
       "Bash(mysql -u app_user -p'Doomdoom1@' ie_module -e \"SHOW INDEX FROM employees WHERE Key_name LIKE 'uk_%' OR Key_name LIKE '%identification%';\")",
       "Bash(mysql -u app_user -p'Doomdoom1@' ie_module -e \"DELETE FROM employees WHERE employee_no LIKE 'EMPX%'; DELETE FROM factories WHERE code LIKE 'PLX%'; DELETE FROM employee_categories WHERE name LIKE 'MachineOperatorX%';\")",
-      "Bash(echo \"TSC_EXIT=$?\")"
+      "Bash(echo \"TSC_EXIT=$?\")",
+      "Skill(code-review)",
+      "Skill(code-review:*)",
+      "Bash(xargs -I{} echo {})",
+      "Bash(git -C /home/chathura-jayawardane/Documents/Programming/WithChathushka/SkillMatrix/IE-Backend ls-files)",
+      "Bash(git -C /home/chathura-jayawardane/Documents/Programming/WithChathushka/SkillMatrix/IE-Backend log --all --oneline -- systemdata.json)",
+      "Bash(git -C /home/chathura-jayawardane/Documents/Programming/WithChathushka/SkillMatrix/IE-Backend check-ignore -v systemdata.json)",
+      "Bash(grep -n \"DB::select\\\\|\\\\.\\\\$\" app/Http/Repositories/QueriesRepository.php)"
     ]
   }
 }

@@ -11,8 +11,9 @@ class TimeStudyCreateValidator
       'study_date' => 'required|date',
       'time_study_type' => 'required|in:interview_training,production_floor',
       'operation_id' => 'required|integer|exists:operations,id',
-      'product_id' => 'nullable|integer|exists:products,id',
+      'style_id' => 'nullable|required_if:time_study_type,production_floor|integer|exists:styles,id',
       'employee_id' => 'required|integer|exists:employees,id',
+      'conducted_by_id' => 'nullable|integer|exists:users,id',
       'product_category_id' => 'nullable|integer|exists:product_categories,id',
       'machine_type_id' => 'nullable|integer|exists:machine_types,id',
       'smv' => 'nullable|numeric|min:0',
@@ -27,13 +28,14 @@ class TimeStudyCreateValidator
       'efficiency_pct' => 'nullable|numeric|min:0',
 
       'skill_ids' => 'nullable|array',
-      'skill_ids.*' => 'integer|exists:soft_skills,id',
+      'skill_ids.*' => 'integer|exists:base_skills,id',
 
       'laps' => 'required|array|min:1',
       'laps.*.lap_no' => 'required|integer|min:1',
       'laps.*.duration_ms' => 'required|integer|min:0',
       'laps.*.down_time_ms' => 'nullable|integer|min:0',
       'laps.*.net_ms' => 'required|integer|min:0',
+      'laps.*.is_excluded' => 'nullable|boolean',
 
       'downtimes' => 'nullable|array',
       'downtimes.*.lap_no' => 'nullable|integer|min:1',

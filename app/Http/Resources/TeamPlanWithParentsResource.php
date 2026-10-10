@@ -11,7 +11,7 @@ class TeamPlanWithParentsResource extends JsonResource
         return [
             'id' => $this->id,
             'team_id' => $this->team_id,
-            'product_id' => $this->product_id,
+            'style_id' => $this->style_id,
             'sequence_no' => $this->sequence_no,
             'planned_quantity' => $this->planned_quantity,
             'planned_start_date' => $this->planned_start_date,
@@ -25,7 +25,7 @@ class TeamPlanWithParentsResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'team' => $this->whenLoaded('team'),
-            'product' => $this->whenLoaded('product'),
+            'style' => $this->whenLoaded('style'),
         ];
     }
 }
