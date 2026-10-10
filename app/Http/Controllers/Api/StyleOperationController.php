@@ -44,7 +44,7 @@ class StyleOperationController extends Controller
     public function getByStyle($styleId)
     {
         try {
-            $records = StyleOperation::with(['operation'])
+            $records = StyleOperation::with(['operation.baseOperation', 'operation.machineType', 'operation.grade'])
                 ->where('style_id', $styleId)
                 ->orderBy('sequence_no')
                 ->get();

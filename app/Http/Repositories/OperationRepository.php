@@ -17,8 +17,8 @@ class OperationRepository
   private static function buildDefaultDescription(array $rec)
   {
     $parts = [
-      optional(BaseOperation::find($rec['base_operation_id'] ?? null))->name,
       optional(ProductCategory::find($rec['product_category_id'] ?? null))->name,
+      optional(BaseOperation::find($rec['base_operation_id'] ?? null))->name,
       optional(MachineType::find($rec['machine_type_id'] ?? null))->name,
     ];
 
