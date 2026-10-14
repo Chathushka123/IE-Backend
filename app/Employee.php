@@ -63,6 +63,7 @@ class Employee extends Model
         'joining_date',
         'leaving_date',
         'confirmation_date',
+        'group_join_date',
         'employment_type',
         'employee_category',
         'reporting_manager_id',
@@ -76,6 +77,7 @@ class Employee extends Model
         'joining_date' => 'date',
         'leaving_date' => 'date',
         'confirmation_date' => 'date',
+        'group_join_date' => 'date',
     ];
 
     // Derived, not stored: birthday + the employee's management hierarchy's
