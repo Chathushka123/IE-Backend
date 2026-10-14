@@ -30,8 +30,8 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
     /** Extra blank rows below the data that still get dropdown validation, for adding new employees. */
     const BUFFER_ROWS = 500;
 
-    /** Columns holding native Excel dates: Birthday, Joining/Leaving/Confirmation Date. */
-    const DATE_COLUMNS = ['G', 'W', 'X', 'Y'];
+    /** Columns holding native Excel dates: Birthday, Joining/Group Join/Leaving/Confirmation Date. */
+    const DATE_COLUMNS = ['G', 'W', 'X', 'Y', 'Z'];
 
     private array $filters;
 
@@ -85,6 +85,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             'Employee Category',
             'Employment Type',
             'Joining Date',
+            'Group Join Date',
             'Leaving Date',
             'Confirmation Date',
             'Reporting Manager',
@@ -130,6 +131,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             $employee->employee_category,
             $employee->employment_type,
             $this->toExcelDate($employee->joining_date),
+            $this->toExcelDate($employee->group_join_date),
             $this->toExcelDate($employee->leaving_date),
             $this->toExcelDate($employee->confirmation_date),
             // The importer matches Reporting Manager by Employee No first — export that
@@ -176,7 +178,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
         ];
     }
 
-    /** Renders Birthday/Joining/Leaving/Confirmation Date as real Excel dates (see columnFormats()) rather than text. */
+    /** Renders Birthday/Joining/Group Join/Leaving/Confirmation Date as real Excel dates (see columnFormats()) rather than text. */
     public function columnFormats(): array
     {
         return array_merge(
@@ -184,7 +186,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
             // Retirement Date is read-only/computed (see headings()) — formatted for display
             // only, deliberately not in DATE_COLUMNS since that also drives input validation
             // for the editable date columns below.
-            ['AH' => NumberFormat::FORMAT_DATE_YYYYMMDD]
+            ['AI' => NumberFormat::FORMAT_DATE_YYYYMMDD]
         );
     }
 
@@ -217,16 +219,16 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
         $this->applyInlineList($sheet, 'K', $lastRow, 'Single,Married,Divorced,Other');
         $this->applyInlineList($sheet, 'U', $lastRow, 'Direct,Indirect');
         $this->applyInlineList($sheet, 'V', $lastRow, 'Permanent,Contract,Casual');
-        $this->applyInlineList($sheet, 'AC', $lastRow, 'Active,Resigned,Terminated');
+        $this->applyInlineList($sheet, 'AD', $lastRow, 'Active,Resigned,Terminated');
 
         $this->applyRangeList($sheet, 'Q', $lastRow, $ranges['country'], 'Country', 'Pick from the list, or leave blank.');
         $this->applyRangeList($sheet, 'R', $lastRow, $ranges['management_hierarchy'], 'Management Hierarchy', 'Pick from the list — must match an existing management hierarchy exactly.');
         $this->applyRangeList($sheet, 'S', $lastRow, $ranges['department'], 'Department', 'Pick from the list, or leave blank.');
         $this->applyRangeList($sheet, 'T', $lastRow, $ranges['designation'], 'Designation', 'Pick from the list, or leave blank.');
-        $this->applyRangeList($sheet, 'Z', $lastRow, $ranges['employee'], 'Reporting Manager', "Enter the manager's Employee No, or leave blank.");
-        $this->applyRangeList($sheet, 'AA', $lastRow, $ranges['team'], 'Team', 'Pick from the list, or leave blank.');
-        $this->applyRangeList($sheet, 'AB', $lastRow, $ranges['team'], 'Base Team', 'Pick from the list, or leave blank.');
-        $this->applyRangeList($sheet, 'AD', $lastRow, $ranges['factory'], 'Factory', 'Pick from the list — must match an existing factory exactly.');
+        $this->applyRangeList($sheet, 'AA', $lastRow, $ranges['employee'], 'Reporting Manager', "Enter the manager's Employee No, or leave blank.");
+        $this->applyRangeList($sheet, 'AB', $lastRow, $ranges['team'], 'Team', 'Pick from the list, or leave blank.');
+        $this->applyRangeList($sheet, 'AC', $lastRow, $ranges['team'], 'Base Team', 'Pick from the list, or leave blank.');
+        $this->applyRangeList($sheet, 'AE', $lastRow, $ranges['factory'], 'Factory', 'Pick from the list — must match an existing factory exactly.');
 
         foreach (self::DATE_COLUMNS as $column) {
             $this->applyDateValidation($sheet, $column, $lastRow);
@@ -317,7 +319,7 @@ class EmployeesExport implements FromCollection, WithHeadings, WithMapping, Shou
     }
 
     /**
-     * Restricts a Birthday/Joining/Leaving/Confirmation Date cell to a real, in-range
+     * Restricts a Birthday/Joining/Group Join/Leaving/Confirmation Date cell to a real, in-range
      * date. Pairs with columnFormats(), which renders the underlying value as
      * yyyy-mm-dd — Excel's Date validation only works against genuine date values,
      * not text, which is why map() exports these as Excel date serials, not strings.

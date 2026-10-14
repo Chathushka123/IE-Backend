@@ -32,6 +32,7 @@ class EmployeeCommonValidator
       'joining_date' => 'nullable|date',
       'leaving_date' => 'nullable|date',
       'confirmation_date' => 'nullable|date',
+      'group_join_date' => 'nullable|date|before_or_equal:today',
       'employment_type' => 'nullable|in:Permanent,Contract,Casual',
       'employee_category' => 'nullable|in:Direct,Indirect',
       'reporting_manager_id' => 'nullable|integer|exists:employees,id',

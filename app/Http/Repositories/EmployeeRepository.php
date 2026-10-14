@@ -88,6 +88,7 @@ class EmployeeRepository
     'employee_category',
     'employee_status',
     'reporting_manager_id',
+    'group_join_date',
   ];
 
   /** Foreign-key tracked fields, mapped to the model whose `name` resolves a human-readable label. */
@@ -170,8 +171,8 @@ class EmployeeRepository
     $rows = [];
 
     foreach (self::TRACKED_FIELDS as $field) {
-      $old = $oldValues[$field] ?? null;
-      $new = $newValues[$field] ?? null;
+      $old = self::normalizeTrackedValue($oldValues[$field] ?? null);
+      $new = self::normalizeTrackedValue($newValues[$field] ?? null);
       if ((string) $old === (string) $new) {
         continue;
       }
@@ -191,6 +192,16 @@ class EmployeeRepository
     if (!empty($rows)) {
       EmployeeFieldChange::insert($rows);
     }
+  }
+
+  /**
+   * Date-cast tracked fields (group_join_date) come back as Carbon instances, whose
+   * string form carries a "00:00:00" time — reduce them to Y-m-d so the diff and the
+   * stored old/new values match what the user actually entered.
+   */
+  private static function normalizeTrackedValue($value)
+  {
+    return $value instanceof \DateTimeInterface ? $value->format('Y-m-d') : $value;
   }
 
   private static function resolveFieldLabel($field, $value)
@@ -344,6 +355,7 @@ class EmployeeRepository
     self::setIfNotNull($rec, 'designation_id', self::resolveForeignKey(Designation::class, $row['designation'] ?? null, 'Designation', false));
     self::setIfNotNull($rec, 'employee_category', self::blankToNull($row['employee_category'] ?? null));
     self::setIfNotNull($rec, 'joining_date', self::parseImportDate($row['joining_date'] ?? null));
+    self::setIfNotNull($rec, 'group_join_date', self::parseImportDate($row['group_join_date'] ?? null));
     self::setIfNotNull($rec, 'leaving_date', self::parseImportDate($row['leaving_date'] ?? null));
     self::setIfNotNull($rec, 'confirmation_date', self::parseImportDate($row['confirmation_date'] ?? null));
     self::setIfNotNull($rec, 'employment_type', self::blankToNull($row['employment_type'] ?? null));

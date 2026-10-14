@@ -90,6 +90,7 @@ class EmployeeImportTest extends TestCase
             'designation' => null,
             'employee_category' => null,
             'joining_date' => null,
+            'group_join_date' => null,
             'leaving_date' => null,
             'confirmation_date' => null,
             'employment_type' => null,
@@ -262,6 +263,29 @@ class EmployeeImportTest extends TestCase
             'city_or_province' => 'Western Province',
             'postal_code' => '00300',
             'employee_category' => 'Direct',
+        ]);
+    }
+
+    public function test_group_join_date_is_imported_and_recorded_in_journey()
+    {
+        $this->actingAsUser();
+        $this->makeManagementHierarchy();
+        $this->makeFactory();
+
+        $summary = EmployeeRepository::importRows(collect([
+            $this->baseRow(['group_join_date' => '2020-03-15']),
+        ]));
+
+        $this->assertSame(1, $summary['created']);
+        $this->assertEmpty($summary['failed']);
+        $employee = \App\Employee::where('identification_no', '199012345678')->firstOrFail();
+        $this->assertSame('2020-03-15', $employee->group_join_date->toDateString());
+        // Stored as a plain Y-m-d, not Carbon's "2020-03-15 00:00:00" string form.
+        $this->assertDatabaseHas('employee_field_changes', [
+            'employee_id' => $employee->id,
+            'field' => 'group_join_date',
+            'old_value' => null,
+            'new_value' => '2020-03-15',
         ]);
     }
 

@@ -36,6 +36,7 @@ class EmployeeWithParentsResource extends JsonResource
             'joining_date' => $this->joining_date,
             'leaving_date' => $this->leaving_date,
             'confirmation_date' => $this->confirmation_date,
+            'group_join_date' => $this->group_join_date,
             'employment_type' => $this->employment_type,
             'employee_category' => $this->employee_category,
             'reporting_manager_id' => $this->reporting_manager_id,
