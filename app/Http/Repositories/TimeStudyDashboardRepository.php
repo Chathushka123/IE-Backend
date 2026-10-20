@@ -56,6 +56,9 @@ class TimeStudyDashboardRepository
         if (!empty($filters['created_by_ids'])) {
             $query->whereIn('time_studies.created_by_id', (array) $filters['created_by_ids']);
         }
+        if (!empty($filters['conducted_by_ids'])) {
+            $query->whereIn('time_studies.conducted_by_id', (array) $filters['conducted_by_ids']);
+        }
 
         return $query;
     }
