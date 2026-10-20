@@ -155,7 +155,7 @@ class SkillMatrixCalculationRepository
             return null;
         }
 
-        $run->load(['cells.employee', 'cells.operation', 'calculatedBy']);
+        $run->load(['cells.employee.factory', 'cells.employee.team', 'cells.operation', 'calculatedBy']);
 
         $operators = [];
         $operations = [];
@@ -179,7 +179,7 @@ class SkillMatrixCalculationRepository
         $operators = array_values($operators);
         $operations = array_values($operations);
 
-        usort($operators, fn ($a, $b) => strcmp($a['employee_no'] ?? '', $b['employee_no'] ?? ''));
+        usort($operators, [SkillMatrixRepository::class, 'compareOperators']);
         usort($operations, fn ($a, $b) => strcmp($a['code'] ?? $a['description'], $b['code'] ?? $b['description']));
 
         return [
@@ -368,6 +368,8 @@ class SkillMatrixCalculationRepository
             'id' => (int) $employee->id,
             'employee_no' => $employee->employee_no,
             'name' => $employee->full_name ?: trim($employee->first_name . ' ' . $employee->last_name),
+            'factory_code' => optional($employee->factory)->code,
+            'team_code' => optional($employee->team)->code,
         ];
     }
 
