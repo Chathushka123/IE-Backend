@@ -42,6 +42,7 @@ class TimeStudyExport implements FromCollection, WithHeadings, WithMapping, With
             ->when($filters['style_ids'] ?? null, fn ($q, $v) => $q->whereIn('style_id', (array) $v))
             ->when($filters['factory_ids'] ?? null, fn ($q, $v) => $q->whereIn('factory_id', (array) $v))
             ->when($filters['created_by_ids'] ?? null, fn ($q, $v) => $q->whereIn('created_by_id', (array) $v))
+            ->when($filters['conducted_by_ids'] ?? null, fn ($q, $v) => $q->whereIn('conducted_by_id', (array) $v))
             ->when($filters['ids'] ?? null, fn ($q, $v) => $q->whereIn('id', (array) $v));
     }
 

@@ -63,7 +63,7 @@ class SkillMatrixInsightsTest extends TestCase
         ]);
     }
 
-    private function makeEmployee(int $factoryId): int
+    private function makeEmployee(int $factoryId, ?int $teamId = null): int
     {
         $unique = strtoupper(substr(md5(uniqid('', true)), 0, 8));
 
@@ -81,7 +81,39 @@ class SkillMatrixInsightsTest extends TestCase
             'last_name' => 'Doe',
             'management_hierarchy_id' => $managementHierarchyId,
             'factory_id' => $factoryId,
+            'team_id' => $teamId,
             'employee_status' => 'Active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function makeTeam(int $factoryId, string $code): int
+    {
+        $unique = strtoupper(substr(md5(uniqid('', true)), 0, 6));
+
+        $sectionId = DB::table('sections')->insertGetId([
+            'name' => 'Sewing '.$unique,
+            'code' => 'SEW'.$unique,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $departmentId = DB::table('departments')->insertGetId([
+            'name' => 'Production '.$unique,
+            'code' => 'PRD'.$unique,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return DB::table('teams')->insertGetId([
+            'name' => 'Line '.$code,
+            'code' => $code,
+            'section_id' => $sectionId,
+            'department_id' => $departmentId,
+            'factory_id' => $factoryId,
+            'is_active' => true,
+            'working_minutes_per_day' => 480,
+            'target_efficiency_pct' => 55,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -250,5 +282,34 @@ class SkillMatrixInsightsTest extends TestCase
             'calculation_run_id' => $secondRunId,
             'mean_efficiency' => 70.00,
         ]);
+    }
+
+    public function testOperatorsCarryFactoryAndTeamCodesAndAreSortedTeamThenEmployeeNo()
+    {
+        $factoryId = $this->makeFactory();
+        $headers = $this->authHeaders($factoryId);
+        $operationId = $this->makeOperation('mean', 1);
+
+        $teamB = $this->makeTeam($factoryId, 'TEAM-B');
+        $teamA = $this->makeTeam($factoryId, 'TEAM-A');
+
+        $inTeamB = $this->makeEmployee($factoryId, $teamB);
+        $inTeamA = $this->makeEmployee($factoryId, $teamA);
+        $noTeam = $this->makeEmployee($factoryId, null);
+
+        foreach ([$inTeamB, $inTeamA, $noTeam] as $employeeId) {
+            $this->insertTimeStudy($factoryId, $operationId, $employeeId, 70);
+        }
+
+        $this->withHeaders($headers)->postJson('/api/v1/skillMatrixInsights/recalculate', [])->assertStatus(200);
+
+        foreach (['/api/v1/skillMatrixInsights', '/api/v1/timeStudies/skillMatrix'] as $url) {
+            $operators = $this->withHeaders($headers)->getJson($url)->json('data.operators');
+
+            $this->assertSame([$inTeamA, $inTeamB, $noTeam], array_column($operators, 'id'), $url);
+            $this->assertSame(['TEAM-A', 'TEAM-B', null], array_column($operators, 'team_code'), $url);
+            $factoryCode = DB::table('factories')->where('id', $factoryId)->value('code');
+            $this->assertSame([$factoryCode, $factoryCode, $factoryCode], array_column($operators, 'factory_code'), $url);
+        }
     }
 }

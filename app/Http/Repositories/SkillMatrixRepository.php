@@ -19,9 +19,13 @@ class SkillMatrixRepository
         $rows = TimeStudyDashboardRepository::baseQuery($filters)
             ->join('employees', 'time_studies.employee_id', '=', 'employees.id')
             ->join('operations', 'time_studies.operation_id', '=', 'operations.id')
+            ->leftJoin('factories', 'employees.factory_id', '=', 'factories.id')
+            ->leftJoin('teams', 'employees.team_id', '=', 'teams.id')
             ->select(
                 'employees.id as employee_id',
                 'employees.employee_no',
+                'factories.code as factory_code',
+                'teams.code as team_code',
                 DB::raw("COALESCE(NULLIF(employees.full_name, ''), CONCAT(employees.first_name, ' ', employees.last_name)) as employee_name"),
                 'operations.id as operation_id',
                 'operations.code as operation_code',
@@ -36,6 +40,8 @@ class SkillMatrixRepository
             ->groupBy(
                 'employees.id',
                 'employees.employee_no',
+                'factories.code',
+                'teams.code',
                 'employees.full_name',
                 'employees.first_name',
                 'employees.last_name',
@@ -57,6 +63,8 @@ class SkillMatrixRepository
                 'id' => (int) $row->employee_id,
                 'employee_no' => $row->employee_no,
                 'name' => $row->employee_name,
+                'factory_code' => $row->factory_code,
+                'team_code' => $row->team_code,
             ];
             $operations[$row->operation_id] = [
                 'id' => (int) $row->operation_id,
@@ -77,7 +85,7 @@ class SkillMatrixRepository
         $operators = array_values($operators);
         $operations = array_values($operations);
 
-        usort($operators, fn ($a, $b) => strcmp($a['employee_no'] ?? '', $b['employee_no'] ?? ''));
+        usort($operators, [self::class, 'compareOperators']);
         usort($operations, fn ($a, $b) => strcmp($a['code'] ?? $a['description'], $b['code'] ?? $b['description']));
 
         return [
@@ -85,6 +93,27 @@ class SkillMatrixRepository
             'operations' => $operations,
             'cells' => $cells,
         ];
+    }
+
+    /**
+     * Factory code → team code → employee no. Rows with no factory/team code sort after coded ones
+     * so unassigned employees don't float to the top of the matrix.
+     */
+    public static function compareOperators(array $a, array $b): int
+    {
+        foreach (['factory_code', 'team_code', 'employee_no'] as $key) {
+            $left = (string) ($a[$key] ?? '');
+            $right = (string) ($b[$key] ?? '');
+            if ($left === $right) {
+                continue;
+            }
+            if ($left === '' || $right === '') {
+                return $left === '' ? 1 : -1;
+            }
+            return strnatcasecmp($left, $right);
+        }
+
+        return 0;
     }
 
     /**
