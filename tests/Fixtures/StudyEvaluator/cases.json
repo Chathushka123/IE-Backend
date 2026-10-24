@@ -1,0 +1,1763 @@
+[
+  {
+    "name": "rules off, six steady laps, quality uses default limits",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 8,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "never"
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.1
+    },
+    "expected": {
+      "stats": {
+        "active_laps": 6,
+        "avg_cycle_ms": 6000,
+        "fastest_cycle_ms": 6000,
+        "slowest_cycle_ms": 6000,
+        "median_cycle_ms": 6000,
+        "variation_pct": 0,
+        "down_time_pct": 0,
+        "efficiency_pct": 100.0
+      },
+      "checks": {},
+      "quality_score": 92,
+      "quality_breakdown": [
+        {
+          "text": "Only 6 of 8 laps",
+          "points": -8
+        }
+      ],
+      "status": "approved"
+    }
+  },
+  {
+    "name": "min laps not met blocks and costs quality",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 10,
+          "severity": "block"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "warnings"
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.1
+    },
+    "expected": {
+      "stats": {
+        "active_laps": 6
+      },
+      "checks": {
+        "laps": "block"
+      },
+      "blockers": 1,
+      "quality_score": 88,
+      "status": "approved"
+    }
+  },
+  {
+    "name": "min laps not met warns when severity is warn",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 10,
+          "severity": "warn"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "warnings"
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.1
+    },
+    "expected": {
+      "checks": {
+        "laps": "warn"
+      },
+      "blockers": 0,
+      "warnings": 1,
+      "quality_score": 88,
+      "status": "needs_review"
+    }
+  },
+  {
+    "name": "min laps met is clean and approved automatically",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 10,
+          "severity": "warn"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "warnings"
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.1
+    },
+    "expected": {
+      "checks": {
+        "laps": "ok"
+      },
+      "quality_score": 100,
+      "quality_breakdown": [],
+      "status": "approved"
+    }
+  },
+  {
+    "name": "min laps check is pending until a lap exists",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 3,
+          "severity": "block"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "warnings"
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0,
+        "excluded": true
+      }
+    ],
+    "context": {
+      "smv": 0.1
+    },
+    "expected": {
+      "stats": {
+        "active_laps": 0,
+        "avg_cycle_ms": null,
+        "efficiency_pct": null
+      },
+      "checks": {
+        "laps": "pending"
+      },
+      "quality_score": 0
+    }
+  },
+  {
+    "name": "first_last both drops the first and last lap by rule",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "both"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "never"
+    },
+    "laps": [
+      {
+        "duration_ms": 9000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 3000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.1
+    },
+    "expected": {
+      "stats": {
+        "active_laps": 3,
+        "avg_cycle_ms": 6000
+      },
+      "laps": [
+        {
+          "excluded": true,
+          "exclusion_source": "rule"
+        },
+        {
+          "excluded": false,
+          "exclusion_source": null
+        },
+        {
+          "excluded": false
+        },
+        {
+          "excluded": false
+        },
+        {
+          "excluded": true,
+          "exclusion_source": "rule"
+        }
+      ]
+    }
+  },
+  {
+    "name": "first_last last never drops a single lap",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "last"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "never"
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.1
+    },
+    "expected": {
+      "stats": {
+        "active_laps": 1,
+        "avg_cycle_ms": 6000
+      },
+      "laps": [
+        {
+          "excluded": false,
+          "exclusion_source": null
+        }
+      ]
+    }
+  },
+  {
+    "name": "first_last first is overridden by an explicit analyst include, and an explicit exclude is the analyst's",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "first"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "never"
+    },
+    "laps": [
+      {
+        "duration_ms": 9000,
+        "down_time_ms": 0,
+        "excluded": false
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0,
+        "excluded": true
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.1
+    },
+    "expected": {
+      "stats": {
+        "active_laps": 3,
+        "avg_cycle_ms": 7000
+      },
+      "laps": [
+        {
+          "excluded": false,
+          "exclusion_source": null
+        },
+        {
+          "excluded": true,
+          "exclusion_source": "analyst"
+        },
+        {
+          "excluded": false
+        },
+        {
+          "excluded": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "undecided unusual lap blocks and lowers quality",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "block"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "warnings"
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 12000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.12
+    },
+    "expected": {
+      "stats": {
+        "active_laps": 5,
+        "avg_cycle_ms": 7200,
+        "fastest_cycle_ms": 6000,
+        "slowest_cycle_ms": 12000,
+        "median_cycle_ms": 6000,
+        "variation_pct": 33.33,
+        "efficiency_pct": 100.0
+      },
+      "checks": {
+        "outliers": "block"
+      },
+      "blockers": 1,
+      "quality_score": 72,
+      "quality_breakdown": [
+        {
+          "text": "1 unusual lap left in",
+          "points": -8
+        },
+        {
+          "text": "Lap times vary 33% (limit 20%)",
+          "points": -20
+        }
+      ],
+      "laps": [
+        {
+          "outlier_flagged": false
+        },
+        {
+          "outlier_flagged": false
+        },
+        {
+          "outlier_flagged": false
+        },
+        {
+          "outlier_flagged": false
+        },
+        {
+          "outlier_flagged": true,
+          "outlier_kept": false,
+          "deviation_pct": 100.0
+        }
+      ]
+    }
+  },
+  {
+    "name": "a kept unusual lap clears the check but still costs quality and needs review",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "block"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "warnings"
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 12000,
+        "down_time_ms": 0,
+        "outlier_kept": true
+      }
+    ],
+    "context": {
+      "smv": 0.12
+    },
+    "expected": {
+      "checks": {
+        "outliers": "ok"
+      },
+      "blockers": 0,
+      "quality_score": 72,
+      "status": "needs_review",
+      "laps": [
+        {},
+        {},
+        {},
+        {},
+        {
+          "outlier_flagged": true,
+          "outlier_kept": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "an unusual lap the analyst excluded is gone",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "block"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "warnings"
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 12000,
+        "down_time_ms": 0,
+        "excluded": true
+      }
+    ],
+    "context": {
+      "smv": 0.1
+    },
+    "expected": {
+      "stats": {
+        "active_laps": 4,
+        "avg_cycle_ms": 6000
+      },
+      "checks": {
+        "outliers": "ok"
+      },
+      "quality_score": 100,
+      "status": "approved",
+      "laps": [
+        {},
+        {},
+        {},
+        {},
+        {
+          "excluded": true,
+          "exclusion_source": "analyst",
+          "outlier_flagged": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "outlier check needs four laps and stays pending below that",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 3,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "warn"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "warnings"
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 20000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.1
+    },
+    "expected": {
+      "checks": {
+        "outliers": "pending"
+      },
+      "quality_score": 75,
+      "laps": [
+        {
+          "outlier_flagged": false
+        },
+        {
+          "outlier_flagged": false
+        },
+        {
+          "outlier_flagged": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "median of an even number of laps, flags beyond the limit",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 28,
+          "severity": "block"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "warnings"
+    },
+    "laps": [
+      {
+        "duration_ms": 5000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 8000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 9000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.1
+    },
+    "expected": {
+      "stats": {
+        "median_cycle_ms": 7000
+      },
+      "checks": {
+        "outliers": "block"
+      },
+      "quality_score": 80,
+      "laps": [
+        {
+          "outlier_flagged": true,
+          "deviation_pct": 28.6
+        },
+        {
+          "outlier_flagged": false
+        },
+        {
+          "outlier_flagged": false
+        },
+        {
+          "outlier_flagged": true,
+          "deviation_pct": 28.6
+        }
+      ]
+    }
+  },
+  {
+    "name": "a lap exactly at the limit is not flagged",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "block"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "warnings"
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 7800,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.1
+    },
+    "expected": {
+      "checks": {
+        "outliers": "ok"
+      },
+      "laps": [
+        {
+          "outlier_flagged": false
+        },
+        {
+          "outlier_flagged": false
+        },
+        {
+          "outlier_flagged": false
+        },
+        {
+          "outlier_flagged": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "variation over the limit warns and costs quality",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "warn"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "warnings"
+    },
+    "laps": [
+      {
+        "duration_ms": 4000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 8000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.1
+    },
+    "expected": {
+      "stats": {
+        "variation_pct": 23.57
+      },
+      "checks": {
+        "variation": "warn"
+      },
+      "quality_score": 95,
+      "status": "needs_review"
+    }
+  },
+  {
+    "name": "variation within the limit is ok",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "warn"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "warnings"
+    },
+    "laps": [
+      {
+        "duration_ms": 5000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 7000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.1
+    },
+    "expected": {
+      "stats": {
+        "variation_pct": 11.79
+      },
+      "checks": {
+        "variation": "ok"
+      },
+      "quality_score": 100,
+      "status": "approved"
+    }
+  },
+  {
+    "name": "variation check needs three laps",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 2,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "block"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "warnings"
+    },
+    "laps": [
+      {
+        "duration_ms": 4000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 9000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.1
+    },
+    "expected": {
+      "checks": {
+        "variation": "pending"
+      }
+    }
+  },
+  {
+    "name": "down time over the limit blocks and costs quality",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "block"
+        },
+        "first_last": "ask"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "warnings"
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 1500
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 1500
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 1500
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 1500
+      }
+    ],
+    "context": {
+      "smv": 0.1
+    },
+    "expected": {
+      "stats": {
+        "avg_cycle_ms": 4500,
+        "down_time_pct": 25,
+        "efficiency_pct": 133.33
+      },
+      "checks": {
+        "down_time": "block"
+      },
+      "quality_score": 90,
+      "quality_breakdown": [
+        {
+          "text": "Down time 25% (limit 15%)",
+          "points": -10
+        }
+      ]
+    }
+  },
+  {
+    "name": "a required field that is missing blocks",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [
+        {
+          "key": "fabric",
+          "label": "Fabric",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "shift",
+          "label": "Shift",
+          "type": "choice",
+          "required": false
+        }
+      ],
+      "counts_in_matrix": true,
+      "approval": "warnings"
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.1,
+      "values": {}
+    },
+    "expected": {
+      "checks": {
+        "field:fabric": "block"
+      },
+      "blockers": 1
+    }
+  },
+  {
+    "name": "a required field that is answered is ok",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [
+        {
+          "key": "fabric",
+          "label": "Fabric",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "shift",
+          "label": "Shift",
+          "type": "choice",
+          "required": false
+        }
+      ],
+      "counts_in_matrix": true,
+      "approval": "warnings"
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.1,
+      "values": {
+        "fabric": "Cotton pique"
+      }
+    },
+    "expected": {
+      "checks": {
+        "field:fabric": "ok"
+      },
+      "blockers": 0
+    }
+  },
+  {
+    "name": "zero is a valid answer for a required field",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [
+        {
+          "key": "count",
+          "label": "Bundle size",
+          "type": "number",
+          "required": true
+        }
+      ],
+      "counts_in_matrix": true,
+      "approval": "warnings"
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.1,
+      "values": {
+        "count": 0
+      }
+    },
+    "expected": {
+      "checks": {
+        "field:count": "ok"
+      }
+    }
+  },
+  {
+    "name": "approval always sends even a clean study to review",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "warn"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "always"
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.1
+    },
+    "expected": {
+      "checks": {
+        "laps": "ok"
+      },
+      "quality_score": 100,
+      "status": "needs_review"
+    }
+  },
+  {
+    "name": "approval never approves even with warnings",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "warn"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "never"
+    },
+    "laps": [
+      {
+        "duration_ms": 4000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 8000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.1
+    },
+    "expected": {
+      "checks": {
+        "variation": "warn"
+      },
+      "status": "approved"
+    }
+  },
+  {
+    "name": "no smv means no efficiency",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "never"
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": null
+    },
+    "expected": {
+      "stats": {
+        "efficiency_pct": null,
+        "avg_cycle_ms": 6000
+      }
+    }
+  },
+  {
+    "name": "establish-smv blocks without enough operators or a rating",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask",
+        "min_operators": {
+          "value": 3,
+          "severity": "block"
+        },
+        "rating_required": true
+      },
+      "fields": [],
+      "counts_in_matrix": false,
+      "approval": "always",
+      "allowance_pct": 14
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "purpose": "smv",
+      "operators": 2,
+      "rating": null,
+      "smv": 0.1
+    },
+    "expected": {
+      "checks": {
+        "operators": "block",
+        "rating": "block"
+      },
+      "blockers": 2,
+      "smv_calc": {
+        "average_minutes": 0.1,
+        "rating_pct": 100,
+        "normal_minutes": 0.1,
+        "allowance_pct": 14,
+        "proposed_smv": 0.114
+      }
+    }
+  },
+  {
+    "name": "establish-smv proposed SMV applies rating then allowance",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask",
+        "min_operators": {
+          "value": 3,
+          "severity": "block"
+        },
+        "rating_required": true
+      },
+      "fields": [],
+      "counts_in_matrix": false,
+      "approval": "always",
+      "allowance_pct": 14
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "purpose": "smv",
+      "operators": 3,
+      "rating": 110,
+      "smv": 0.1
+    },
+    "expected": {
+      "checks": {
+        "operators": "ok",
+        "rating": "ok"
+      },
+      "blockers": 0,
+      "status": "needs_review",
+      "smv_calc": {
+        "rating_pct": 110,
+        "normal_minutes": 0.11,
+        "proposed_smv": 0.1254
+      }
+    }
+  },
+  {
+    "name": "perf studies never produce an smv calculation",
+    "definition": {
+      "rules": {
+        "min_laps": {
+          "value": 4,
+          "severity": "off"
+        },
+        "outlier": {
+          "pct": 30,
+          "severity": "off"
+        },
+        "variation": {
+          "pct": 20,
+          "severity": "off"
+        },
+        "down_time": {
+          "pct": 15,
+          "severity": "off"
+        },
+        "first_last": "ask"
+      },
+      "fields": [],
+      "counts_in_matrix": true,
+      "approval": "never"
+    },
+    "laps": [
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      },
+      {
+        "duration_ms": 6000,
+        "down_time_ms": 0
+      }
+    ],
+    "context": {
+      "smv": 0.1
+    },
+    "expected": {
+      "smv_calc": null
+    }
+  }
+]

@@ -116,6 +116,22 @@ Route::prefix('v1')->group(function () {
         Route::get('skillMatrixInsights/cell', 'Api\SkillMatrixInsightsController@cell')->name('skillMatrixInsights.cell');
         Route::get('timeStudies/{id}', 'Api\TimeStudyController@show')->name('timeStudies.show');
         Route::post('timeStudies', 'Api\TimeStudyController@store')->name('timeStudies.store');
+        Route::post('timeStudies/smvSession', 'Api\TimeStudyController@storeSmvSession')->name('timeStudies.storeSmvSession');
+        Route::get('timeStudies/{id}/smvProposal', 'Api\TimeStudyController@smvProposal')->name('timeStudies.smvProposal');
+        Route::post('timeStudies/{id}/applySmv', 'Api\TimeStudyController@applySmv')->name('timeStudies.applySmv');
+        Route::post('timeStudies/{id}/review', 'Api\TimeStudyController@review')->name('timeStudies.review');
+
+        // Time Study Templates — specific paths must come before {id} wildcard
+        Route::get('timeStudyTemplates', 'Api\TimeStudyTemplateController@index')->name('timeStudyTemplates.index');
+        Route::get('timeStudyTemplates/resolve', 'Api\TimeStudyTemplateController@resolve')->name('timeStudyTemplates.resolve');
+        Route::post('timeStudyTemplates/preview', 'Api\TimeStudyTemplateController@preview')->name('timeStudyTemplates.preview');
+        Route::post('timeStudyTemplates', 'Api\TimeStudyTemplateController@store')->name('timeStudyTemplates.store');
+        Route::get('timeStudyTemplates/{id}', 'Api\TimeStudyTemplateController@show')->name('timeStudyTemplates.show');
+        Route::put('timeStudyTemplates/{id}/draft', 'Api\TimeStudyTemplateController@saveDraft')->name('timeStudyTemplates.saveDraft');
+        Route::delete('timeStudyTemplates/{id}/draft', 'Api\TimeStudyTemplateController@discardDraft')->name('timeStudyTemplates.discardDraft');
+        Route::post('timeStudyTemplates/{id}/publish', 'Api\TimeStudyTemplateController@publish')->name('timeStudyTemplates.publish');
+        Route::post('timeStudyTemplates/{id}/duplicate', 'Api\TimeStudyTemplateController@duplicate')->name('timeStudyTemplates.duplicate');
+        Route::post('timeStudyTemplates/{id}/archive', 'Api\TimeStudyTemplateController@archive')->name('timeStudyTemplates.archive');
 
         // Team Plans — specific paths must come before {id} wildcard
         Route::get('teamPlans', 'Api\TeamPlanController@index')->name('teamPlans.index');

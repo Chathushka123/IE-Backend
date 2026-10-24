@@ -16,9 +16,11 @@ class TimeStudyCreateValidator
       'conducted_by_id' => 'nullable|integer|exists:users,id',
       'product_category_id' => 'nullable|integer|exists:product_categories,id',
       'machine_type_id' => 'nullable|integer|exists:machine_types,id',
+      // Deprecated client-side values: the server recomputes the SMV, the stats and the
+      // efficiency from the laps and ignores whatever is sent for them (see TimeStudyRepository).
       'smv' => 'nullable|numeric|min:0',
 
-      'total_productive_ms' => 'required|integer|min:0',
+      'total_productive_ms' => 'nullable|integer|min:0', // recomputed from total_cycle_ms - total_down_time_ms
       'total_down_time_ms' => 'required|integer|min:0',
       'total_hold_ms' => 'required|integer|min:0',
       'total_cycle_ms' => 'required|integer|min:0',
@@ -26,6 +28,10 @@ class TimeStudyCreateValidator
       'fastest_cycle_ms' => 'nullable|integer|min:0',
       'slowest_cycle_ms' => 'nullable|integer|min:0',
       'efficiency_pct' => 'nullable|numeric|min:0',
+
+      'template_version_id' => 'nullable|integer|exists:time_study_template_versions,id',
+      'template_overridden' => 'nullable|boolean',
+      'field_values' => 'nullable|array',
 
       'skill_ids' => 'nullable|array',
       'skill_ids.*' => 'integer|exists:base_skills,id',
@@ -36,6 +42,7 @@ class TimeStudyCreateValidator
       'laps.*.down_time_ms' => 'nullable|integer|min:0',
       'laps.*.net_ms' => 'required|integer|min:0',
       'laps.*.is_excluded' => 'nullable|boolean',
+      'laps.*.outlier_kept' => 'nullable|boolean',
 
       'downtimes' => 'nullable|array',
       'downtimes.*.lap_no' => 'nullable|integer|min:1',

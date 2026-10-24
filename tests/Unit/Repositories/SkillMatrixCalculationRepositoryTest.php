@@ -3,6 +3,7 @@
 namespace Tests\Unit\Repositories;
 
 use App\Http\Repositories\SkillMatrixCalculationRepository;
+use App\Http\Repositories\SkillMatrixRepository;
 use App\Support\FactoryContext;
 use Illuminate\Support\Facades\DB;
 
@@ -191,9 +192,9 @@ class SkillMatrixCalculationRepositoryTest extends RepositoryTestCase
         ]);
     }
 
-    private function insertTimeStudy(int $factoryId, int $operationId, int $employeeId, float $efficiencyPct): void
+    private function insertTimeStudy(int $factoryId, int $operationId, int $employeeId, float $efficiencyPct, array $extra = []): void
     {
-        DB::table('time_studies')->insert([
+        DB::table('time_studies')->insert($extra + [
             'factory_id' => $factoryId,
             'study_date' => '2026-01-01',
             'time_study_type' => 'production_floor',
@@ -303,5 +304,67 @@ class SkillMatrixCalculationRepositoryTest extends RepositoryTestCase
         // Scope two's run is still untouched by the scope-one recalculation.
         $this->assertDatabaseHas('skill_matrix_calculation_runs', ['id' => $runTwo->id]);
         $this->assertEquals(1, DB::table('skill_matrix_calculation_cells')->where('calculation_run_id', $runTwo->id)->count());
+    }
+
+    // ---------------------------------------------------------------
+    // Only approved studies of matrix templates feed skill levels
+    // ---------------------------------------------------------------
+
+    public function testRecalculateIgnoresStudiesThatAreNotApprovedOrDoNotCountTowardsTheMatrix()
+    {
+        $user = $this->actingAsTestUser();
+        $factoryId = $this->makeFactory();
+        $employeeId = $this->makeEmployee($factoryId);
+        $operationId = $this->makeOperation('mean', 1);
+
+        $this->insertTimeStudy($factoryId, $operationId, $employeeId, 70);
+        $this->insertTimeStudy($factoryId, $operationId, $employeeId, 90, ['status' => 'needs_review']);
+        $this->insertTimeStudy($factoryId, $operationId, $employeeId, 10, ['status' => 'rejected']);
+        $this->insertTimeStudy($factoryId, $operationId, $employeeId, 20, ['counts_in_matrix' => false]);
+        FactoryContext::set([$factoryId]);
+
+        $run = SkillMatrixCalculationRepository::recalculate([], $user->id);
+
+        $this->assertEquals(1, $run->study_count_total);
+        $cell = DB::table('skill_matrix_calculation_cells')->where('calculation_run_id', $run->id)->first();
+        $this->assertEquals(70.00, (float) $cell->selected_efficiency);
+    }
+
+    public function testTheLiveMatrixAndItsCellDetailIgnoreTheSameStudies()
+    {
+        $this->actingAsTestUser();
+        $factoryId = $this->makeFactory();
+        $employeeId = $this->makeEmployee($factoryId);
+        $operationId = $this->makeOperation('mean', 1);
+
+        $this->insertTimeStudy($factoryId, $operationId, $employeeId, 70);
+        $this->insertTimeStudy($factoryId, $operationId, $employeeId, 90, ['status' => 'needs_review']);
+        $this->insertTimeStudy($factoryId, $operationId, $employeeId, 20, ['counts_in_matrix' => false]);
+        FactoryContext::set([$factoryId]);
+
+        $matrix = SkillMatrixRepository::getMatrix([]);
+        $detail = SkillMatrixRepository::getCellDetail(['employee_id' => $employeeId, 'operation_id' => $operationId]);
+
+        $this->assertCount(1, $matrix['cells']);
+        $this->assertEquals(1, $matrix['cells'][0]['study_count']);
+        $this->assertEquals(70.0, $matrix['cells'][0]['avg_efficiency']);
+        $this->assertCount(1, $detail['studies']);
+    }
+
+    public function testStudiesInsertedWithoutTheNewColumnsStillCountAsBefore()
+    {
+        $user = $this->actingAsTestUser();
+        $factoryId = $this->makeFactory();
+        $employeeId = $this->makeEmployee($factoryId);
+        $operationId = $this->makeOperation('mean', 1);
+
+        // The shape every pre-template row has: none of the template columns are set.
+        $this->insertTimeStudy($factoryId, $operationId, $employeeId, 60);
+        $this->insertTimeStudy($factoryId, $operationId, $employeeId, 80);
+        FactoryContext::set([$factoryId]);
+
+        $run = SkillMatrixCalculationRepository::recalculate([], $user->id);
+
+        $this->assertEquals(2, $run->study_count_total);
     }
 }

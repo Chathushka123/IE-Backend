@@ -1,0 +1,100 @@
+[
+  {
+    "name": "three operators: mean of their normal times, then the allowance",
+    "normal_minutes": [
+      0.1,
+      0.12,
+      0.11
+    ],
+    "allowance_pct": 14,
+    "current_smv": 0.1,
+    "expected": {
+      "operators": 3,
+      "normal_minutes": 0.11,
+      "proposed_smv": 0.1254,
+      "change_pct": 25.4
+    }
+  },
+  {
+    "name": "one operator, no allowance, no current SMV",
+    "normal_minutes": [
+      0.1
+    ],
+    "allowance_pct": 0,
+    "current_smv": null,
+    "expected": {
+      "operators": 1,
+      "normal_minutes": 0.1,
+      "proposed_smv": 0.1,
+      "change_pct": null
+    }
+  },
+  {
+    "name": "no operators proposes nothing",
+    "normal_minutes": [],
+    "allowance_pct": 14,
+    "current_smv": 0.1,
+    "expected": {
+      "operators": 0,
+      "normal_minutes": null,
+      "proposed_smv": null,
+      "change_pct": null
+    }
+  },
+  {
+    "name": "an unchanged SMV is a zero percent change",
+    "normal_minutes": [
+      0.5,
+      0.5
+    ],
+    "allowance_pct": 20,
+    "current_smv": 0.6,
+    "expected": {
+      "operators": 2,
+      "normal_minutes": 0.5,
+      "proposed_smv": 0.6,
+      "change_pct": 0.0
+    }
+  },
+  {
+    "name": "the proposed SMV is rounded to four decimals",
+    "normal_minutes": [
+      0.3333,
+      0.3334
+    ],
+    "allowance_pct": 10,
+    "current_smv": null,
+    "expected": {
+      "operators": 2,
+      "normal_minutes": 0.33335,
+      "proposed_smv": 0.3667,
+      "change_pct": null
+    }
+  },
+  {
+    "name": "a current SMV of zero gives no percentage",
+    "normal_minutes": [
+      0.2
+    ],
+    "allowance_pct": 10,
+    "current_smv": 0,
+    "expected": {
+      "operators": 1,
+      "proposed_smv": 0.22,
+      "change_pct": null
+    }
+  },
+  {
+    "name": "a lower proposed SMV is a negative change",
+    "normal_minutes": [
+      0.08
+    ],
+    "allowance_pct": 0,
+    "current_smv": 0.1,
+    "expected": {
+      "operators": 1,
+      "proposed_smv": 0.08,
+      "change_pct": -20.0
+    }
+  }
+]

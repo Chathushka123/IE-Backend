@@ -31,4 +31,21 @@ class TimeStudyFilterTest extends TestCase
         $this->assertStringContainsString('`conducted_by_id` in (?)', $query->toSql());
         $this->assertSame([5], $query->getBindings());
     }
+
+    public function test_matrix_only_restricts_to_approved_studies_of_matrix_templates(): void
+    {
+        $sql = TimeStudyDashboardRepository::baseQuery([], true)->toSql();
+
+        $this->assertStringContainsString('`time_studies`.`counts_in_matrix` = ?', $sql);
+        $this->assertStringContainsString('`time_studies`.`status` = ?', $sql);
+        $this->assertSame([true, 'approved'], TimeStudyDashboardRepository::baseQuery([], true)->getBindings());
+    }
+
+    public function test_reports_see_every_study_by_default(): void
+    {
+        $sql = TimeStudyDashboardRepository::baseQuery([])->toSql();
+
+        $this->assertStringNotContainsString('counts_in_matrix', $sql);
+        $this->assertStringNotContainsString('`status`', $sql);
+    }
 }

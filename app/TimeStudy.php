@@ -32,9 +32,26 @@ class TimeStudy extends Model
         'style_id',
         'employee_id',
         'conducted_by_id',
+        'template_version_id',
+        'template_overridden',
+        'purpose',
+        'counts_in_matrix',
+        'status',
+        'quality_score',
+        'quality_breakdown',
+        'rule_flags',
+        'field_values',
+        'reviewed_by_id',
+        'reviewed_at',
+        'review_note',
+        'session_id',
+        'session_lead',
+        'rating_pct',
+        'proposed_smv',
         'product_category_id',
         'machine_type_id',
         'smv',
+        'smv_source',
         'total_productive_ms',
         'total_down_time_ms',
         'total_hold_ms',
@@ -49,6 +66,15 @@ class TimeStudy extends Model
         'study_date' => 'date',
         'smv' => 'decimal:4',
         'efficiency_pct' => 'decimal:2',
+        'template_overridden' => 'boolean',
+        'counts_in_matrix' => 'boolean',
+        'quality_breakdown' => 'array',
+        'rule_flags' => 'array',
+        'field_values' => 'array',
+        'reviewed_at' => 'datetime',
+        'session_lead' => 'boolean',
+        'rating_pct' => 'decimal:1',
+        'proposed_smv' => 'decimal:4',
     ];
 
     public function factory()
@@ -84,6 +110,16 @@ class TimeStudy extends Model
     public function machineType()
     {
         return $this->belongsTo(MachineType::class, 'machine_type_id');
+    }
+
+    public function reviewedBy()
+    {
+        return $this->belongsTo(User::class, 'reviewed_by_id');
+    }
+
+    public function templateVersion()
+    {
+        return $this->belongsTo(TimeStudyTemplateVersion::class, 'template_version_id');
     }
 
     public function baseSkills()

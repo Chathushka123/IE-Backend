@@ -133,6 +133,20 @@ $navigator_json = '
           "path":"/ts/time-study-report"
         },
         {
+          "caption":"Time Study Review",
+          "icon":"fas fa-clipboard-check",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ts/time-study-review"
+        },
+        {
+          "caption":"Time Study Templates",
+          "icon":"fas fa-clipboard-list",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ts/time-study-templates"
+        },
+        {
           "caption":"Time Study Downtime Reasons",
           "icon":"fas fa-triangle-exclamation",
           "type":"node",

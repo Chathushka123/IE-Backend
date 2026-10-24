@@ -13,10 +13,15 @@ class TimeStudyLap extends Model
         'down_time_ms',
         'net_ms',
         'is_excluded',
+        'exclusion_source',
+        'outlier_flagged',
+        'outlier_kept',
     ];
 
     protected $casts = [
         'is_excluded' => 'boolean',
+        'outlier_flagged' => 'boolean',
+        'outlier_kept' => 'boolean',
     ];
 
     public function timeStudy()
