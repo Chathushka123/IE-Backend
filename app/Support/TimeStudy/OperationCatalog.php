@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * Reads the master data a template's scope is matched against. An `operations` row is one base
  * operation on one product category and machine type, so it carries every value a condition can
- * name; the product group comes through the category.
+ * name; the product group comes through the category and the machine category through the machine type.
  */
 class OperationCatalog
 {
@@ -17,6 +17,7 @@ class OperationCatalog
         'base_operation' => ['base_operations', 'name'],
         'base_operation_category' => ['base_operation_categories', 'name'],
         'machine_type' => ['machine_types', 'name'],
+        'machine_category' => ['machine_categories', 'name'],
         'product_category' => ['product_categories', 'name'],
         'product_group' => ['product_groups', 'name'],
     ];
@@ -41,6 +42,16 @@ class OperationCatalog
         return self::REFERENCES[$field][0] ?? null;
     }
 
+    /** Whether a condition's ref_id names a real row (or, for study type, a known type). */
+    public static function referenceExists(string $field, int $refId): bool
+    {
+        if ($field === 'study_type') {
+            return StudyTypes::exists($refId);
+        }
+
+        return DB::table(self::REFERENCES[$field][0])->where('id', $refId)->exists();
+    }
+
     /**
      * Display names for conditions, one query per field used.
      *
@@ -56,6 +67,10 @@ class OperationCatalog
 
         $names = [];
         foreach ($idsByField as $field => $ids) {
+            if ($field === 'study_type') {
+                $names[$field] = StudyTypes::LABELS;
+                continue;
+            }
             [$table, $label] = self::REFERENCES[$field];
             $names[$field] = DB::table($table)->whereIn('id', $ids)->selectRaw("id, $label as label")->pluck('label', 'id')->all();
         }
@@ -72,9 +87,10 @@ class OperationCatalog
         return DB::table('operations as o')
             ->join('base_operations as bo', 'o.base_operation_id', '=', 'bo.id')
             ->join('product_categories as pc', 'o.product_category_id', '=', 'pc.id')
+            ->join('machine_types as mt', 'o.machine_type_id', '=', 'mt.id')
             ->selectRaw("o.id as operation, o.code, o.description, bo.name as base_operation_name,
                 o.base_operation_id as base_operation, bo.base_operation_category_id as base_operation_category,
-                o.machine_type_id as machine_type, o.product_category_id as product_category, pc.product_group_id as product_group");
+                o.machine_type_id as machine_type, mt.machine_category_id as machine_category, o.product_category_id as product_category, pc.product_group_id as product_group");
     }
 
     private static function present($row): array

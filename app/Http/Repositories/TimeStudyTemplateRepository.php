@@ -4,6 +4,7 @@ namespace App\Http\Repositories;
 
 use App\Exceptions\GeneralException;
 use App\Support\TimeStudy\OperationCatalog;
+use App\Support\TimeStudy\StudyTypes;
 use App\Support\TimeStudy\TemplateDefinition;
 use App\Support\TimeStudy\TemplateMatcher;
 use App\TimeStudyTemplate;
@@ -23,7 +24,7 @@ use Illuminate\Validation\Rule;
  */
 class TimeStudyTemplateRepository
 {
-    private const CONDITION_FIELDS = ['operation', 'base_operation', 'base_operation_category', 'machine_type', 'product_category', 'product_group'];
+    private const CONDITION_FIELDS = ['operation', 'base_operation', 'base_operation_category', 'machine_type', 'machine_category', 'product_category', 'product_group', 'study_type'];
 
     // ---------------------------------------------------------------
     // Reading
@@ -295,20 +296,32 @@ class TimeStudyTemplateRepository
             $issues[] = 'A condition refers to something that no longer exists.';
         }
 
+        // Which operations a template covers does not depend on the kind of study, so coverage is
+        // judged on the operation conditions alone; the study types only decide who wins below.
         $operations = OperationCatalog::all();
-        $matched = $manualOnly ? [] : array_filter($operations, fn ($op) => TemplateMatcher::matches($conditions, $op['attributes']));
+        $operationConditions = self::withoutStudyType($conditions);
+        $matched = $manualOnly ? [] : array_filter($operations, fn ($op) => TemplateMatcher::matches($operationConditions, $op['attributes']));
 
         $others = self::publishedCandidates($purpose, $selfId);
+        $coveredTypes = self::studyTypesOf($conditions);
         $wins = 0;
         $losses = [];
         foreach ($matched as $op) {
-            $rivals = array_filter($others, fn ($t) => TemplateMatcher::matches($t['conditions'], $op['attributes']));
-            $best = TemplateMatcher::rank(array_values($rivals))[0] ?? null;
-            // A tie goes to the template published last, which this draft would be.
-            if ($best === null || TemplateMatcher::specificity($conditions) >= TemplateMatcher::specificity($best['conditions'])) {
+            $lostTo = null;
+            foreach ($coveredTypes as $typeId) {
+                $attributes = $op['attributes'] + ['study_type' => $typeId];
+                $rivals = array_filter($others, fn ($t) => TemplateMatcher::matches($t['conditions'], $attributes));
+                $best = TemplateMatcher::rank(array_values($rivals))[0] ?? null;
+                // A tie goes to the template published last, which this draft would be.
+                if ($best !== null && TemplateMatcher::specificity($conditions) < TemplateMatcher::specificity($best['conditions'])) {
+                    $lostTo = $best;
+                    break;
+                }
+            }
+            if ($lostTo === null) {
                 $wins++;
             } else {
-                $losses[$best['id']] = ['template_id' => $best['id'], 'name' => $best['name'], 'count' => ($losses[$best['id']]['count'] ?? 0) + 1];
+                $losses[$lostTo['id']] = ['template_id' => $lostTo['id'], 'name' => $lostTo['name'], 'count' => ($losses[$lostTo['id']]['count'] ?? 0) + 1];
             }
         }
 
@@ -326,16 +339,19 @@ class TimeStudyTemplateRepository
     }
 
     /** The template a study of this operation would use, every other one the analyst may pick, and the fallback when none applies. */
-    public static function resolve(int $operationId, string $purpose): array
+    public static function resolve(int $operationId, string $purpose, ?string $studyType = null): array
     {
         $operation = OperationCatalog::find($operationId);
         if ($operation === null) {
             throw new GeneralException('That operation could not be found.');
         }
 
+        // Until the kind of study is known, only templates that do not name a study type can match.
+        $attributes = $operation['attributes'] + ['study_type' => StudyTypes::idOf($studyType)];
+
         $all = self::publishedCandidates($purpose, null, true);
         $automatic = array_values(array_filter($all, fn ($t) => !$t['manual_only']));
-        $candidates = TemplateMatcher::rank(array_values(array_filter($automatic, fn ($t) => TemplateMatcher::matches($t['conditions'], $operation['attributes']))));
+        $candidates = TemplateMatcher::rank(array_values(array_filter($automatic, fn ($t) => TemplateMatcher::matches($t['conditions'], $attributes))));
         $chosen = $candidates[0] ?? null;
 
         $present = fn (array $t) => [
@@ -362,9 +378,76 @@ class TimeStudyTemplateRepository
         ];
     }
 
+    /**
+     * What choosing this template up front pre-fills on the study screen: the operations and kinds
+     * of study it covers (null operations = no limit) and the version and rules to run under.
+     * Only a live, published, non-system template can be started from.
+     */
+    public static function startFrom(int $id): array
+    {
+        $template = TimeStudyTemplate::findOrFail($id);
+        // Includes manual-only templates (the point of them); the Legacy fallback is not something to start from.
+        $candidate = collect(self::publishedCandidates($template->purpose, null, true))->firstWhere('id', $template->id);
+        if ($candidate === null || $candidate['system_key'] !== null) {
+            throw new GeneralException('Only a published template can be used to start a study.');
+        }
+
+        // A manual-only template has no automatic scope, so it can be used for anything.
+        $limited = !$candidate['manual_only'];
+        $operations = $limited
+            ? array_keys(array_filter(OperationCatalog::all(), fn ($op) => TemplateMatcher::matches(self::withoutStudyType($candidate['conditions']), $op['attributes'])))
+            : null;
+        $typeIds = $limited ? self::studyTypesOf($candidate['conditions']) : StudyTypes::all();
+
+        return [
+            'template_id' => $candidate['id'],
+            'version_id' => $candidate['version_id'],
+            'name' => $candidate['name'],
+            'version_no' => $candidate['version_no'],
+            'manual_only' => (bool) $candidate['manual_only'],
+            'counts_in_matrix' => $candidate['counts_in_matrix'],
+            'definition' => $candidate['definition'],
+            'operation_ids' => $operations === null ? null : array_map('intval', $operations),
+            // Production-floor studies start from a style, so only styles whose bulletin has one of the covered operations are useful.
+            'style_ids' => $operations === null ? null : self::stylesWithOperations($operations),
+            'study_types' => array_keys(array_filter(StudyTypes::IDS, fn ($typeId) => in_array($typeId, $typeIds, true))),
+        ];
+    }
+
     // ---------------------------------------------------------------
     // Internals
     // ---------------------------------------------------------------
+
+    /** @return int[] ids of the styles whose active bulletin includes any of these operations */
+    private static function stylesWithOperations(array $operationIds): array
+    {
+        if ($operationIds === []) {
+            return [];
+        }
+
+        return DB::table('style_operations')
+            ->where('is_active', true)
+            ->whereIn('operation_id', $operationIds)
+            ->distinct()
+            ->pluck('style_id')
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
+    }
+
+    /** @return array<int,array{field:string,ref_id:int}> */
+    private static function withoutStudyType(array $conditions): array
+    {
+        return array_values(array_filter($conditions, fn ($c) => $c['field'] !== 'study_type'));
+    }
+
+    /** The study type ids a template covers: the ones it names, or all of them when it names none. @return int[] */
+    private static function studyTypesOf(array $conditions): array
+    {
+        $named = array_values(array_unique(array_map(fn ($c) => (int) $c['ref_id'], array_filter($conditions, fn ($c) => $c['field'] === 'study_type'))));
+
+        return $named ?: StudyTypes::all();
+    }
 
     /** Latest published version of every live template of this purpose, shaped for matching. */
     private static function publishedCandidates(string $purpose, ?int $excludeTemplateId, bool $includeSystem = false): array
@@ -450,7 +533,7 @@ class TimeStudyTemplateRepository
             if (!is_numeric($refId) || (int) $refId < 1) {
                 throw new GeneralException('Choose a value for every condition, or remove it.');
             }
-            if (!DB::table(OperationCatalog::referenceTable($field))->where('id', (int) $refId)->exists()) {
+            if (!OperationCatalog::referenceExists($field, (int) $refId)) {
                 throw new GeneralException('A condition refers to something that no longer exists.');
             }
             $conditions[$field . ':' . (int) $refId] = ['field' => $field, 'ref_id' => (int) $refId];

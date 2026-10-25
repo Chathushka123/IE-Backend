@@ -386,6 +386,19 @@ class TimeStudyTemplateRepositoryTest extends RepositoryTestCase
         $this->assertSame([], $preview['issues']);
     }
 
+    public function testAMachineCategoryConditionCoversEveryOperationOnItsMachineTypes()
+    {
+        $this->actingAsTestUser();
+        $m = $this->makeMasters();
+        $other = $this->makeOperation($m['baseOperation'], $m['category'], $this->makeMachineType());
+        $machineCategoryId = DB::table('machine_types')->where('id', $m['machine'])->value('machine_category_id');
+
+        $preview = Repo::preview(['name' => 'Machine family', 'purpose' => 'perf', 'conditions' => [['field' => 'machine_category', 'ref_id' => $machineCategoryId]]]);
+
+        $this->assertSame([$m['operation']], array_column($preview['scope']['matched_operations'], 'id'));
+        $this->assertNotContains($other, array_column($preview['scope']['matched_operations'], 'id'));
+    }
+
     public function testPreviewOfAManualOnlyTemplateMatchesNothingAutomatically()
     {
         $this->actingAsTestUser();
@@ -488,6 +501,130 @@ class TimeStudyTemplateRepositoryTest extends RepositoryTestCase
         $this->assertSame(3, $resolved['chosen']['candidate_count']);
         $this->assertSame(['operation'], array_column($resolved['chosen']['matched_conditions'], 'field'));
         $this->assertEqualsCanonicalizing(['Everything', 'Lockstitch'], array_column($resolved['alternatives'], 'name'));
+    }
+
+    public function testAStudyTypeTemplateIsChosenOnlyForThatKindOfStudy()
+    {
+        $this->actingAsTestUser();
+        $m = $this->makeMasters();
+        $this->publishedTemplate('Any study');
+        $this->publishedTemplate('Floor only', [['field' => 'study_type', 'ref_id' => 2]]);
+
+        $this->assertSame('Floor only', Repo::resolve($m['operation'], 'perf', 'production_floor')['chosen']['name']);
+        $this->assertSame('Any study', Repo::resolve($m['operation'], 'perf', 'interview_training')['chosen']['name']);
+        $this->assertSame('Any study', Repo::resolve($m['operation'], 'perf')['chosen']['name']);
+    }
+
+    public function testAStudyTypeConditionIsLabelledAndMustNameAKnownType()
+    {
+        $this->actingAsTestUser();
+
+        $template = Repo::create(['name' => 'Training', 'purpose' => 'perf', 'conditions' => [['field' => 'study_type', 'ref_id' => 1]]]);
+
+        $this->assertSame('Interview & Training', $template['draft']['conditions'][0]['label']);
+        $this->expectException(GeneralException::class);
+        Repo::create(['name' => 'Bad', 'purpose' => 'perf', 'conditions' => [['field' => 'study_type', 'ref_id' => 99]]]);
+    }
+
+    public function testPreviewCoverageIgnoresStudyTypeButItDecidesWhoWins()
+    {
+        $this->actingAsTestUser();
+        $m = $this->makeMasters();
+        $this->publishedTemplate('Trained floor', [['field' => 'operation', 'ref_id' => $m['operation']], ['field' => 'study_type', 'ref_id' => 2]]);
+
+        $floorOnly = Repo::preview(['name' => 'Floor', 'purpose' => 'perf', 'conditions' => [['field' => 'machine_type', 'ref_id' => $m['machine']], ['field' => 'study_type', 'ref_id' => 2]]]);
+        $trainingOnly = Repo::preview(['name' => 'Training', 'purpose' => 'perf', 'conditions' => [['field' => 'machine_type', 'ref_id' => $m['machine']], ['field' => 'study_type', 'ref_id' => 1]]]);
+
+        $this->assertSame(1, $floorOnly['scope']['matched_count']);
+        $this->assertSame(0, $floorOnly['scope']['wins']);
+        $this->assertSame('Trained floor', $floorOnly['scope']['losses'][0]['name']);
+        $this->assertSame(1, $trainingOnly['scope']['wins']);
+    }
+
+    public function testStartFromListsTheOperationsAndStudyTypesATemplateCovers()
+    {
+        $this->actingAsTestUser();
+        $m = $this->makeMasters();
+        $other = $this->makeOperation($m['baseOperation'], $m['category'], $this->makeMachineType());
+        $id = $this->publishedTemplate('Lockstitch floor', [['field' => 'machine_type', 'ref_id' => $m['machine']], ['field' => 'study_type', 'ref_id' => 2]]);
+
+        $start = Repo::startFrom($id);
+
+        $this->assertSame([$m['operation']], $start['operation_ids']);
+        $this->assertNotContains($other, $start['operation_ids']);
+        $this->assertSame(['production_floor'], $start['study_types']);
+        $this->assertSame('Lockstitch floor', $start['name']);
+        $this->assertSame('warn', $start['definition']['rules']['min_laps']['severity']);
+    }
+
+    public function testStartFromListsTheStylesWhoseBulletinHasACoveredOperation()
+    {
+        $this->actingAsTestUser();
+        $m = $this->makeMasters();
+        $other = $this->makeOperation($m['baseOperation'], $m['category'], $this->makeMachineType());
+        $id = $this->publishedTemplate('Lockstitch', [['field' => 'machine_type', 'ref_id' => $m['machine']]]);
+        $withCovered = $this->makeStyleWith($m['category'], [$m['operation'], $other]);
+        $withoutCovered = $this->makeStyleWith($m['category'], [$other]);
+        $inactiveOnly = $this->makeStyleWith($m['category'], [$m['operation']], false);
+
+        $styles = Repo::startFrom($id)['style_ids'];
+
+        $this->assertContains($withCovered, $styles);
+        $this->assertNotContains($withoutCovered, $styles);
+        $this->assertNotContains($inactiveOnly, $styles);
+    }
+
+    public function testStartFromAnUnlimitedTemplateDoesNotLimitStyles()
+    {
+        $this->actingAsTestUser();
+        $id = $this->publishedTemplate('Trial');
+        Repo::saveDraft($id, ['manual_only' => true]);
+        Repo::publish($id);
+
+        $this->assertNull(Repo::startFrom($id)['style_ids']);
+    }
+
+    public function testStartFromATemplateWithNoScopeCoversEveryOperationAndBothStudyTypes()
+    {
+        $this->actingAsTestUser();
+        $m = $this->makeMasters();
+        $id = $this->publishedTemplate('Everything');
+
+        $start = Repo::startFrom($id);
+
+        $this->assertContains($m['operation'], $start['operation_ids']);
+        $this->assertSame(['interview_training', 'production_floor'], $start['study_types']);
+    }
+
+    public function testStartFromAManualOnlyTemplateIsNotLimited()
+    {
+        $this->actingAsTestUser();
+        $id = $this->publishedTemplate('Trial');
+        Repo::saveDraft($id, ['manual_only' => true]);
+        Repo::publish($id);
+
+        $start = Repo::startFrom($id);
+
+        $this->assertNull($start['operation_ids']);
+        $this->assertTrue($start['manual_only']);
+    }
+
+    public function testStartFromRefusesAnUnpublishedArchivedOrSystemTemplate()
+    {
+        $this->actingAsTestUser();
+        $draft = Repo::create(['name' => 'Draft only', 'purpose' => 'perf'])['id'];
+        $archived = $this->publishedTemplate('Old');
+        Repo::archive($archived);
+        $legacy = TimeStudyTemplate::where('system_key', 'legacy')->value('id');
+
+        foreach ([$draft, $archived, $legacy] as $id) {
+            try {
+                Repo::startFrom($id);
+                $this->fail("Expected template $id to be refused");
+            } catch (GeneralException $e) {
+                $this->assertNotEmpty($e->getMessage());
+            }
+        }
     }
 
     public function testResolveIncludesTheRulesAndTheLegacyFallback()
@@ -608,6 +745,20 @@ class TimeStudyTemplateRepositoryTest extends RepositoryTestCase
     // ---------------------------------------------------------------
     // Fixtures
     // ---------------------------------------------------------------
+
+    /** A style on this product category whose bulletin holds these operations. */
+    private function makeStyleWith(int $productCategoryId, array $operationIds, bool $active = true): int
+    {
+        $unique = strtoupper(substr(md5(uniqid('', true)), 0, 8));
+        $customerId = DB::table('customers')->insertGetId(['description' => 'Customer '.$unique, 'code' => 'CU'.$unique, 'created_at' => now(), 'updated_at' => now()]);
+        $seasonId = DB::table('seasons')->insertGetId(['name' => 'Season '.$unique, 'code' => 'SE'.$unique, 'customer_id' => $customerId, 'created_at' => now(), 'updated_at' => now()]);
+        $styleId = DB::table('styles')->insertGetId(['name' => 'Style '.$unique, 'style_code' => 'ST'.$unique, 'product_category_id' => $productCategoryId, 'customer_id' => $customerId, 'season_id' => $seasonId, 'is_active' => true, 'created_at' => now(), 'updated_at' => now()]);
+        foreach ($operationIds as $i => $operationId) {
+            DB::table('style_operations')->insert(['style_id' => $styleId, 'operation_id' => $operationId, 'sequence_no' => $i + 1, 'smv' => 1, 'is_active' => $active, 'created_at' => now(), 'updated_at' => now()]);
+        }
+
+        return $styleId;
+    }
 
     private function publishedTemplate(string $name, array $conditions = [], string $purpose = 'perf'): int
     {

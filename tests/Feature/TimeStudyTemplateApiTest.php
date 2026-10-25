@@ -77,6 +77,20 @@ class TimeStudyTemplateApiTest extends TestCase
         $this->getJson('/api/v1/timeStudyTemplates/resolve', $this->headers())->assertStatus(400)->assertJsonPath('status', 'error');
     }
 
+    public function testStartFromReturnsWhatAPublishedTemplateCovers()
+    {
+        $h = $this->headers();
+        $id = $this->postJson('/api/v1/timeStudyTemplates', ['name' => 'Start here', 'purpose' => 'perf'], $h)->json('data.id');
+
+        $this->getJson("/api/v1/timeStudyTemplates/$id/startFrom", $h)->assertStatus(400);
+        $this->postJson("/api/v1/timeStudyTemplates/$id/publish", [], $h)->assertOk();
+
+        $this->getJson("/api/v1/timeStudyTemplates/$id/startFrom", $h)
+            ->assertOk()
+            ->assertJsonPath('data.name', 'Start here')
+            ->assertJsonPath('data.study_types', ['interview_training', 'production_floor']);
+    }
+
     public function testDiscardDuplicateAndArchiveRoutesWork()
     {
         $h = $this->headers();

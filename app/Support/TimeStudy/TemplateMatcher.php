@@ -16,12 +16,14 @@ class TemplateMatcher
     // That makes the winner predictable from the scope alone, which the builder can explain.
     // Chose this over a user-set priority number; tune the order here.
     public const WEIGHTS = [
-        'operation' => 32,
-        'base_operation' => 16,
-        'product_category' => 8,
-        'machine_type' => 4,
-        'base_operation_category' => 2,
-        'product_group' => 1,
+        'operation' => 128,
+        'base_operation' => 64,
+        'product_category' => 32,
+        'machine_type' => 16,
+        'base_operation_category' => 8,
+        'machine_category' => 4,
+        'product_group' => 2,
+        'study_type' => 1,
     ];
 
     /**

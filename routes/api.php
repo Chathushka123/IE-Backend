@@ -124,6 +124,7 @@ Route::prefix('v1')->group(function () {
         // Time Study Templates — specific paths must come before {id} wildcard
         Route::get('timeStudyTemplates', 'Api\TimeStudyTemplateController@index')->name('timeStudyTemplates.index');
         Route::get('timeStudyTemplates/resolve', 'Api\TimeStudyTemplateController@resolve')->name('timeStudyTemplates.resolve');
+        Route::get('timeStudyTemplates/{id}/startFrom', 'Api\TimeStudyTemplateController@startFrom')->name('timeStudyTemplates.startFrom');
         Route::post('timeStudyTemplates/preview', 'Api\TimeStudyTemplateController@preview')->name('timeStudyTemplates.preview');
         Route::post('timeStudyTemplates', 'Api\TimeStudyTemplateController@store')->name('timeStudyTemplates.store');
         Route::get('timeStudyTemplates/{id}', 'Api\TimeStudyTemplateController@show')->name('timeStudyTemplates.show');

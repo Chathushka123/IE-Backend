@@ -59,15 +59,25 @@ class TimeStudyTemplateController extends Controller
         return $this->respond(fn () => TimeStudyTemplateRepository::preview($request->all()));
     }
 
+    public function startFrom(int $id)
+    {
+        return $this->respond(fn () => TimeStudyTemplateRepository::startFrom($id));
+    }
+
     public function resolve(Request $request)
     {
         return $this->respond(function () use ($request) {
             $request->validate([
                 'operation_id' => 'required|integer',
                 'purpose' => 'nullable|in:perf,smv',
+                'time_study_type' => 'nullable|in:interview_training,production_floor',
             ]);
 
-            return TimeStudyTemplateRepository::resolve($request->integer('operation_id'), $request->input('purpose', 'perf'));
+            return TimeStudyTemplateRepository::resolve(
+                $request->integer('operation_id'),
+                $request->input('purpose', 'perf'),
+                $request->input('time_study_type')
+            );
         });
     }
 
