@@ -14,6 +14,26 @@ class TemplateDefinition
     public const APPROVALS = ['always', 'warnings', 'never'];
     public const FIELD_TYPES = ['text', 'number', 'yesno', 'choice'];
     public const PRESETS = ['standard', 'strict', 'explore'];
+    public const OPERATORS_PER_OPERATION = ['any', 'one', 'several'];
+    // 'combined': one operator on several operations in a repeating cycle, timed in one stopwatch pass and
+    // saved as one study per operation. Like 'several' as far as a plan's limits go.
+    public const OPERATIONS_PER_OPERATOR = ['one', 'several', 'combined'];
+    public const MAX_OPERATORS_PER_OPERATION = 20;
+
+    /**
+     * How a study plan may pair operators with operations. No limits at all: what every template without a
+     * layout (everything built before layouts existed) has always allowed.
+     */
+    public static function defaultLayout(): array
+    {
+        return ['operators_per_operation' => ['mode' => 'any', 'min' => 2], 'operations_per_operator' => 'several'];
+    }
+
+    /** The layout of a stored definition, or the permissive default when it has none. */
+    public static function layoutOf(array $definition): array
+    {
+        return self::normalizeLayout($definition['layout'] ?? []);
+    }
 
     /** Evidence floor for anything that feeds the skill matrix. */
     public const MATRIX_MIN_LAPS = 3;
@@ -61,6 +81,10 @@ class TemplateDefinition
             $definition['approval'] = 'always';
         }
 
+        if ($purpose === 'perf') {
+            $definition['layout'] = self::defaultLayout();
+        }
+
         return $definition;
     }
 
@@ -103,7 +127,30 @@ class TemplateDefinition
             $definition['allowance_pct'] = self::number($raw['allowance_pct'] ?? null, 14);
         }
 
+        // An establish-SMV study is one operation timed on several operators in a single session, so the
+        // layout (how a plan pairs operators with operations) only exists for operator performance.
+        if ($purpose === 'perf') {
+            $definition['layout'] = self::normalizeLayout($raw['layout'] ?? []);
+        }
+
         return $definition;
+    }
+
+    private static function normalizeLayout($raw): array
+    {
+        $raw = is_array($raw) ? $raw : [];
+        $given = is_array($raw['operators_per_operation'] ?? null) ? $raw['operators_per_operation'] : [];
+        $default = self::defaultLayout();
+
+        $min = self::number($given['min'] ?? null, $default['operators_per_operation']['min']);
+
+        return [
+            'operators_per_operation' => [
+                'mode' => in_array($given['mode'] ?? null, self::OPERATORS_PER_OPERATION, true) ? $given['mode'] : 'any',
+                'min' => is_numeric($min) ? (int) $min : $default['operators_per_operation']['min'],
+            ],
+            'operations_per_operator' => in_array($raw['operations_per_operator'] ?? null, self::OPERATIONS_PER_OPERATOR, true) ? $raw['operations_per_operator'] : 'several',
+        ];
     }
 
     /** @return string[] plain-language reasons this definition cannot be published */
@@ -129,6 +176,14 @@ class TemplateDefinition
             $minLaps = $rules['min_laps'] ?? [];
             if (($minLaps['value'] ?? 0) < self::MATRIX_MIN_LAPS || ($minLaps['severity'] ?? 'off') === 'off') {
                 $issues[] = 'Minimum laps must be at least ' . self::MATRIX_MIN_LAPS . ' and not switched off while the template counts towards the skill matrix.';
+            }
+        }
+
+        if ($purpose === 'perf') {
+            $layout = self::layoutOf($definition);
+            $min = $layout['operators_per_operation']['min'];
+            if ($layout['operators_per_operation']['mode'] === 'several' && ($min < 2 || $min > self::MAX_OPERATORS_PER_OPERATION)) {
+                $issues[] = 'The number of operators per operation must be between 2 and ' . self::MAX_OPERATORS_PER_OPERATION . '.';
             }
         }
 

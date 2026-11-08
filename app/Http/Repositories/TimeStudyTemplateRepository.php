@@ -414,6 +414,30 @@ class TimeStudyTemplateRepository
         ];
     }
 
+    /**
+     * What one specific published version covers. Unlike startFrom() this is for a version a plan is already
+     * pinned to, which may no longer be the template's latest.
+     *
+     * @return array{operation_ids:?int[],study_types:string[],style_ids:?int[]}
+     */
+    public static function coverageOfVersion(TimeStudyTemplateVersion $version): array
+    {
+        $version->loadMissing('conditions');
+        $unlimited = (bool) ($version->definition['manual_only'] ?? false);
+        $conditions = self::conditionRows($version);
+
+        $operations = $unlimited
+            ? null
+            : array_map('intval', array_keys(array_filter(OperationCatalog::all(), fn ($op) => TemplateMatcher::matches(self::withoutStudyType($conditions), $op['attributes']))));
+        $typeIds = $unlimited ? StudyTypes::all() : self::studyTypesOf($conditions);
+
+        return [
+            'operation_ids' => $operations,
+            'style_ids' => $operations === null ? null : self::stylesWithOperations($operations),
+            'study_types' => array_keys(array_filter(StudyTypes::IDS, fn ($typeId) => in_array($typeId, $typeIds, true))),
+        ];
+    }
+
     // ---------------------------------------------------------------
     // Internals
     // ---------------------------------------------------------------

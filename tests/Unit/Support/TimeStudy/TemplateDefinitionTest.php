@@ -190,4 +190,58 @@ class TemplateDefinitionTest extends TestCase
         $this->assertStringContainsString('operators', $issues);
         $this->assertStringContainsString('allowance', $issues);
     }
+
+    public function testPerformanceTemplatesDefaultToNoLimitsOnHowOperatorsAndOperationsPair(): void
+    {
+        $definition = TemplateDefinition::defaults('perf');
+
+        $this->assertSame('any', $definition['layout']['operators_per_operation']['mode']);
+        $this->assertSame('several', $definition['layout']['operations_per_operator']);
+    }
+
+    public function testADefinitionWithoutALayoutIsReadAsHavingNoLimits(): void
+    {
+        $this->assertSame(TemplateDefinition::defaultLayout(), TemplateDefinition::layoutOf(['rules' => []]));
+    }
+
+    public function testNormalizeKeepsAValidLayoutAndRepairsAnInvalidOne(): void
+    {
+        $kept = TemplateDefinition::normalize(['layout' => ['operators_per_operation' => ['mode' => 'several', 'min' => '3'], 'operations_per_operator' => 'one']], 'perf');
+        $repaired = TemplateDefinition::normalize(['layout' => ['operators_per_operation' => ['mode' => 'lots', 'min' => 'x'], 'operations_per_operator' => 'many']], 'perf');
+
+        $this->assertSame(['mode' => 'several', 'min' => 3], $kept['layout']['operators_per_operation']);
+        $this->assertSame('one', $kept['layout']['operations_per_operator']);
+        $this->assertSame(TemplateDefinition::defaultLayout(), $repaired['layout']);
+    }
+
+    public function testEstablishSmvTemplatesHaveNoLayout(): void
+    {
+        $this->assertArrayNotHasKey('layout', TemplateDefinition::normalize(['layout' => ['operations_per_operator' => 'one']], 'smv'));
+        $this->assertArrayNotHasKey('layout', TemplateDefinition::defaults('smv'));
+    }
+
+    public function testSeveralOperatorsPerOperationNeedsBetweenTwoAndTwentyOperators(): void
+    {
+        foreach ([1, 21] as $min) {
+            $definition = TemplateDefinition::normalize(['layout' => ['operators_per_operation' => ['mode' => 'several', 'min' => $min]]], 'perf');
+            $this->assertNotSame([], TemplateDefinition::issues($definition, 'perf'), "min $min should be reported");
+        }
+        $ok = TemplateDefinition::normalize(['layout' => ['operators_per_operation' => ['mode' => 'several', 'min' => 2]]], 'perf');
+        $this->assertSame([], TemplateDefinition::issues($ok, 'perf'));
+    }
+
+    public function testTheMinimumIsIgnoredWhenThePlanDoesNotNeedSeveralOperators(): void
+    {
+        $definition = TemplateDefinition::normalize(['layout' => ['operators_per_operation' => ['mode' => 'one', 'min' => 99]]], 'perf');
+
+        $this->assertSame([], TemplateDefinition::issues($definition, 'perf'));
+    }
+
+    public function testACombinedCycleIsAValidWayToPairOperationsWithOperators(): void
+    {
+        $definition = TemplateDefinition::normalize(['layout' => ['operations_per_operator' => 'combined']], 'perf');
+
+        $this->assertSame('combined', $definition['layout']['operations_per_operator']);
+        $this->assertSame([], TemplateDefinition::issues($definition, 'perf'));
+    }
 }

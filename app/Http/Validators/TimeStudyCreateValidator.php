@@ -31,6 +31,7 @@ class TimeStudyCreateValidator
 
       'template_version_id' => 'nullable|integer|exists:time_study_template_versions,id',
       'template_overridden' => 'nullable|boolean',
+      'time_study_plan_item_id' => 'nullable|integer|exists:time_study_plan_items,id',
       'field_values' => 'nullable|array',
 
       'skill_ids' => 'nullable|array',

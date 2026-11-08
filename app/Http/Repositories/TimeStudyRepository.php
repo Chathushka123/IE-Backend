@@ -26,7 +26,11 @@ class TimeStudyRepository
     'conducted_by_id', 'total_down_time_ms', 'total_hold_ms', 'total_cycle_ms',
   ];
 
-  public static function createRec(array $rec)
+  /**
+   * @param array $internal values only the server may set, never the client (the cycle group and position,
+   *                        see TimeStudyCycleRepository)
+   */
+  public static function createRec(array $rec, array $internal = [])
   {
     $validator = Validator::make(
       $rec,
@@ -36,6 +40,18 @@ class TimeStudyRepository
       Utilities::extractError($validator);
     }
 
+    // A study for a planned pair is saved under a lock on that pair, so two analysts saving at the same moment
+    // cannot both fill its last slot (see TimeStudyPlanRepository::assertCanRecord).
+    if (!empty($rec['time_study_plan_item_id'])) {
+      return DB::transaction(fn () => self::record($rec, $internal));
+    }
+
+    return self::record($rec, $internal);
+  }
+
+  /** Evaluates and saves one study. The input has already been validated. */
+  private static function record(array $rec, array $internal = [])
+  {
     $skillIds = $rec['skill_ids'] ?? [];
     $laps = $rec['laps'] ?? [];
     $downtimes = $rec['downtimes'] ?? [];
@@ -50,6 +66,12 @@ class TimeStudyRepository
         throw new \App\Exceptions\GeneralException('Lap ' . $lap['lap_no'] . ': down time cannot be longer than the lap itself.');
       }
     }
+
+    // A study recorded for a planned pair must be for exactly that pair, under the plan's template, and the
+    // pair must not be held by another analyst.
+    $planItem = !empty($rec['time_study_plan_item_id'])
+      ? TimeStudyPlanRepository::assertCanRecord((int) $rec['time_study_plan_item_id'], $rec)
+      : null;
 
     $version = self::resolveTemplateVersion($rec['template_version_id'] ?? null);
     $definition = $version->definition;
@@ -108,7 +130,15 @@ class TimeStudyRepository
     // Productive time is the stopwatch total minus its down time; the browser's own figure is not used.
     $headerData['total_productive_ms'] = max(0, ($rec['total_cycle_ms'] ?? 0) - ($rec['total_down_time_ms'] ?? 0));
 
+    if ($planItem) {
+      $headerData['time_study_plan_item_id'] = $planItem->id;
+    }
+    $headerData = array_merge($headerData, array_intersect_key($internal, array_flip(['cycle_group_id', 'cycle_position'])));
+
     $model = self::persist($headerData, $evaluation['laps'], $skillIds, $downtimes);
+    if ($planItem) {
+      TimeStudyPlanRepository::releaseAfterRecording($planItem);
+    }
 
     return $model;
   }

@@ -40,8 +40,8 @@ $navigator_json = '
        ]
     },
     {
-       "caption":"Industrial Engineering",
-       "id":"industrial-engineering",
+       "caption":"IE - Front End",
+       "id":"ie-frontend",
        "icon":"fas fa-database",
        "type":"folder",
        "permitted" : 0,
@@ -91,8 +91,8 @@ $navigator_json = '
        ]
     },
     {
-      "caption": "Time Study",
-      "id": "time-study",
+      "caption": "IE - Operations",
+      "id": "ie-operations",
       "icon": "fas fa-layer-group",
       "type": "folder",
       "permitted" : 0,

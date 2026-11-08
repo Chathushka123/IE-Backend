@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Repositories\TimeStudyRepository;
 use App\Http\Repositories\TimeStudyReviewRepository;
+use App\Http\Repositories\TimeStudyCycleReportRepository;
+use App\Http\Repositories\TimeStudyCycleRepository;
 use App\Http\Repositories\TimeStudySmvSessionRepository;
 use App\Http\Repositories\OperationSmvRepository;
 use App\Http\Repositories\TimeStudyDashboardRepository;
@@ -113,6 +115,16 @@ class TimeStudyController extends Controller
         }
     }
 
+    /** Combined cycles: whole-cycle efficiency, switch time, and cycle versus single-operation performance. */
+    public function cycleReport(Request $request)
+    {
+        try {
+            return response()->json(['status' => 'success', 'data' => TimeStudyCycleReportRepository::report($request->query())], 200);
+        } catch (Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 400);
+        }
+    }
+
     public function skillMatrix(Request $request)
     {
         try {
@@ -154,6 +166,21 @@ class TimeStudyController extends Controller
         try {
             DB::beginTransaction();
             $result = TimeStudySmvSessionRepository::create($request->all());
+            DB::commit();
+
+            return response()->json(['status' => 'success', 'data' => $result], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 400);
+        }
+    }
+
+    /** A combined cycle: one operator on several operations in one pass, saved as one study per operation. */
+    public function storeCycle(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+            $result = TimeStudyCycleRepository::create($request->all());
             DB::commit();
 
             return response()->json(['status' => 'success', 'data' => $result], 200);

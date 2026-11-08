@@ -1,0 +1,523 @@
+[
+  {
+    "name": "no limits accepts any pairing",
+    "layout": {
+      "operators_per_operation": {
+        "mode": "any",
+        "min": 2
+      },
+      "operations_per_operator": "several"
+    },
+    "pairs": [
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        8
+      ],
+      [
+        2,
+        7
+      ]
+    ],
+    "coverage": null,
+    "names": {
+      "operations": {
+        "1": "Collar attach",
+        "2": "Cuff attach",
+        "3": "Hem"
+      },
+      "operators": {
+        "7": "Nimali",
+        "8": "Kasun",
+        "9": "Ruwan"
+      }
+    },
+    "requireMinimums": true,
+    "expected": []
+  },
+  {
+    "name": "an empty plan cannot be started",
+    "layout": {
+      "operators_per_operation": {
+        "mode": "any",
+        "min": 2
+      },
+      "operations_per_operator": "several"
+    },
+    "pairs": [],
+    "coverage": null,
+    "names": {
+      "operations": {
+        "1": "Collar attach",
+        "2": "Cuff attach",
+        "3": "Hem"
+      },
+      "operators": {
+        "7": "Nimali",
+        "8": "Kasun",
+        "9": "Ruwan"
+      }
+    },
+    "requireMinimums": true,
+    "expected": [
+      "Add at least one operator to an operation."
+    ]
+  },
+  {
+    "name": "an empty plan is not an error while minimums are not required",
+    "layout": {
+      "operators_per_operation": {
+        "mode": "any",
+        "min": 2
+      },
+      "operations_per_operator": "several"
+    },
+    "pairs": [],
+    "coverage": null,
+    "names": {
+      "operations": {
+        "1": "Collar attach",
+        "2": "Cuff attach",
+        "3": "Hem"
+      },
+      "operators": {
+        "7": "Nimali",
+        "8": "Kasun",
+        "9": "Ruwan"
+      }
+    },
+    "requireMinimums": false,
+    "expected": []
+  },
+  {
+    "name": "one operator per operation rejects a second operator",
+    "layout": {
+      "operators_per_operation": {
+        "mode": "one",
+        "min": 2
+      },
+      "operations_per_operator": "several"
+    },
+    "pairs": [
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        8
+      ],
+      [
+        2,
+        9
+      ]
+    ],
+    "coverage": null,
+    "names": {
+      "operations": {
+        "1": "Collar attach",
+        "2": "Cuff attach",
+        "3": "Hem"
+      },
+      "operators": {
+        "7": "Nimali",
+        "8": "Kasun",
+        "9": "Ruwan"
+      }
+    },
+    "requireMinimums": true,
+    "expected": [
+      "Collar attach has 2 operators, but this template times one operator per operation."
+    ]
+  },
+  {
+    "name": "one operator per operation allows one operator on several operations",
+    "layout": {
+      "operators_per_operation": {
+        "mode": "one",
+        "min": 2
+      },
+      "operations_per_operator": "several"
+    },
+    "pairs": [
+      [
+        1,
+        7
+      ],
+      [
+        2,
+        7
+      ],
+      [
+        3,
+        7
+      ]
+    ],
+    "coverage": null,
+    "names": {
+      "operations": {
+        "1": "Collar attach",
+        "2": "Cuff attach",
+        "3": "Hem"
+      },
+      "operators": {
+        "7": "Nimali",
+        "8": "Kasun",
+        "9": "Ruwan"
+      }
+    },
+    "requireMinimums": true,
+    "expected": []
+  },
+  {
+    "name": "several operators needs the minimum on every operation",
+    "layout": {
+      "operators_per_operation": {
+        "mode": "several",
+        "min": 2
+      },
+      "operations_per_operator": "one"
+    },
+    "pairs": [
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        8
+      ],
+      [
+        2,
+        9
+      ]
+    ],
+    "coverage": null,
+    "names": {
+      "operations": {
+        "1": "Collar attach",
+        "2": "Cuff attach",
+        "3": "Hem"
+      },
+      "operators": {
+        "7": "Nimali",
+        "8": "Kasun",
+        "9": "Ruwan"
+      }
+    },
+    "requireMinimums": true,
+    "expected": [
+      "Cuff attach has 1 operator; this template needs at least 2."
+    ]
+  },
+  {
+    "name": "several operators is met when every operation has enough",
+    "layout": {
+      "operators_per_operation": {
+        "mode": "several",
+        "min": 2
+      },
+      "operations_per_operator": "one"
+    },
+    "pairs": [
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        8
+      ],
+      [
+        2,
+        9
+      ],
+      [
+        2,
+        10
+      ]
+    ],
+    "coverage": null,
+    "names": {
+      "operations": {
+        "1": "Collar attach",
+        "2": "Cuff attach",
+        "3": "Hem"
+      },
+      "operators": {
+        "7": "Nimali",
+        "8": "Kasun",
+        "9": "Ruwan"
+      }
+    },
+    "requireMinimums": true,
+    "expected": []
+  },
+  {
+    "name": "the minimum is not enforced while the plan is running",
+    "layout": {
+      "operators_per_operation": {
+        "mode": "several",
+        "min": 3
+      },
+      "operations_per_operator": "one"
+    },
+    "pairs": [
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        8
+      ]
+    ],
+    "coverage": null,
+    "names": {
+      "operations": {
+        "1": "Collar attach",
+        "2": "Cuff attach",
+        "3": "Hem"
+      },
+      "operators": {
+        "7": "Nimali",
+        "8": "Kasun",
+        "9": "Ruwan"
+      }
+    },
+    "requireMinimums": false,
+    "expected": []
+  },
+  {
+    "name": "one operation per operator rejects an operator on two operations",
+    "layout": {
+      "operators_per_operation": {
+        "mode": "any",
+        "min": 2
+      },
+      "operations_per_operator": "one"
+    },
+    "pairs": [
+      [
+        1,
+        7
+      ],
+      [
+        2,
+        7
+      ],
+      [
+        3,
+        8
+      ]
+    ],
+    "coverage": null,
+    "names": {
+      "operations": {
+        "1": "Collar attach",
+        "2": "Cuff attach",
+        "3": "Hem"
+      },
+      "operators": {
+        "7": "Nimali",
+        "8": "Kasun",
+        "9": "Ruwan"
+      }
+    },
+    "requireMinimums": true,
+    "expected": [
+      "Nimali is on 2 operations, but this template times one operation per operator."
+    ]
+  },
+  {
+    "name": "an operation the template does not cover is reported once",
+    "layout": {
+      "operators_per_operation": {
+        "mode": "any",
+        "min": 2
+      },
+      "operations_per_operator": "several"
+    },
+    "pairs": [
+      [
+        1,
+        7
+      ],
+      [
+        3,
+        7
+      ],
+      [
+        3,
+        8
+      ]
+    ],
+    "coverage": [
+      1,
+      2
+    ],
+    "names": {
+      "operations": {
+        "1": "Collar attach",
+        "2": "Cuff attach",
+        "3": "Hem"
+      },
+      "operators": {
+        "7": "Nimali",
+        "8": "Kasun",
+        "9": "Ruwan"
+      }
+    },
+    "requireMinimums": true,
+    "expected": [
+      "Hem is not covered by this template."
+    ]
+  },
+  {
+    "name": "a template with no scope limit covers everything",
+    "layout": {
+      "operators_per_operation": {
+        "mode": "any",
+        "min": 2
+      },
+      "operations_per_operator": "several"
+    },
+    "pairs": [
+      [
+        99,
+        7
+      ]
+    ],
+    "coverage": null,
+    "names": {
+      "operations": {
+        "1": "Collar attach",
+        "2": "Cuff attach",
+        "3": "Hem"
+      },
+      "operators": {
+        "7": "Nimali",
+        "8": "Kasun",
+        "9": "Ruwan"
+      }
+    },
+    "requireMinimums": true,
+    "expected": []
+  },
+  {
+    "name": "unknown ids fall back to a numbered name",
+    "layout": {
+      "operators_per_operation": {
+        "mode": "one",
+        "min": 2
+      },
+      "operations_per_operator": "one"
+    },
+    "pairs": [
+      [
+        50,
+        60
+      ],
+      [
+        50,
+        61
+      ],
+      [
+        51,
+        60
+      ]
+    ],
+    "coverage": null,
+    "names": {},
+    "requireMinimums": true,
+    "expected": [
+      "Operation #50 has 2 operators, but this template times one operator per operation.",
+      "Operator #60 is on 2 operations, but this template times one operation per operator."
+    ]
+  },
+  {
+    "name": "every problem is listed, operations by id then operators by id",
+    "layout": {
+      "operators_per_operation": {
+        "mode": "several",
+        "min": 2
+      },
+      "operations_per_operator": "one"
+    },
+    "pairs": [
+      [
+        2,
+        8
+      ],
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        8
+      ]
+    ],
+    "coverage": [
+      1
+    ],
+    "names": {
+      "operations": {
+        "1": "Collar attach",
+        "2": "Cuff attach",
+        "3": "Hem"
+      },
+      "operators": {
+        "7": "Nimali",
+        "8": "Kasun",
+        "9": "Ruwan"
+      }
+    },
+    "requireMinimums": true,
+    "expected": [
+      "Cuff attach is not covered by this template.",
+      "Cuff attach has 1 operator; this template needs at least 2.",
+      "Kasun is on 2 operations, but this template times one operation per operator."
+    ]
+  },
+  {
+    "name": "a combined cycle is no limit on operations per operator",
+    "layout": {
+      "operators_per_operation": {
+        "mode": "one",
+        "min": 2
+      },
+      "operations_per_operator": "combined"
+    },
+    "pairs": [
+      [
+        1,
+        7
+      ],
+      [
+        2,
+        7
+      ],
+      [
+        3,
+        7
+      ]
+    ],
+    "coverage": null,
+    "names": {
+      "operations": {
+        "1": "Collar attach",
+        "2": "Cuff attach",
+        "3": "Hem"
+      },
+      "operators": {
+        "7": "Nimali"
+      }
+    },
+    "requireMinimums": true,
+    "expected": []
+  }
+]
