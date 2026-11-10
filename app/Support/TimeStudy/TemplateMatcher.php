@@ -12,16 +12,17 @@ namespace App\Support\TimeStudy;
 class TemplateMatcher
 {
     // ADR: powers of two, so a template that names a narrower field always beats any mix of
-    // broader ones (one operation outranks every combination of category, machine and group).
+    // broader ones (one operation outranks every combination of category, machine, family and group).
     // That makes the winner predictable from the scope alone, which the builder can explain.
     // Chose this over a user-set priority number; tune the order here.
     public const WEIGHTS = [
-        'operation' => 128,
-        'base_operation' => 64,
-        'product_category' => 32,
-        'machine_type' => 16,
-        'base_operation_category' => 8,
-        'machine_category' => 4,
+        'operation' => 256,
+        'base_operation' => 128,
+        'product_category' => 64,
+        'machine_type' => 32,
+        'base_operation_category' => 16,
+        'machine_category' => 8,
+        'product_family' => 4, // between its category (narrower) and its group (broader)
         'product_group' => 2,
         'study_type' => 1,
     ];

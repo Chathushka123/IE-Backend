@@ -9,7 +9,7 @@ class ProductCategoryCommonValidator
     return [
       'name' => 'required|string|max:255',
       'code' => 'required|string|max:50',
-      'product_group_id' => 'required|integer|exists:product_groups,id',
+      'product_family_id' => 'required|integer|exists:product_families,id',
       'is_active' => 'nullable|boolean',
     ];
   }

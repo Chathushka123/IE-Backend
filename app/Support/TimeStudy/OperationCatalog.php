@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * Reads the master data a template's scope is matched against. An `operations` row is one base
  * operation on one product category and machine type, so it carries every value a condition can
- * name; the product group comes through the category and the machine category through the machine type.
+ * name; the product family comes through the category, the product group through that family, and the machine category through the machine type.
  */
 class OperationCatalog
 {
@@ -19,6 +19,7 @@ class OperationCatalog
         'machine_type' => ['machine_types', 'name'],
         'machine_category' => ['machine_categories', 'name'],
         'product_category' => ['product_categories', 'name'],
+        'product_family' => ['product_families', 'name'],
         'product_group' => ['product_groups', 'name'],
     ];
 
@@ -87,10 +88,11 @@ class OperationCatalog
         return DB::table('operations as o')
             ->join('base_operations as bo', 'o.base_operation_id', '=', 'bo.id')
             ->join('product_categories as pc', 'o.product_category_id', '=', 'pc.id')
+            ->join('product_families as pf', 'pc.product_family_id', '=', 'pf.id')
             ->join('machine_types as mt', 'o.machine_type_id', '=', 'mt.id')
             ->selectRaw("o.id as operation, o.code, o.description, bo.name as base_operation_name,
                 o.base_operation_id as base_operation, bo.base_operation_category_id as base_operation_category,
-                o.machine_type_id as machine_type, mt.machine_category_id as machine_category, o.product_category_id as product_category, pc.product_group_id as product_group");
+                o.machine_type_id as machine_type, mt.machine_category_id as machine_category, o.product_category_id as product_category, pc.product_family_id as product_family, pf.product_group_id as product_group");
     }
 
     private static function present($row): array

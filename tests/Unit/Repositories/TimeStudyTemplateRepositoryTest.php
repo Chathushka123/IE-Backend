@@ -8,6 +8,7 @@ use App\Support\FactoryContext;
 use App\TimeStudyTemplate;
 use App\TimeStudyTemplateVersion;
 use Illuminate\Support\Facades\DB;
+use Tests\Support\ProductFamilies;
 
 class TimeStudyTemplateRepositoryTest extends RepositoryTestCase
 {
@@ -399,6 +400,43 @@ class TimeStudyTemplateRepositoryTest extends RepositoryTestCase
         $this->assertNotContains($other, array_column($preview['scope']['matched_operations'], 'id'));
     }
 
+    public function testAProductFamilyConditionIsLabelledAndCoversOnlyOperationsOfCategoriesInThatFamily()
+    {
+        $this->actingAsTestUser();
+        $m = $this->makeMasters();
+        // A category in a different family (of the same group) must not be matched.
+        $otherCategory = DB::table('product_categories')->insertGetId(['name' => 'Other '.$m['unique'], 'code' => 'OC'.$m['unique'], 'product_family_id' => ProductFamilies::forGroup($m['group']), 'created_at' => now(), 'updated_at' => now()]);
+        $other = $this->makeOperation($m['baseOperation'], $otherCategory, $m['machine']);
+        // A second category in the SAME family is matched too.
+        $sameFamilyCategory = DB::table('product_categories')->insertGetId(['name' => 'Same '.$m['unique'], 'code' => 'SC'.$m['unique'], 'product_family_id' => $m['family'], 'created_at' => now(), 'updated_at' => now()]);
+        $sibling = $this->makeOperation($m['baseOperation'], $sameFamilyCategory, $m['machine']);
+
+        $template = Repo::create(['name' => 'Family scoped', 'purpose' => 'perf', 'conditions' => [['field' => 'product_family', 'ref_id' => $m['family']]]]);
+        $preview = Repo::preview(['name' => 'Family scoped', 'purpose' => 'perf', 'conditions' => [['field' => 'product_family', 'ref_id' => $m['family']]]]);
+
+        $this->assertSame(DB::table('product_families')->where('id', $m['family'])->value('name'), $template['draft']['conditions'][0]['label']);
+        $this->assertEqualsCanonicalizing([$m['operation'], $sibling], array_column($preview['scope']['matched_operations'], 'id'));
+        $this->assertNotContains($other, array_column($preview['scope']['matched_operations'], 'id'));
+    }
+
+    public function testAProductFamilyConditionMustNameAnExistingFamily()
+    {
+        $this->actingAsTestUser();
+
+        $this->expectException(GeneralException::class);
+        Repo::create(['name' => 'Bad family', 'purpose' => 'perf', 'conditions' => [['field' => 'product_family', 'ref_id' => 999999]]]);
+    }
+
+    public function testAFamilyTemplateBeatsAGroupTemplateForTheSameOperation()
+    {
+        $this->actingAsTestUser();
+        $m = $this->makeMasters();
+        $this->publishedTemplate('Whole group', [['field' => 'product_group', 'ref_id' => $m['group']]]);
+        $this->publishedTemplate('Just the family', [['field' => 'product_family', 'ref_id' => $m['family']]]);
+
+        $this->assertSame('Just the family', Repo::resolve($m['operation'], 'perf')['chosen']['name']);
+    }
+
     public function testPreviewOfAManualOnlyTemplateMatchesNothingAutomatically()
     {
         $this->actingAsTestUser();
@@ -773,13 +811,15 @@ class TimeStudyTemplateRepositoryTest extends RepositoryTestCase
     {
         $unique = strtoupper(substr(md5(uniqid('', true)), 0, 8));
         $groupId = DB::table('product_groups')->insertGetId(['name' => 'Group '.$unique, 'code' => 'PG'.$unique, 'created_at' => now(), 'updated_at' => now()]);
-        $categoryId = DB::table('product_categories')->insertGetId(['name' => 'Category '.$unique, 'code' => 'PC'.$unique, 'product_group_id' => $groupId, 'created_at' => now(), 'updated_at' => now()]);
+        $familyId = ProductFamilies::forGroup($groupId);
+        $categoryId = DB::table('product_categories')->insertGetId(['name' => 'Category '.$unique, 'code' => 'PC'.$unique, 'product_family_id' => $familyId, 'created_at' => now(), 'updated_at' => now()]);
         $baseOperationId = $this->makeBaseOperation();
         $machineId = $this->makeMachineType($unique);
 
         return [
             'unique' => $unique,
             'group' => $groupId,
+            'family' => $familyId,
             'category' => $categoryId,
             'baseOperation' => $baseOperationId,
             'machine' => $machineId,

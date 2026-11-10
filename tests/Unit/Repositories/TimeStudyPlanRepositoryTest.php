@@ -10,6 +10,7 @@ use App\Support\TimeStudy\TemplateDefinition;
 use App\TimeStudyPlanItem;
 use App\User;
 use Illuminate\Support\Facades\DB;
+use Tests\Support\ProductFamilies;
 
 class TimeStudyPlanRepositoryTest extends RepositoryTestCase
 {
@@ -707,7 +708,7 @@ class TimeStudyPlanRepositoryTest extends RepositoryTestCase
         $baseCategoryId = DB::table('base_operation_categories')->insertGetId(['name' => 'Cat '.$unique, 'created_at' => now(), 'updated_at' => now()]);
         $gradeId = DB::table('operation_grades')->insertGetId(['name' => 'Grade '.$unique, 'code' => 'OG'.$unique, 'created_at' => now(), 'updated_at' => now()]);
         $groupId = DB::table('product_groups')->insertGetId(['name' => 'Group '.$unique, 'code' => 'PG'.$unique, 'created_at' => now(), 'updated_at' => now()]);
-        $categoryId = DB::table('product_categories')->insertGetId(['name' => 'Category '.$unique, 'code' => 'PC'.$unique, 'product_group_id' => $groupId, 'created_at' => now(), 'updated_at' => now()]);
+        $categoryId = DB::table('product_categories')->insertGetId(['name' => 'Category '.$unique, 'code' => 'PC'.$unique, 'product_family_id' => ProductFamilies::forGroup($groupId), 'created_at' => now(), 'updated_at' => now()]);
         $machineCategoryId = DB::table('machine_categories')->insertGetId(['name' => 'MC '.$unique, 'created_at' => now(), 'updated_at' => now()]);
         $machineId = DB::table('machine_types')->insertGetId(['name' => 'Machine '.$unique, 'code' => 'MT'.$unique, 'machine_category_id' => $machineCategoryId, 'created_at' => now(), 'updated_at' => now()]);
 

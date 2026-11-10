@@ -24,13 +24,13 @@ class ProductCategory extends Model
     protected $fillable = [
         'name',
         'code',
-        'product_group_id',
+        'product_family_id',
         'is_active',
     ];
 
-    public function productGroup()
+    public function productFamily()
     {
-        return $this->belongsTo(ProductGroup::class, 'product_group_id');
+        return $this->belongsTo(ProductFamily::class, 'product_family_id');
     }
 
     public function operations()

@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
+use Tests\Support\ProductFamilies;
 
 class SkillMatrixInsightsTest extends TestCase
 {
@@ -150,7 +151,7 @@ class SkillMatrixInsightsTest extends TestCase
         $productCategoryId = DB::table('product_categories')->insertGetId([
             'name' => 'T-Shirts '.$unique,
             'code' => 'TS'.$unique,
-            'product_group_id' => $productGroupId,
+            'product_family_id' => ProductFamilies::forGroup($productGroupId),
             'created_at' => now(),
             'updated_at' => now(),
         ]);

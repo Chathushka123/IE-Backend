@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
+use Tests\Support\ProductFamilies;
 
 class StyleMilestoneTest extends TestCase
 {
@@ -106,7 +107,7 @@ class StyleMilestoneTest extends TestCase
         $categoryId = DB::table('product_categories')->insertGetId([
             'name' => 'T-Shirts'.$unique,
             'code' => 'TS'.$unique,
-            'product_group_id' => $groupId,
+            'product_family_id' => ProductFamilies::forGroup($groupId),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -322,6 +323,8 @@ class StyleMilestoneTest extends TestCase
         $this->assertFiltersToOnlyStyleA($headers, $styleA, ['customer_id' => [$styleARow->customer_id]]);
         $this->assertFiltersToOnlyStyleA($headers, $styleA, ['season_id' => [$styleARow->season_id]]);
         $this->assertFiltersToOnlyStyleA($headers, $styleA, ['product_category_id' => [$styleARow->product_category_id]]);
+        $familyOfA = DB::table('product_categories')->where('id', $styleARow->product_category_id)->value('product_family_id');
+        $this->assertFiltersToOnlyStyleA($headers, $styleA, ['product_family_id' => [$familyOfA]]);
         $this->assertFiltersToOnlyStyleA($headers, $styleA, ['factory_id' => [$factoryA]]);
     }
 

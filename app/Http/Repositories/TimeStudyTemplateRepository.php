@@ -24,7 +24,7 @@ use Illuminate\Validation\Rule;
  */
 class TimeStudyTemplateRepository
 {
-    private const CONDITION_FIELDS = ['operation', 'base_operation', 'base_operation_category', 'machine_type', 'machine_category', 'product_category', 'product_group', 'study_type'];
+    private const CONDITION_FIELDS = ['operation', 'base_operation', 'base_operation_category', 'machine_type', 'machine_category', 'product_category', 'product_family', 'product_group', 'study_type'];
 
     // ---------------------------------------------------------------
     // Reading

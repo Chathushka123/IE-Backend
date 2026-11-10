@@ -17,6 +17,7 @@ class StyleController extends Controller
         'customer_id',
         'season_id',
         'product_category_id',
+        'product_family_id',
         'factory_id',
         'created_at_from',
         'created_at_to',

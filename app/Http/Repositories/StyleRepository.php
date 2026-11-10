@@ -45,6 +45,14 @@ class StyleRepository
       }
     }
 
+    // product_family_id is not a column on styles: a style reaches its family through its category.
+    $familyIds = $filters['product_family_id'] ?? null;
+    if (!empty($familyIds)) {
+      $query->whereHas('productCategory', function ($q) use ($familyIds) {
+        $q->whereIn('product_family_id', (array) $familyIds);
+      });
+    }
+
     // factory_id is a many-to-many (factory_style pivot), not a column on styles.
     $factoryIds = $filters['factory_id'] ?? null;
     if (!empty($factoryIds)) {

@@ -8,6 +8,8 @@ use App\Http\Repositories\StyleRepository;
 use App\ProductCategory;
 use App\ProductGroup;
 use App\Season;
+use App\Style;
+use Tests\Support\ProductFamilies;
 
 class StyleRepositoryTest extends RepositoryTestCase
 {
@@ -16,7 +18,7 @@ class StyleRepositoryTest extends RepositoryTestCase
     {
         $unique = strtoupper(substr(md5($suffix.uniqid()), 0, 6));
         $groupId = ProductGroup::create(['name' => 'Knits'.$suffix, 'code' => 'KN'.$unique])->id;
-        $categoryId = ProductCategory::create(['name' => 'T-Shirts'.$suffix, 'code' => 'TS'.$unique, 'product_group_id' => $groupId])->id;
+        $categoryId = ProductCategory::create(['name' => 'T-Shirts'.$suffix, 'code' => 'TS'.$unique, 'product_family_id' => ProductFamilies::forGroup($groupId)])->id;
         $customerId = Customer::create(['description' => 'Decathlon'.$suffix, 'code' => 'DC'.$unique])->id;
         $seasonId = Season::create(['name' => 'Summer 27', 'code' => 'SU'.$unique, 'customer_id' => $customerId])->id;
 
@@ -37,6 +39,21 @@ class StyleRepositoryTest extends RepositoryTestCase
         ]);
 
         $this->assertDatabaseHas('styles', ['id' => $model->id, 'style_code' => 'ST123']);
+    }
+
+    public function testExportFiltersCanNarrowStylesToAProductFamily()
+    {
+        $this->actingAsTestUser();
+        [$categoryOne, $customerId, $seasonId] = $this->makeScope('One');
+        [$categoryTwo] = $this->makeScope('Two');
+        $inFamily = StyleRepository::createRec(['name' => 'In', 'style_code' => 'IN1', 'product_category_id' => $categoryOne, 'customer_id' => $customerId, 'season_id' => $seasonId]);
+        StyleRepository::createRec(['name' => 'Out', 'style_code' => 'OUT1', 'product_category_id' => $categoryTwo, 'customer_id' => $customerId, 'season_id' => $seasonId]);
+        $familyId = ProductCategory::find($categoryOne)->product_family_id;
+
+        $query = Style::query();
+        StyleRepository::applyExportFilters($query, ['product_family_id' => [$familyId]]);
+
+        $this->assertSame([$inFamily->id], $query->pluck('id')->all());
     }
 
     public function testRejectsAMissingStyleCode()

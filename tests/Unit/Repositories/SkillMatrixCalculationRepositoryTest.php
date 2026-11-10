@@ -6,6 +6,7 @@ use App\Http\Repositories\SkillMatrixCalculationRepository;
 use App\Http\Repositories\SkillMatrixRepository;
 use App\Support\FactoryContext;
 use Illuminate\Support\Facades\DB;
+use Tests\Support\ProductFamilies;
 
 class SkillMatrixCalculationRepositoryTest extends RepositoryTestCase
 {
@@ -162,7 +163,7 @@ class SkillMatrixCalculationRepositoryTest extends RepositoryTestCase
         $productCategoryId = DB::table('product_categories')->insertGetId([
             'name' => 'T-Shirts '.$unique,
             'code' => 'TS'.$unique,
-            'product_group_id' => $productGroupId,
+            'product_family_id' => ProductFamilies::forGroup($productGroupId),
             'created_at' => now(),
             'updated_at' => now(),
         ]);

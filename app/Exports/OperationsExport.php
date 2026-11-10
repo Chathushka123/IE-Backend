@@ -20,7 +20,7 @@ class OperationsExport implements FromCollection, WithHeadings, WithMapping, Sho
         // would throw at query time. Fixed here to 'baseOperation.category', matching the
         // renamed relation names (Operation::baseOperation() -> BaseOperation::category()).
         return Operation::with([
-            'productCategory.productGroup',
+            'productCategory.productFamily.productGroup',
             'baseOperation.category',
             'machineType.category',
             'grade',
@@ -34,8 +34,11 @@ class OperationsExport implements FromCollection, WithHeadings, WithMapping, Sho
     {
         return [
             'Product Group',
-            'Product Category',
-            'Operation Category',
+            'Product Family',
+            // NAMING: the UI calls a product category a "Product Silhouette"; this export is for people, not re-import.
+            'Product Silhouette',
+            // NAMING: the UI calls a base operation category an "Operation Process Group".
+            'Operation Process Group',
             'Operation Code',
             'Operation',
             'Machine Category',
@@ -52,7 +55,8 @@ class OperationsExport implements FromCollection, WithHeadings, WithMapping, Sho
     public function map($grading): array
     {
         return [
-            optional(optional($grading->productCategory)->productGroup)->name,
+            optional(optional(optional($grading->productCategory)->productFamily)->productGroup)->name,
+            optional(optional($grading->productCategory)->productFamily)->name,
             optional($grading->productCategory)->name,
             optional(optional($grading->baseOperation)->category)->name,
             optional($grading->baseOperation)->code,

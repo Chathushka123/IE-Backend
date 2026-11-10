@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
+use Tests\Support\ProductFamilies;
 
 class TeamPlanTest extends TestCase
 {
@@ -85,7 +86,7 @@ class TeamPlanTest extends TestCase
         $categoryId = DB::table('product_categories')->insertGetId([
             'name' => 'T-Shirts'.$unique,
             'code' => 'TS'.$unique,
-            'product_group_id' => $groupId,
+            'product_family_id' => ProductFamilies::forGroup($groupId),
             'created_at' => now(),
             'updated_at' => now(),
         ]);

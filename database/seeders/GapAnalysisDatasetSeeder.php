@@ -124,6 +124,7 @@ class GapAnalysisDatasetSeeder extends Seeder
         DB::table('base_skills')->where('code', 'LIKE', 'GAP-SK-%')->delete();
 
         DB::table('product_categories')->where('code', 'GAP-PC')->delete();
+        DB::table('product_families')->where('code', 'GAP-PF')->delete();
         DB::table('product_groups')->where('code', 'GAP-PG')->delete();
         DB::table('machine_types')->where('code', 'GAP-MT')->delete();
         DB::table('machine_categories')->where('code', 'GAP-MC')->delete();
@@ -200,10 +201,19 @@ class GapAnalysisDatasetSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
+        $productFamilyId = DB::table('product_families')->insertGetId([
+            'name' => 'Gap Demo Family',
+            'code' => 'GAP-PF',
+            'product_group_id' => $productGroupId,
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         $productCategoryId = DB::table('product_categories')->insertGetId([
             'name' => 'Gap Demo T-Shirts',
             'code' => 'GAP-PC',
-            'product_group_id' => $productGroupId,
+            'product_family_id' => $productFamilyId,
             'is_active' => true,
             'created_at' => now(),
             'updated_at' => now(),

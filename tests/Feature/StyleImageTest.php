@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
+use Tests\Support\ProductFamilies;
 
 class StyleImageTest extends TestCase
 {
@@ -71,7 +72,7 @@ class StyleImageTest extends TestCase
         $unique = strtoupper(substr(md5(uniqid()), 0, 6));
 
         $groupId = DB::table('product_groups')->insertGetId(['name' => 'G'.$unique, 'code' => 'G'.$unique, 'created_at' => now(), 'updated_at' => now()]);
-        $categoryId = DB::table('product_categories')->insertGetId(['name' => 'C'.$unique, 'code' => 'C'.$unique, 'product_group_id' => $groupId, 'created_at' => now(), 'updated_at' => now()]);
+        $categoryId = DB::table('product_categories')->insertGetId(['name' => 'C'.$unique, 'code' => 'C'.$unique, 'product_family_id' => ProductFamilies::forGroup($groupId), 'created_at' => now(), 'updated_at' => now()]);
         $customerId = DB::table('customers')->insertGetId(['description' => 'Cu'.$unique, 'code' => 'CU'.$unique, 'created_at' => now(), 'updated_at' => now()]);
 
         $seasonId = DB::table('seasons')->insertGetId(['name' => 'Summer 27', 'code' => 'SU'.$unique, 'customer_id' => $customerId, 'created_at' => now(), 'updated_at' => now()]);

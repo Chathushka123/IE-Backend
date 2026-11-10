@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
+use Tests\Support\ProductFamilies;
 
 class TimeStudySmvApiTest extends TestCase
 {
@@ -32,7 +33,7 @@ class TimeStudySmvApiTest extends TestCase
         $base = DB::table('base_operations')->insertGetId(['name' => 'Op '.$u, 'code' => 'BO'.$u, 'base_operation_category_id' => $cat, 'created_at' => now(), 'updated_at' => now()]);
         $grade = DB::table('operation_grades')->insertGetId(['name' => 'Grade '.$u, 'code' => 'OG'.$u, 'created_at' => now(), 'updated_at' => now()]);
         $group = DB::table('product_groups')->insertGetId(['name' => 'Group '.$u, 'code' => 'PG'.$u, 'created_at' => now(), 'updated_at' => now()]);
-        $pcat = DB::table('product_categories')->insertGetId(['name' => 'PC '.$u, 'code' => 'PC'.$u, 'product_group_id' => $group, 'created_at' => now(), 'updated_at' => now()]);
+        $pcat = DB::table('product_categories')->insertGetId(['name' => 'PC '.$u, 'code' => 'PC'.$u, 'product_family_id' => ProductFamilies::forGroup($group), 'created_at' => now(), 'updated_at' => now()]);
         $mcat = DB::table('machine_categories')->insertGetId(['name' => 'MC '.$u, 'created_at' => now(), 'updated_at' => now()]);
         $machine = DB::table('machine_types')->insertGetId(['name' => 'Machine '.$u, 'code' => 'MT'.$u, 'machine_category_id' => $mcat, 'created_at' => now(), 'updated_at' => now()]);
         $operation = DB::table('operations')->insertGetId([

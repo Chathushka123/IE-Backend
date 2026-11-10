@@ -6,6 +6,7 @@ use App\Exceptions\GeneralException;
 use App\Http\Repositories\TimeStudyRepository;
 use App\TimeStudyTemplate;
 use Illuminate\Support\Facades\DB;
+use Tests\Support\ProductFamilies;
 
 class TimeStudyRepositoryTest extends RepositoryTestCase
 {
@@ -533,7 +534,7 @@ class TimeStudyRepositoryTest extends RepositoryTestCase
         $productCategoryId = DB::table('product_categories')->insertGetId([
             'name' => 'T-Shirts '.$unique,
             'code' => 'TS'.$unique,
-            'product_group_id' => $productGroupId,
+            'product_family_id' => ProductFamilies::forGroup($productGroupId),
             'created_at' => now(),
             'updated_at' => now(),
         ]);

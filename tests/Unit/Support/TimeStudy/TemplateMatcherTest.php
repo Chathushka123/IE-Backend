@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class TemplateMatcherTest extends TestCase
 {
-    private const OPERATION = ['operation' => 10, 'base_operation' => 20, 'base_operation_category' => 30, 'machine_type' => 40, 'machine_category' => 45, 'product_category' => 50, 'product_group' => 60, 'study_type' => 2];
+    private const OPERATION = ['operation' => 10, 'base_operation' => 20, 'base_operation_category' => 30, 'machine_type' => 40, 'machine_category' => 45, 'product_category' => 50, 'product_family' => 55, 'product_group' => 60, 'study_type' => 2];
 
     private function cond(string $field, int $id): array
     {
@@ -52,9 +52,21 @@ class TemplateMatcherTest extends TestCase
     public function testSpecificityIsTheSumOfTheConstrainedFieldsWeightsCountingEachFieldOnce(): void
     {
         $this->assertSame(0, TemplateMatcher::specificity([]));
-        $this->assertSame(128, TemplateMatcher::specificity([$this->cond('operation', 1)]));
-        $this->assertSame(32, TemplateMatcher::specificity([$this->cond('product_category', 1), $this->cond('product_category', 2)]));
-        $this->assertSame(2 + 16, TemplateMatcher::specificity([$this->cond('product_group', 1), $this->cond('machine_type', 2)]));
+        $this->assertSame(256, TemplateMatcher::specificity([$this->cond('operation', 1)]));
+        $this->assertSame(64, TemplateMatcher::specificity([$this->cond('product_category', 1), $this->cond('product_category', 2)]));
+        $this->assertSame(2 + 32, TemplateMatcher::specificity([$this->cond('product_group', 1), $this->cond('machine_type', 2)]));
+    }
+
+    public function testAProductFamilyConditionMatchesOnlyOperationsInThatFamily(): void
+    {
+        $this->assertTrue(TemplateMatcher::matches([$this->cond('product_family', 55)], self::OPERATION));
+        $this->assertFalse(TemplateMatcher::matches([$this->cond('product_family', 56)], self::OPERATION));
+    }
+
+    public function testAFamilyIsMoreSpecificThanItsGroupButLessThanItsCategory(): void
+    {
+        $this->assertGreaterThan(TemplateMatcher::specificity([$this->cond('product_group', 1)]), TemplateMatcher::specificity([$this->cond('product_family', 1)]));
+        $this->assertLessThan(TemplateMatcher::specificity([$this->cond('product_category', 1)]), TemplateMatcher::specificity([$this->cond('product_family', 1)]));
     }
 
     public function testASpecificOperationOutranksAnyCombinationOfBroaderFields(): void

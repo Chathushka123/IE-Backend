@@ -12,13 +12,13 @@ class ProductCategoryWithParentsResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'code' => $this->code,
-            'product_group_id' => $this->product_group_id,
+            'product_family_id' => $this->product_family_id,
             'is_active' => $this->is_active,
             'created_by_id' => $this->created_by_id,
             'updated_by_id' => $this->updated_by_id,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'productGroup' => $this->whenLoaded('productGroup'),
+            'productFamily' => $this->whenLoaded('productFamily'),
         ];
     }
 }
