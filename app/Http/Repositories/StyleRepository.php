@@ -2,7 +2,9 @@
 
 namespace App\Http\Repositories;
 
+use App\Operation;
 use App\Style;
+use App\StyleOperation;
 use App\ProductCategory;
 use App\Customer;
 use App\Factory;
@@ -94,6 +96,104 @@ class StyleRepository
       throw new \App\Exceptions\GeneralException($e->getMessage());
     }
     return $model;
+  }
+
+  /**
+   * Creates a copy of a style from the (edited) values in $rec, with the operation bulletin the caller
+   * chose. The caller wraps this in a transaction so a failed bulletin leaves no half-copied style.
+   *
+   * Rules:
+   *  - at least one of style code / product category / customer / season must differ from the
+   *    source: together they are a unique key, so an identical key could never be saved (the name
+   *    must differ too, which the normal create validation enforces);
+   *  - $operations is the copy's whole bulletin, in order: each item is
+   *    ['operation_id' => int, 'smv' => ?number, 'is_active' => ?bool]. The caller decides which of
+   *    the original's operations to keep and which operations from the operation master to add;
+   *    sequence numbers are assigned 1..n in the order given;
+   *  - every operation must belong to the copy's product category (a style can only use operations
+   *    of its own category — see StyleOperationRepository) and appear only once.
+   *
+   * Not copied, on purpose: milestones (order-specific dates), images, team plans and time studies.
+   *
+   * @param array<int,array{operation_id:int,smv?:mixed,is_active?:mixed}> $operations
+   * @return array{0:Style,1:int} the new style and how many bulletin operations it was given
+   */
+  public static function duplicateRec($source_id, array $rec, array $operations = []): array
+  {
+    $source = Style::findOrFail($source_id);
+
+    if (self::hasSameUniqueKey($source, $rec)) {
+      throw new \App\Exceptions\GeneralException(
+        'Change at least one of Style Code, Product Silhouette, Customer or Season to duplicate this style.'
+      );
+    }
+    $bulletin = self::validatedBulletin($operations, (int) ($rec['product_category_id'] ?? 0));
+
+    // A style is only visible through its factories, so a copy must not silently land in none.
+    if (!array_key_exists('factory_ids', $rec)) {
+      $rec['factory_ids'] = $source->factories()->pluck('factories.id')->all();
+    }
+
+    $copy = self::createRec($rec);
+
+    foreach ($bulletin as $index => $item) {
+      StyleOperation::create([
+        'style_id' => $copy->id,
+        'operation_id' => $item['operation_id'],
+        'sequence_no' => $index + 1,
+        'smv' => $item['smv'],
+        'is_active' => $item['is_active'],
+      ]);
+    }
+
+    return [$copy, count($bulletin)];
+  }
+
+  /**
+   * Checks the chosen operations before anything is created.
+   *
+   * @return array<int,array{operation_id:int,smv:?float,is_active:bool}>
+   */
+  private static function validatedBulletin(array $operations, int $categoryId): array
+  {
+    $ids = array_map(fn ($item) => (int) ($item['operation_id'] ?? 0), $operations);
+    if (count($ids) !== count(array_unique($ids))) {
+      throw new \App\Exceptions\GeneralException('An operation can only be in the bulletin once.');
+    }
+
+    $found = Operation::whereIn('id', $ids)->get()->keyBy('id');
+    $bulletin = [];
+    foreach ($operations as $item) {
+      $operation = $found->get((int) ($item['operation_id'] ?? 0));
+      if (!$operation) {
+        throw new \App\Exceptions\GeneralException('One of the selected operations no longer exists.');
+      }
+      if ((int) $operation->product_category_id !== $categoryId) {
+        throw new \App\Exceptions\GeneralException(
+          'The operation "'.($operation->description ?: $operation->code).'" does not belong to the copy\'s product silhouette.'
+        );
+      }
+      $smv = $item['smv'] ?? null;
+      if ($smv !== null && (!is_numeric($smv) || $smv < 0)) {
+        throw new \App\Exceptions\GeneralException('An operation\'s SMV must be a number of 0 or more.');
+      }
+      $bulletin[] = [
+        'operation_id' => (int) $operation->id,
+        'smv' => $smv === null ? null : (float) $smv,
+        'is_active' => array_key_exists('is_active', $item) ? filter_var($item['is_active'], FILTER_VALIDATE_BOOLEAN) : true,
+      ];
+    }
+
+    return $bulletin;
+  }
+
+  /** Style code compares case-insensitively, like the database collation the unique key uses. */
+  private static function hasSameUniqueKey(Style $source, array $rec): bool
+  {
+    return strcasecmp(trim((string) $source->style_code), trim((string) ($rec['style_code'] ?? ''))) === 0
+      && (int) $source->product_category_id === (int) ($rec['product_category_id'] ?? 0)
+      && (int) $source->customer_id === (int) ($rec['customer_id'] ?? 0)
+      && (int) $source->season_id === (int) ($rec['season_id'] ?? 0);
   }
 
   public static function updateRec($model_id, array $rec)

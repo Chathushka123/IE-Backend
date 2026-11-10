@@ -56,6 +56,7 @@ Route::prefix('v1')->group(function () {
         Route::post('styles/export', 'Api\StyleController@export')->name('styles.export');
         Route::post('styles/filter', 'Api\StyleController@filter')->name('styles.filter');
         Route::post('styles/import', 'Api\StyleController@import')->name('styles.import');
+        Route::post('styles/{id}/duplicate', 'Api\StyleController@duplicate')->name('styles.duplicate');
         Route::get('styles/byFactories', 'Api\StyleController@getByFactories')->name('styles.byFactories');
 
         // Style images — files live on Google Drive (config/style_images.php); {imageId}/file streams the bytes

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Repositories\StyleRepository;
 use App\Style;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Exception;
 
@@ -61,6 +62,34 @@ class StyleController extends Controller
                 'to' => $paginated->lastItem(),
             ],
         ]);
+    }
+
+    /**
+     * Duplicates a style: the body is the new style's (edited) fields, as for create, plus an
+     * optional ordered `operations` list (the copy's bulletin). See StyleRepository::duplicateRec() for the rules.
+     */
+    public function duplicate(Request $request, $id)
+    {
+        try {
+            $operations = $request->input('operations', []);
+            if (!is_array($operations)) {
+                throw new Exception('The operations must be a list.');
+            }
+
+            DB::beginTransaction();
+            [$copy, $operationsCopied] = StyleRepository::duplicateRec($id, $request->except('operations'), $operations);
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $copy->load(['productCategory', 'customer', 'season', 'factories']),
+                'meta' => ['operations_copied' => $operationsCopied],
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 400);
+        }
     }
 
     /**
