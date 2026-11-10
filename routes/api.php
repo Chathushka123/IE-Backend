@@ -58,6 +58,12 @@ Route::prefix('v1')->group(function () {
         Route::post('styles/import', 'Api\StyleController@import')->name('styles.import');
         Route::get('styles/byFactories', 'Api\StyleController@getByFactories')->name('styles.byFactories');
 
+        // Style images — files live on Google Drive (config/style_images.php); {imageId}/file streams the bytes
+        Route::get('styles/{styleId}/images', 'Api\StyleImageController@index')->name('styles.images.index');
+        Route::post('styles/{styleId}/images', 'Api\StyleImageController@store')->name('styles.images.store');
+        Route::get('styles/{styleId}/images/{imageId}/file', 'Api\StyleImageController@file')->name('styles.images.file');
+        Route::delete('styles/{styleId}/images/{imageId}', 'Api\StyleImageController@destroy')->name('styles.images.destroy');
+
         // Auth
         Route::get('user', 'Api\AuthController@user')->name('user.get');
         Route::post('logout', 'Api\AuthController@logout')->middleware('csrf.cookie')->name('logout');
