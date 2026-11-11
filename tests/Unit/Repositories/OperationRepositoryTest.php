@@ -11,6 +11,7 @@ use App\MachineType;
 use App\OperationGrade;
 use App\ProductCategory;
 use App\ProductGroup;
+use Tests\Support\ProductFamilies;
 
 class OperationRepositoryTest extends RepositoryTestCase
 {
@@ -23,7 +24,7 @@ class OperationRepositoryTest extends RepositoryTestCase
         $baseOperationId = BaseOperation::create(['name' => 'Stitch Sleeve'.$suffix, 'code' => 'BO'.$unique, 'base_operation_category_id' => $baseOperationCategoryId])->id;
 
         $groupId = ProductGroup::create(['name' => 'Knits'.$suffix, 'code' => 'KN'.$unique])->id;
-        $categoryId = ProductCategory::create(['name' => 'T-Shirts'.$suffix, 'code' => 'TS'.$unique, 'product_group_id' => $groupId])->id;
+        $categoryId = ProductCategory::create(['name' => 'T-Shirts'.$suffix, 'code' => 'TS'.$unique, 'product_family_id' => ProductFamilies::forGroup($groupId)])->id;
 
         $machineCategoryId = MachineCategory::create(['name' => 'Sewing Machines'.$suffix])->id;
         $machineTypeId = MachineType::create(['name' => 'Single Needle'.$suffix, 'code' => 'MT'.$unique, 'machine_category_id' => $machineCategoryId])->id;

@@ -16,7 +16,7 @@ class SkillMatrixRepository
 {
     public static function getMatrix(array $filters): array
     {
-        $rows = TimeStudyDashboardRepository::baseQuery($filters)
+        $rows = TimeStudyDashboardRepository::baseQuery($filters, true)
             ->join('employees', 'time_studies.employee_id', '=', 'employees.id')
             ->join('operations', 'time_studies.operation_id', '=', 'operations.id')
             ->leftJoin('factories', 'employees.factory_id', '=', 'factories.id')
@@ -126,7 +126,7 @@ class SkillMatrixRepository
         $employeeId = (int) ($filters['employee_id'] ?? 0);
         $operationId = (int) ($filters['operation_id'] ?? 0);
 
-        $studyIds = TimeStudyDashboardRepository::baseQuery($filters)
+        $studyIds = TimeStudyDashboardRepository::baseQuery($filters, true)
             ->where('time_studies.employee_id', $employeeId)
             ->where('time_studies.operation_id', $operationId)
             ->whereNotNull('time_studies.efficiency_pct')

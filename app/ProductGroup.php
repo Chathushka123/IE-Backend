@@ -27,8 +27,8 @@ class ProductGroup extends Model
         'is_active',
     ];
 
-    public function productCategories()
+    public function productFamilies()
     {
-        return $this->hasMany(ProductCategory::class, 'product_group_id');
+        return $this->hasMany(ProductFamily::class, 'product_group_id');
     }
 }

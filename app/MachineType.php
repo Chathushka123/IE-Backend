@@ -25,6 +25,7 @@ class MachineType extends Model
         'name',
         'code',
         'machine_category_id',
+        'standard_rpm',
         'is_active',
     ];
 

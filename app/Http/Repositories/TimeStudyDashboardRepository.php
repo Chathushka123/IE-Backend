@@ -18,9 +18,19 @@ class TimeStudyDashboardRepository
      * Public so SkillMatrixRepository (same report filter set, different aggregation
      * shape) can reuse the exact same scoping logic instead of duplicating it.
      */
-    public static function baseQuery(array $filters)
+    /**
+     * @param bool $matrixOnly Restrict to studies that may feed skill-level calculations: approved
+     *                         studies of templates that count towards the skill matrix. Reports
+     *                         and the dashboard leave it off and see every study with its status.
+     */
+    public static function baseQuery(array $filters, bool $matrixOnly = false)
     {
         $query = DB::table('time_studies');
+
+        if ($matrixOnly) {
+            $query->where('time_studies.counts_in_matrix', true)
+                ->where('time_studies.status', 'approved');
+        }
 
         if (!FactoryContext::isBypassed() && FactoryContext::isResolved()) {
             $query->whereIn('time_studies.factory_id', FactoryContext::ids());

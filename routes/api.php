@@ -56,7 +56,14 @@ Route::prefix('v1')->group(function () {
         Route::post('styles/export', 'Api\StyleController@export')->name('styles.export');
         Route::post('styles/filter', 'Api\StyleController@filter')->name('styles.filter');
         Route::post('styles/import', 'Api\StyleController@import')->name('styles.import');
+        Route::post('styles/{id}/duplicate', 'Api\StyleController@duplicate')->name('styles.duplicate');
         Route::get('styles/byFactories', 'Api\StyleController@getByFactories')->name('styles.byFactories');
+
+        // Style images — files live on Google Drive (config/style_images.php); {imageId}/file streams the bytes
+        Route::get('styles/{styleId}/images', 'Api\StyleImageController@index')->name('styles.images.index');
+        Route::post('styles/{styleId}/images', 'Api\StyleImageController@store')->name('styles.images.store');
+        Route::get('styles/{styleId}/images/{imageId}/file', 'Api\StyleImageController@file')->name('styles.images.file');
+        Route::delete('styles/{styleId}/images/{imageId}', 'Api\StyleImageController@destroy')->name('styles.images.destroy');
 
         // Auth
         Route::get('user', 'Api\AuthController@user')->name('user.get');
@@ -108,6 +115,7 @@ Route::prefix('v1')->group(function () {
         Route::get('timeStudies/byOperator/{employeeId}', 'Api\TimeStudyController@getByOperator')->name('timeStudies.byOperator');
         Route::get('timeStudies/byOperation/{operationId}', 'Api\TimeStudyController@getByOperation')->name('timeStudies.byOperation');
         Route::get('timeStudies/export', 'Api\TimeStudyController@export')->name('timeStudies.export');
+        Route::get('timeStudies/cycleReport', 'Api\TimeStudyController@cycleReport')->name('timeStudies.cycleReport');
         Route::get('timeStudies/dashboard', 'Api\TimeStudyController@dashboard')->name('timeStudies.dashboard');
         Route::get('timeStudies/skillMatrix', 'Api\TimeStudyController@skillMatrix')->name('timeStudies.skillMatrix');
         Route::get('timeStudies/skillMatrix/cell', 'Api\TimeStudyController@skillMatrixCell')->name('timeStudies.skillMatrixCell');
@@ -116,6 +124,40 @@ Route::prefix('v1')->group(function () {
         Route::get('skillMatrixInsights/cell', 'Api\SkillMatrixInsightsController@cell')->name('skillMatrixInsights.cell');
         Route::get('timeStudies/{id}', 'Api\TimeStudyController@show')->name('timeStudies.show');
         Route::post('timeStudies', 'Api\TimeStudyController@store')->name('timeStudies.store');
+        Route::post('timeStudies/cycle', 'Api\TimeStudyController@storeCycle')->name('timeStudies.storeCycle');
+        Route::post('timeStudies/smvSession', 'Api\TimeStudyController@storeSmvSession')->name('timeStudies.storeSmvSession');
+        Route::get('timeStudies/{id}/smvProposal', 'Api\TimeStudyController@smvProposal')->name('timeStudies.smvProposal');
+        Route::post('timeStudies/{id}/applySmv', 'Api\TimeStudyController@applySmv')->name('timeStudies.applySmv');
+        Route::post('timeStudies/{id}/review', 'Api\TimeStudyController@review')->name('timeStudies.review');
+
+        // Time Study Templates — specific paths must come before {id} wildcard
+        Route::get('timeStudyTemplates', 'Api\TimeStudyTemplateController@index')->name('timeStudyTemplates.index');
+        Route::get('timeStudyTemplates/resolve', 'Api\TimeStudyTemplateController@resolve')->name('timeStudyTemplates.resolve');
+        Route::get('timeStudyTemplates/{id}/startFrom', 'Api\TimeStudyTemplateController@startFrom')->name('timeStudyTemplates.startFrom');
+        Route::post('timeStudyTemplates/preview', 'Api\TimeStudyTemplateController@preview')->name('timeStudyTemplates.preview');
+        Route::post('timeStudyTemplates', 'Api\TimeStudyTemplateController@store')->name('timeStudyTemplates.store');
+        Route::get('timeStudyTemplates/{id}', 'Api\TimeStudyTemplateController@show')->name('timeStudyTemplates.show');
+        Route::put('timeStudyTemplates/{id}/draft', 'Api\TimeStudyTemplateController@saveDraft')->name('timeStudyTemplates.saveDraft');
+        Route::delete('timeStudyTemplates/{id}/draft', 'Api\TimeStudyTemplateController@discardDraft')->name('timeStudyTemplates.discardDraft');
+        Route::post('timeStudyTemplates/{id}/publish', 'Api\TimeStudyTemplateController@publish')->name('timeStudyTemplates.publish');
+        Route::post('timeStudyTemplates/{id}/duplicate', 'Api\TimeStudyTemplateController@duplicate')->name('timeStudyTemplates.duplicate');
+        Route::post('timeStudyTemplates/{id}/archive', 'Api\TimeStudyTemplateController@archive')->name('timeStudyTemplates.archive');
+
+        // Time Study Plans: who is timed on which operations, shared between analysts
+        Route::get('timeStudyPlans', 'Api\TimeStudyPlanController@index')->name('timeStudyPlans.index');
+        Route::post('timeStudyPlans', 'Api\TimeStudyPlanController@store')->name('timeStudyPlans.store');
+        Route::get('timeStudyPlans/report', 'Api\TimeStudyPlanController@report')->name('timeStudyPlans.report');
+        Route::get('timeStudyPlans/{id}', 'Api\TimeStudyPlanController@show')->name('timeStudyPlans.show');
+        Route::put('timeStudyPlans/{id}', 'Api\TimeStudyPlanController@update')->name('timeStudyPlans.update');
+        Route::post('timeStudyPlans/{id}/activate', 'Api\TimeStudyPlanController@activate')->name('timeStudyPlans.activate');
+        Route::post('timeStudyPlans/{id}/complete', 'Api\TimeStudyPlanController@complete')->name('timeStudyPlans.complete');
+        Route::post('timeStudyPlans/{id}/cancel', 'Api\TimeStudyPlanController@cancel')->name('timeStudyPlans.cancel');
+        Route::post('timeStudyPlans/{id}/pairs', 'Api\TimeStudyPlanController@addPairs')->name('timeStudyPlans.addPairs');
+        Route::delete('timeStudyPlans/{id}/pairs/{itemId}', 'Api\TimeStudyPlanController@removePair')->name('timeStudyPlans.removePair');
+        Route::post('timeStudyPlans/{id}/pairs/{itemId}/skip', 'Api\TimeStudyPlanController@skipPair')->name('timeStudyPlans.skipPair');
+        Route::post('timeStudyPlans/{id}/pairs/{itemId}/restore', 'Api\TimeStudyPlanController@restorePair')->name('timeStudyPlans.restorePair');
+        Route::post('timeStudyPlans/{id}/pairs/{itemId}/claim', 'Api\TimeStudyPlanController@claim')->name('timeStudyPlans.claim');
+        Route::post('timeStudyPlans/{id}/pairs/{itemId}/release', 'Api\TimeStudyPlanController@release')->name('timeStudyPlans.release');
 
         // Team Plans — specific paths must come before {id} wildcard
         Route::get('teamPlans', 'Api\TeamPlanController@index')->name('teamPlans.index');

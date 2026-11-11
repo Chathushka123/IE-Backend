@@ -40,8 +40,8 @@ $navigator_json = '
        ]
     },
     {
-       "caption":"Industrial Engineering",
-       "id":"industrial-engineering",
+       "caption":"IE - Front End",
+       "id":"ie-frontend",
        "icon":"fas fa-database",
        "type":"folder",
        "permitted" : 0,
@@ -91,8 +91,8 @@ $navigator_json = '
        ]
     },
     {
-      "caption": "Time Study",
-      "id": "time-study",
+      "caption": "IE - Operations",
+      "id": "ie-operations",
       "icon": "fas fa-layer-group",
       "type": "folder",
       "permitted" : 0,
@@ -131,6 +131,20 @@ $navigator_json = '
           "type":"node",
           "permitted" : 0,
           "path":"/ts/time-study-report"
+        },
+        {
+          "caption":"Time Study Review",
+          "icon":"fas fa-clipboard-check",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ts/time-study-review"
+        },
+        {
+          "caption":"Time Study Templates",
+          "icon":"fas fa-clipboard-list",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ts/time-study-templates"
         },
         {
           "caption":"Time Study Downtime Reasons",

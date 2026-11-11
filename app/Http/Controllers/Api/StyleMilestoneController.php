@@ -14,7 +14,7 @@ use Exception;
 class StyleMilestoneController extends Controller
 {
     private const FILTER_KEYS = [
-        'customer_id', 'season_id', 'product_category_id', 'factory_id',
+        'customer_id', 'season_id', 'product_category_id', 'product_family_id', 'factory_id',
         'planned_cut_date_from', 'planned_cut_date_to',
         'planned_production_start_date_from', 'planned_production_start_date_to',
         'planned_production_end_date_from', 'planned_production_end_date_to',

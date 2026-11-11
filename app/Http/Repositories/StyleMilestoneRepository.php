@@ -74,6 +74,14 @@ class StyleMilestoneRepository
       });
     }
 
+    // product_family_id: a style reaches its family through its category.
+    $productFamilyIds = $filters['product_family_id'] ?? null;
+    if (!empty($productFamilyIds)) {
+      $query->whereHas('style.productCategory', function ($q) use ($productFamilyIds) {
+        $q->whereIn('product_family_id', (array) $productFamilyIds);
+      });
+    }
+
     // factory_id is a many-to-many on styles (factory_style pivot), not a column.
     $factoryIds = $filters['factory_id'] ?? null;
     if (!empty($factoryIds)) {

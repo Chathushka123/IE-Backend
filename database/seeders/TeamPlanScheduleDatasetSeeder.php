@@ -107,6 +107,7 @@ class TeamPlanScheduleDatasetSeeder extends Seeder
         DB::table('teams')->whereIn('id', $teamIds)->delete();
 
         DB::table('product_categories')->where('code', 'SCHED-PC')->delete();
+        DB::table('product_families')->where('code', 'SCHED-PF')->delete();
         DB::table('product_groups')->where('code', 'SCHED-PG')->delete();
         DB::table('seasons')->where('code', 'SCHED-SEASON')->delete();
         DB::table('customers')->where('code', 'SCHED-CUST')->delete();
@@ -177,10 +178,19 @@ class TeamPlanScheduleDatasetSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
+        $productFamilyId = DB::table('product_families')->insertGetId([
+            'name' => 'Schedule Demo Family',
+            'code' => 'SCHED-PF',
+            'product_group_id' => $productGroupId,
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         $productCategoryId = DB::table('product_categories')->insertGetId([
             'name' => 'Schedule Demo Category',
             'code' => 'SCHED-PC',
-            'product_group_id' => $productGroupId,
+            'product_family_id' => $productFamilyId,
             'is_active' => true,
             'created_at' => now(),
             'updated_at' => now(),

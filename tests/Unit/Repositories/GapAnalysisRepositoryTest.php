@@ -6,6 +6,7 @@ use App\Http\Repositories\GapAnalysisRepository;
 use App\Operation;
 use App\TeamPlan;
 use Illuminate\Support\Facades\DB;
+use Tests\Support\ProductFamilies;
 
 class GapAnalysisRepositoryTest extends RepositoryTestCase
 {
@@ -93,7 +94,7 @@ class GapAnalysisRepositoryTest extends RepositoryTestCase
             'name' => 'Knits '.$unique, 'code' => 'KN'.$unique, 'created_at' => now(), 'updated_at' => now(),
         ]);
         $productCategoryId = DB::table('product_categories')->insertGetId([
-            'name' => 'T-Shirts '.$unique, 'code' => 'TS'.$unique, 'product_group_id' => $productGroupId,
+            'name' => 'T-Shirts '.$unique, 'code' => 'TS'.$unique, 'product_family_id' => ProductFamilies::forGroup($productGroupId),
             'created_at' => now(), 'updated_at' => now(),
         ]);
         $machineCategoryId = DB::table('machine_categories')->insertGetId([

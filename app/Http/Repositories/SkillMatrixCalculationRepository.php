@@ -35,7 +35,7 @@ class SkillMatrixCalculationRepository
      */
     public static function recalculate(array $filters, int $calculatedById): SkillMatrixCalculationRun
     {
-        $rows = TimeStudyDashboardRepository::baseQuery($filters)
+        $rows = TimeStudyDashboardRepository::baseQuery($filters, true)
             ->join('operations', 'time_studies.operation_id', '=', 'operations.id')
             ->select(
                 'time_studies.employee_id',
@@ -214,7 +214,7 @@ class SkillMatrixCalculationRepository
             return null;
         }
 
-        $studyIds = TimeStudyDashboardRepository::baseQuery($run->filters ?? [])
+        $studyIds = TimeStudyDashboardRepository::baseQuery($run->filters ?? [], true)
             ->where('time_studies.employee_id', $employeeId)
             ->where('time_studies.operation_id', $operationId)
             ->whereNotNull('time_studies.efficiency_pct')

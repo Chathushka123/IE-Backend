@@ -65,6 +65,11 @@ class Style extends Model
         return $this->hasMany(StyleOperation::class, 'style_id');
     }
 
+    public function images()
+    {
+        return $this->hasMany(StyleImage::class, 'style_id')->orderBy('id');
+    }
+
     public function teamPlans()
     {
         return $this->hasMany(TeamPlan::class, 'style_id');

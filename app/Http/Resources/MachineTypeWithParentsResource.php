@@ -13,6 +13,7 @@ class MachineTypeWithParentsResource extends JsonResource
             'name' => $this->name,
             'code' => $this->code,
             'machine_category_id' => $this->machine_category_id,
+            'standard_rpm' => $this->standard_rpm,
             'is_active' => $this->is_active,
             'created_by_id' => $this->created_by_id,
             'updated_by_id' => $this->updated_by_id,
