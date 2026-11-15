@@ -113,12 +113,16 @@ class StyleRepository
    *  - every operation must belong to the copy's product category (a style can only use operations
    *    of its own category — see StyleOperationRepository) and appear only once.
    *
-   * Not copied, on purpose: milestones (order-specific dates), images, team plans and time studies.
+   *  - $taActionIds (optional) are ids of the SOURCE style's T&A actions to copy onto the new style.
+   *    Their planned/actual dates are never copied (see StyleTaActionRepository::copyToStyle()).
+   *
+   * Not copied, on purpose: milestone dates, T&A dates, images, team plans and time studies.
    *
    * @param array<int,array{operation_id:int,smv?:mixed,is_active?:mixed}> $operations
-   * @return array{0:Style,1:int} the new style and how many bulletin operations it was given
+   * @param int[] $taActionIds
+   * @return array{0:Style,1:int,2:int} the new style, how many bulletin operations it was given, and how many T&A actions were copied
    */
-  public static function duplicateRec($source_id, array $rec, array $operations = []): array
+  public static function duplicateRec($source_id, array $rec, array $operations = [], array $taActionIds = []): array
   {
     $source = Style::findOrFail($source_id);
 
@@ -146,7 +150,9 @@ class StyleRepository
       ]);
     }
 
-    return [$copy, count($bulletin)];
+    $taCopied = StyleTaActionRepository::copyToStyle((int) $source->id, (int) $copy->id, $taActionIds);
+
+    return [$copy, count($bulletin), $taCopied];
   }
 
   /**

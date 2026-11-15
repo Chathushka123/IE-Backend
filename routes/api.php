@@ -178,6 +178,24 @@ Route::prefix('v1')->group(function () {
         Route::post('styleMilestones', 'Api\StyleMilestoneController@store')->name('styleMilestones.store');
         Route::put('styleMilestones/{id}', 'Api\StyleMilestoneController@update')->name('styleMilestones.update');
 
+        // T&A Master — the standard NPI critical path (time & action) list planners maintain once
+        Route::get('taTemplateActions', 'Api\TaTemplateActionController@index')->name('taTemplateActions.index');
+        Route::post('taTemplateActions/reorder', 'Api\TaTemplateActionController@reorder')->name('taTemplateActions.reorder');
+        Route::post('taTemplateActions/export', 'Api\TaTemplateActionController@export')->name('taTemplateActions.export');
+        Route::post('taTemplateActions/import', 'Api\TaTemplateActionController@import')->name('taTemplateActions.import');
+        Route::post('taTemplateActions', 'Api\TaTemplateActionController@store')->name('taTemplateActions.store');
+        Route::put('taTemplateActions/{id}', 'Api\TaTemplateActionController@update')->name('taTemplateActions.update');
+
+        // Style T&A — a style's own copy of those actions, with owner + planned/actual dates
+        Route::get('styleTaActions/byStyle/{styleId}', 'Api\StyleTaActionController@getByStyle')->name('styleTaActions.byStyle');
+        Route::post('styleTaActions/applyTemplate', 'Api\StyleTaActionController@applyTemplate')->name('styleTaActions.applyTemplate');
+        Route::post('styleTaActions/applySchedule', 'Api\StyleTaActionController@applySchedule')->name('styleTaActions.applySchedule');
+        Route::post('styleTaActions/filter', 'Api\StyleTaActionController@filter')->name('styleTaActions.filter');
+        Route::post('styleTaActions/export', 'Api\StyleTaActionController@export')->name('styleTaActions.export');
+        Route::post('styleTaActions/import', 'Api\StyleTaActionController@import')->name('styleTaActions.import');
+        Route::post('styleTaActions', 'Api\StyleTaActionController@store')->name('styleTaActions.store');
+        Route::put('styleTaActions/{id}', 'Api\StyleTaActionController@update')->name('styleTaActions.update');
+
         // Gap Analysis — live-computed Team Plan x Operation headcount/quality gap matrix
         Route::get('gapAnalysis', 'Api\GapAnalysisController@matrix')->name('gapAnalysis.matrix');
         Route::get('gapAnalysis/cell', 'Api\GapAnalysisController@cell')->name('gapAnalysis.cell');
