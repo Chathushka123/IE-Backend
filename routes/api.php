@@ -103,6 +103,7 @@ Route::prefix('v1')->group(function () {
         Route::get('styleOperations/byStyle/{styleId}', 'Api\StyleOperationController@getByStyle')->name('styleOperations.byStyle');
         Route::get('styleOperations/byOperation/{operationId}', 'Api\StyleOperationController@getByOperation')->name('styleOperations.byOperation');
         Route::put('styleOperations/resequence', 'Api\StyleOperationController@resequence')->name('styleOperations.resequence');
+        Route::post('styleOperations/copyFrom/{styleId}', 'Api\StyleOperationController@copyFromStyle')->name('styleOperations.copyFromStyle');
         Route::get('styleOperations/{id}', 'Api\StyleOperationController@show')->name('styleOperations.show');
         Route::post('styleOperations', 'Api\StyleOperationController@store')->name('styleOperations.store');
         Route::put('styleOperations/{id}', 'Api\StyleOperationController@update')->name('styleOperations.update');
