@@ -279,7 +279,7 @@ class StyleRepository
     $seenNames = [];
 
     foreach ($rows as $index => $row) {
-      $rowNumber = $index + 2; // +1 for 0-index, +1 for the heading row
+      $rowNumber = Utilities::importRowNumber($row, $index); // the Excel row the frontend sent (blank rows are skipped client-side)
       $summary['total']++;
       $name = trim((string) ($row['name'] ?? ''));
       $nameKey = Str::lower($name);

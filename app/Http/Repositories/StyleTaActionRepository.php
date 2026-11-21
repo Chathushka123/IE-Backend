@@ -374,7 +374,7 @@ class StyleTaActionRepository
     $seen = [];
 
     foreach ($rows as $index => $row) {
-      $rowNumber = $index + 2; // +1 for 0-index, +1 for the heading row
+      $rowNumber = Utilities::importRowNumber($row, $index); // the Excel row the frontend sent (blank rows are skipped client-side)
       $summary['total']++;
       $styleName = trim((string) ($row['style'] ?? ''));
       $phase = trim((string) ($row['phase'] ?? ''));
@@ -450,10 +450,16 @@ class StyleTaActionRepository
       }
       $rec['employee_id'] = (int) $employee->id;
     }
-    foreach (['process_time', 'planned_date', 'actual_date', 'remarks'] as $column) {
+    foreach (['process_time', 'remarks'] as $column) {
       $value = trim((string) ($row[$column] ?? ''));
       if ($value !== '') {
         $rec[$column] = $value;
+      }
+    }
+    foreach (['planned_date' => 'Planned Date', 'actual_date' => 'Actual Date'] as $column => $label) {
+      $date = Utilities::parseImportDate($row[$column] ?? null, $label);
+      if ($date !== null) {
+        $rec[$column] = $date;
       }
     }
 

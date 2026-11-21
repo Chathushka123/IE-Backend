@@ -167,7 +167,7 @@ class StyleMilestoneRepository
     $seenStyles = [];
 
     foreach ($rows as $index => $row) {
-      $rowNumber = $index + 2; // +1 for 0-index, +1 for the heading row
+      $rowNumber = Utilities::importRowNumber($row, $index); // the Excel row the frontend sent (blank rows are skipped client-side)
       $summary['total']++;
       $styleName = trim((string) ($row['style'] ?? ''));
       $styleKey = Str::lower($styleName);
@@ -232,10 +232,10 @@ class StyleMilestoneRepository
       $rec['planned_quantity'] = (int) $plannedQuantity;
     }
 
-    foreach (self::DATE_FIELDS as $column) {
-      $value = trim((string) ($row[$column] ?? ''));
-      if ($value !== '') {
-        $rec[$column] = $value;
+    foreach (self::DATE_FIELDS as $label => $column) {
+      $date = Utilities::parseImportDate($row[$column] ?? null, $label);
+      if ($date !== null) {
+        $rec[$column] = $date;
       }
     }
 
