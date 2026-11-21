@@ -253,6 +253,47 @@ class Utilities
     return $json;
   }
 
+  /**
+   * Normalises one date cell from an Excel import to Y-m-d, or null when blank.
+   *
+   * Laravel's `date` rule accepts loose text such as "23-11-2026" (strtotime), but MySQL then rejects it
+   * with SQLSTATE 22007 — so importers must hand the database a strict Y-m-d. Text is read day-first
+   * (this app's convention), matching the frontend pre-check; anything else raises a message a user can act on.
+   *
+   * @throws Exception when the value is not a real calendar date
+   */
+  public static function parseImportDate($value, string $label = 'Date'): ?string
+  {
+    if ($value === null || (is_string($value) && trim($value) === '')) {
+      return null;
+    }
+    if ($value instanceof \DateTimeInterface) {
+      return $value->format('Y-m-d');
+    }
+
+    $text = trim((string) $value);
+    // Strip a trailing time part ("2026-11-23 00:00:00" / "...T00:00:00Z"); only the calendar date matters.
+    $text = preg_replace('/[T ]\d{1,2}:\d{2}(:\d{2}(\.\d+)?)?Z?$/', '', $text);
+
+    // Explicit shapes with a mandatory 4-digit year: PHP's own formats would read "23-11-26" as the year 0023.
+    if (preg_match('/^(\d{4})-(\d{1,2})-(\d{1,2})$/', $text, $m)) {
+      [$year, $month, $day] = [(int) $m[1], (int) $m[2], (int) $m[3]];
+    } elseif (preg_match('/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})$/', $text, $m)) {
+      [$day, $month, $year] = [(int) $m[1], (int) $m[2], (int) $m[3]];
+    }
+    if (isset($year) && checkdate($month, $day, $year)) {
+      return sprintf('%04d-%02d-%02d', $year, $month, $day);
+    }
+
+    throw new Exception("{$label} '{$text}' isn't a valid date. Use yyyy-mm-dd (e.g. 2026-11-23) or dd-mm-yyyy (e.g. 23-11-2026).");
+  }
+
+  /** Excel row number to report for an import row: the real sheet row the frontend sent, else position + heading row. */
+  public static function importRowNumber($row, $index): int
+  {
+    return isset($row['_row']) && is_numeric($row['_row']) ? (int) $row['_row'] : $index + 2;
+  }
+
   public static function extractError($validator)
   {
     $err = "";

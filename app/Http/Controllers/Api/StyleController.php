@@ -76,14 +76,24 @@ class StyleController extends Controller
                 throw new Exception('The operations must be a list.');
             }
 
+            $taActionIds = $request->input('ta_action_ids', []);
+            if (!is_array($taActionIds)) {
+                throw new Exception('The T&A actions must be a list.');
+            }
+
             DB::beginTransaction();
-            [$copy, $operationsCopied] = StyleRepository::duplicateRec($id, $request->except('operations'), $operations);
+            [$copy, $operationsCopied, $taActionsCopied] = StyleRepository::duplicateRec(
+                $id,
+                $request->except(['operations', 'ta_action_ids']),
+                $operations,
+                $taActionIds
+            );
             DB::commit();
 
             return response()->json([
                 'status' => 'success',
                 'data' => $copy->load(['productCategory', 'customer', 'season', 'factories']),
-                'meta' => ['operations_copied' => $operationsCopied],
+                'meta' => ['operations_copied' => $operationsCopied, 'ta_actions_copied' => $taActionsCopied],
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();

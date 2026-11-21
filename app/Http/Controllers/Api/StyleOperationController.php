@@ -92,6 +92,39 @@ class StyleOperationController extends Controller
         }
     }
 
+    /**
+     * Copy chosen operations from another style's bulletin onto the end of this style's bulletin.
+     * Body: { source_style_id, operations: [{ operation_id, smv? }] } — smv null inherits the operation master's.
+     */
+    public function copyFromStyle(Request $request, $styleId)
+    {
+        $request->validate([
+            'source_style_id' => 'required|integer|exists:styles,id',
+            'operations' => 'required|array|min:1|max:500',
+            'operations.*.operation_id' => 'required|integer|exists:operations,id',
+            'operations.*.smv' => 'nullable|numeric|min:0',
+        ]);
+
+        try {
+            DB::beginTransaction();
+            $created = StyleOperationRepository::copyFromStyle(
+                (int) $styleId,
+                (int) $request->source_style_id,
+                $request->operations
+            );
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'data'   => $created->load(['operation.baseOperation', 'operation.machineType', 'operation.grade'])->values(),
+                'meta'   => ['operations_copied' => $created->count()],
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 400);
+        }
+    }
+
     public function store(Request $request)
     {
         try {

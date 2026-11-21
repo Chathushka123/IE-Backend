@@ -170,6 +170,13 @@ $navigator_json = '
           "path":"/ie/team-plan"
         },
         {
+          "caption":"T&A Master",
+          "icon":"fas fa-list-check",
+          "type":"node",
+          "permitted" : 0,
+          "path":"/ie/ta-master"
+        },
+        {
           "caption":"Gap Analysis",
           "icon":"fas fa-triangle-exclamation",
           "type":"node",
